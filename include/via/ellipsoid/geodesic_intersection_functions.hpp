@@ -49,15 +49,13 @@ constexpr auto clamp_length(const T ref_length, const T arc_length,
 /// @param initial_distances the initial intersection distances in `Radians`.
 /// @return the Great Circle lengths to the geodesic intersection point,
 /// in radians.
-template <typename T>
+template <typename T, unsigned MAX_ITERATIONS = 10u>
   requires std::floating_point<T>
 auto calculate_geodesic_intersection_distances(
     const Geodesic<T> &g1, const Geodesic<T> &g2, const T sq_precision,
     const bool use_antipodal_intersection,
     const std::tuple<Radians<T>, Radians<T>> initial_distances)
     -> std::tuple<Radians<T>, Radians<T>, unsigned> {
-  const auto MAX_ITERATIONS{10u};
-
   auto [distance1, distance2]{initial_distances};
 
   auto iterations{1u};

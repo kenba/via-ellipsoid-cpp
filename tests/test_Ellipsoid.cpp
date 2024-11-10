@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_SUITE(Test_Ellipsoid)
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_Ellipsoid_wgs84_double) {
   // WGS84 constructor
-  constexpr auto ellipsoid{Ellipsoid<double>::wgs84()};
+  const auto ellipsoid{Ellipsoid<double>::wgs84()};
   BOOST_CHECK_EQUAL(wgs84::A<double>.v(), ellipsoid.a().v());
   BOOST_CHECK_EQUAL(wgs84::F<double>, ellipsoid.f());
 
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_Ellipsoid_wgs84_double) {
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_Ellipsoid_wgs84_long_double) {
   // WGS84 constructor
-  constexpr auto ellipsoid{Ellipsoid<long double>::wgs84()};
+  const auto ellipsoid{Ellipsoid<long double>::wgs84()};
   BOOST_CHECK_EQUAL(wgs84::A<long double>.v(), ellipsoid.a().v());
   BOOST_CHECK_EQUAL(wgs84::F<long double>, ellipsoid.f());
 

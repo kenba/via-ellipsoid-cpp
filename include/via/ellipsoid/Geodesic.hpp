@@ -442,11 +442,10 @@ public:
   /// @param precision the required precision, in Radians
   ///
   /// @return the along and across track distances to the position in `Radians`.
+  template <unsigned MAX_ITERATIONS = 10u>
   constexpr auto calculate_aux_atd_and_xtd(const Angle<T> beta, Angle<T> lon,
                                            Radians<T> precision) const
       -> std::tuple<Radians<T>, Radians<T>, unsigned> {
-    const auto MAX_ITERATIONS{10u};
-
     // calculate the position as a point on the auxiliary sphere
     const V point{vector::to_point(beta, lon)};
     // calculate the start point and pole on the auxiliary sphere
@@ -485,8 +484,8 @@ public:
     if (xtd.v() < precision.v()) {
       xtd = Radians(T());
     } else {
-      const auto [_a, pole]{aux_point_and_pole(atd)};
-      const auto sign{pole.dot(point)};
+      const auto [_a, pole_x]{aux_point_and_pole(atd)};
+      const auto sign{pole_x.dot(point)};
       xtd = Radians<T>(std::copysign(xtd.v(), sign));
     }
 

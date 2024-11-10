@@ -30,7 +30,6 @@ using namespace via::ellipsoid;
 using namespace via;
 
 namespace {
-constexpr int MAX_ITERATIONS(4);
 const auto EPSILON(std::numeric_limits<double>::epsilon());
 const auto CALCULATION_TOLERANCE(100 * EPSILON);
 } // namespace
@@ -47,11 +46,11 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
   BOOST_CHECK_EQUAL(128u, sizeof(Geodesic<double>));
 
   // Latitude, longitude, azimuth, "direct" constructor.
-  const Geodesic<double> geodesic1(Angle(Degrees(45.0)), Angle(Degrees(0.0)),
+  const Geodesic<double> geodesic0(Angle(Degrees(45.0)), Angle(Degrees(0.0)),
                                    Angle(Degrees(90.0)), Radians(0.0));
   BOOST_CHECK_EQUAL(trig::PI_2<double>,
-                    geodesic1.aux_azimuth(Radians(0.0)).to_radians().v());
-  BOOST_CHECK_CLOSE(trig::SQRT1_2<double>, geodesic1.clairaut().v(),
+                    geodesic0.aux_azimuth(Radians(0.0)).to_radians().v());
+  BOOST_CHECK_CLOSE(trig::SQRT1_2<double>, geodesic0.clairaut().v(),
                     CALCULATION_TOLERANCE);
 
   // LatLong, azimuth, aux_length constructor.

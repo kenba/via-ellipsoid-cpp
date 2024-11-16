@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_calculate_parametric_sin_latitude) {
 BOOST_AUTO_TEST_CASE(test_calculate_parametric_and_geodetic_sin_latitude) {
   const auto wgs84_e2{calculate_sq_eccentricity(wgs84::F<double>)};
   for (auto latitude(-90); latitude <= 90; ++latitude) {
-    const double radians{latitude * M_PI / 180.0};
+    const double radians{latitude * trig::PI<double> / 180.0};
     const auto sin_lat{trig::UnitNegRange(std::sin(radians))};
     const auto sin_parametric_lat(
         calculate_parametric_sin_latitude(sin_lat, wgs84_e2));

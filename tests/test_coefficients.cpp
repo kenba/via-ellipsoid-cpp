@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_evaluate_coeffs_C3y) {
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_sin_cos_series_C3) {
-  const Angle<double> sigma(Radians(0.1 * M_PI));
+  const Angle<double> sigma(Radians(0.1 * trig::PI<double>));
 
   boost::array<double, 15> boost_C3x_6;
   boost::geometry::series_expansion::evaluate_coeffs_C3x<6>(boost_C3x_6, N);
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(test_sin_cos_series_C3) {
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_sin_cos_series_C3_2) {
-  const Angle<double> sigma(Radians(0.1 * M_PI));
+  const Angle<double> sigma(Radians(0.1 * trig::PI<double>));
 
   boost::array<double, 15> boost_C3x_6;
   boost::geometry::series_expansion::evaluate_coeffs_C3x<6>(boost_C3x_6, N);

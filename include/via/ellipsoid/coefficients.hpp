@@ -282,9 +282,7 @@ template <typename T, typename IteratorType>
   requires std::floating_point<T>
 constexpr auto polyval(const T x, const IteratorType first,
                        const IteratorType last) -> T {
-#ifndef PYBIND11_VERSION_MAJOR
   Expects(1 <= std::distance(first, last));
-#endif
 
   IteratorType it(last);
   auto result(static_cast<T>(*(--it)));
@@ -303,9 +301,7 @@ constexpr auto polyval(const T x, const IteratorType first,
 template <typename T, typename S>
   requires std::floating_point<T>
 constexpr auto polyval_n(const T x, const S *coeffs, size_t n) -> T {
-#ifndef PYBIND11_VERSION_MAJOR
   Expects(0 < n);
-#endif
 
   T result(0);
   switch (n) {

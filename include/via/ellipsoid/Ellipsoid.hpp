@@ -76,9 +76,7 @@ public:
         n_{calculate_3rd_flattening(f)},
         a3_{evaluate_coeffs_A3<T>(calculate_3rd_flattening(f))},
         c3x_{evaluate_coeffs_C3x<T>(calculate_3rd_flattening(f))} {
-#ifndef PYBIND11_VERSION_MAJOR
     Expects((T() < a.v()) && (T() != f));
-#endif
   }
 
   /// A singleton function to a WGS84 Ellipsoid

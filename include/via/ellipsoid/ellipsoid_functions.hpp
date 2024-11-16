@@ -137,7 +137,7 @@ template <typename T>
 constexpr auto calculate_parametric_latitude(const Angle<T> &lat,
                                              const T one_minus_f) noexcept
     -> Angle<T> {
-  return Angle<T>(one_minus_f * lat.sin().v(), lat.cos().v());
+  return Angle<T>::from_y_x(one_minus_f * lat.sin().v(), lat.cos().v());
 }
 
 /// Function to convert a `parametric` Latitude on the auxiliary sphere to a
@@ -150,7 +150,7 @@ template <typename T>
 constexpr auto calculate_geodetic_latitude(const Angle<T> &lat,
                                            const T one_minus_f) noexcept
     -> Angle<T> {
-  return Angle<T>(lat.sin().v() / one_minus_f, lat.cos().v());
+  return Angle<T>::from_y_x(lat.sin().v() / one_minus_f, lat.cos().v());
 }
 
 } // namespace ellipsoid

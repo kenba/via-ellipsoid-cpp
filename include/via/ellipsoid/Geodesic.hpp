@@ -25,6 +25,7 @@
 /// @brief Contains the via::ellipsoid Geodesic class.
 //////////////////////////////////////////////////////////////////////////////
 #include "geodesic_functions.hpp"
+#include <via/angle/trig.hpp>
 #include <via/sphere/great_circle.hpp>
 
 namespace via {
@@ -78,11 +79,12 @@ public:
                      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : beta_{beta}, lon_{lon}, azi_{azimuth},
         // Calculate the azimuth at the first Equator crossing
-        azi0_(azi_.sin().v() * beta_.cos().v(),
-              std::hypot(azi_.cos().v(), azi_.sin().v() * beta_.sin().v())),
+        azi0_(Angle<T>::from_y_x(
+            azi_.sin().v() * beta_.cos().v(),
+            std::hypot(azi_.cos().v(), azi_.sin().v() * beta_.sin().v()))),
         // Calculate the distance to the first Equator crossing
-        sigma1_{
-            Angle<T>(beta_.sin().v(), calculate_cos_omega(beta_, azi_.cos()))},
+        sigma1_{Angle<T>::from_y_x(beta_.sin().v(),
+                                   calculate_cos_omega(beta_, azi_.cos()))},
         aux_length_{aux_length},
         // Calculate eps for calculating coefficients
         eps_(ellipsoid.calculate_epsilon(clairaut())),
@@ -90,10 +92,9 @@ public:
         a3c_(ellipsoid.f() * clairaut().v() *
              evaluate_poynomial(eps_, ellipsoid.a3())),
         ellipsoid_(ellipsoid) {
-#ifndef PYBIND11_VERSION_MAJOR
     Expects((T() <= beta.cos().v()) && (T() <= aux_length.v()) &&
             (aux_length.v() <= trig::PI<T>));
-#endif
+
     const auto C1{evaluate_coeffs_C1<T>(eps_)};
     b11_ = sin_cos_series(sigma1_, C1);
   }
@@ -264,9 +265,8 @@ public:
                                           azi_.cos().v()};
     const Angle<T> beta(sin_beta, trig::swap_sin_cos(sin_beta));
 
-#ifndef PYBIND11_VERSION_MAJOR
     Ensures(beta.is_valid());
-#endif
+
     return beta;
   }
 
@@ -307,9 +307,10 @@ public:
 
     // Handle North pole, only valid azimuth is due South
     if (MAX_LAT < sin_beta)
-      return Angle<T>(T(), T(-1));
+      return Angle<T>(trig::UnitNegRange(T()), trig::UnitNegRange(T(-1)));
     else
-      return Angle<T>(azi0_.sin().v(), azi0_.cos().v() * sigma_sum.cos().v());
+      return Angle<T>::from_y_x(azi0_.sin().v(),
+                                azi0_.cos().v() * sigma_sum.cos().v());
   }
 
   /// Calculate the azimuth at the length along the geodesic.
@@ -327,16 +328,17 @@ public:
   /// @return the longitude difference from the start point.
   constexpr auto delta_longitude(const Radians<T> gc_length) const -> Angle<T> {
     if (gc_length.abs().v() <= great_circle::MIN_VALUE<T>)
-      return Angle<T>(T(), T(1));
+      return Angle<T>();
 
     // The great circle distance from Northward Equator crossing.
     const Angle<T> sigma_sum(sigma1_ + Angle<T>(gc_length));
 
     // The longitude difference on the auxiliary sphere.
-    const Angle<T> omega1(azi0_.sin().v() * beta_.sin().v(),
-                          calculate_cos_omega(beta_, azi_.cos()));
-    const Angle<T> omega2(azi0_.sin().v() * sigma_sum.sin().v(),
-                          sigma_sum.cos().v());
+    const auto omega1{
+        Angle<T>::from_y_x(azi0_.sin().v() * beta_.sin().v(),
+                           calculate_cos_omega(beta_, azi_.cos()))};
+    const auto omega2{Angle<T>::from_y_x(azi0_.sin().v() * sigma_sum.sin().v(),
+                                         sigma_sum.cos().v())};
     const Angle<T> omega12{omega2 - omega1};
 
     const auto c3{evaluate_coeffs_C3y<T>(ellipsoid_.c3x(), eps_)};
@@ -430,8 +432,8 @@ public:
     // Note: point cannot be at North pole, since it is not on a meridional
     // Geodesic. Use Karney's method to calculate azimuth.
     const Angle<T> sigma_sum{sigma1_ + length};
-    const Angle<T> azimuth(azi0_.sin().v(),
-                           azi0_.cos().v() * sigma_sum.cos().v());
+    const auto azimuth{Angle<T>::from_y_x(
+        azi0_.sin().v(), azi0_.cos().v() * sigma_sum.cos().v())};
     pole = vector::calculate_pole(beta, lon, azimuth);
     return {point, pole};
   }

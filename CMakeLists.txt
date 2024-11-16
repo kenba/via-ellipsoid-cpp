@@ -32,14 +32,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ellipsoid.hpp)
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
 
-# define _USE_MATH_DEFINES to define M_PI etc.
-target_compile_definitions(${PROJECT_NAME} INTERFACE _USE_MATH_DEFINES)
-
 target_include_directories(${PROJECT_NAME} INTERFACE
   $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
 if (WIN32)
+  # Add the C++ Guidelines Support Library include files
+  set(CPP_GSL_DIR $ENV{CPP_GSL_DIR})
+  include_directories(${CPP_GSL_DIR}/include)
+
   # Add the Eigen Library include files
   set(Eigen_DIR $ENV{Eigen_DIR})
   include_directories(${Eigen_DIR})
@@ -58,15 +59,10 @@ if (INSTALL_PYTHON)
   find_package(pybind11 CONFIG REQUIRED)
 
   pybind11_add_module(via_ellipsoid src/via_ellipsoid_python_bindings.cpp)
-  target_compile_definitions(via_ellipsoid PRIVATE _USE_MATH_DEFINES)
   target_compile_features(via_ellipsoid PRIVATE cxx_std_23)
   target_include_directories(via_ellipsoid PRIVATE
     $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>)
   install(TARGETS via_ellipsoid DESTINATION .)
-else()
-  # Add the C++ Guidelines Support Library include files
-  set(CPP_GSL_DIR $ENV{CPP_GSL_DIR})
-  include_directories(${CPP_GSL_DIR}/include)
 endif(INSTALL_PYTHON)
 
 if (CPP_UNIT_TESTS)
@@ -111,7 +107,7 @@ if (CPP_UNIT_TESTS)
     endif()
 
     enable_testing()
-    add_test(NAME via_ellipsoid.test COMMAND  ${PROJECT_NAME}_test)
+    add_test(NAME via-ellipsoid_test COMMAND  ${PROJECT_NAME}_test)
     endif(Boost_FOUND)
 endif(CPP_UNIT_TESTS)
 

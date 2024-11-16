@@ -25,6 +25,7 @@
 /// @brief Contains the via::ellipsoid geodesic template functions.
 //////////////////////////////////////////////////////////////////////////////
 #include "Ellipsoid.hpp"
+#include <via/angle/trig.hpp>
 #include <via/sphere.hpp>
 #ifdef OUTPUT_GEOD_ITERATOR_STEPS
 #include <iomanip>
@@ -90,9 +91,7 @@ constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
                                         const Angle<T> sigma2, const T dn2)
     -> T {
   // TODO investigate why this precondition fails
-  // #ifndef PYBIND11_VERSION_MAJOR
-  //        Expects(T() <= sigma12.v());
-  // #endif
+  // Expects(T() <= sigma12.v());
 
   const T A1{evaluate_A1<T>(eps)};
   const T A2{evaluate_A2<T>(eps)};
@@ -134,9 +133,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
                              std::sqrt(std::numeric_limits<T>::epsilon())};
   constexpr T Y_TOLERANCE{200 * std::numeric_limits<T>::epsilon()};
 
-#ifndef PYBIND11_VERSION_MAJOR
   Expects(T() <= lambda12.sin().v());
-#endif
 
   // Calculate the integration parameter for geodesic
   const auto clairaut{beta1.cos()}; // Note: assumes sin_alpha_1 = 1
@@ -254,9 +251,7 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                  const T precision = great_circle::MIN_VALUE<T>)
     -> std::tuple<Angle<T>, Radians<T>> {
   static const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
-#ifndef PYBIND11_VERSION_MAJOR
   Expects(T() < gc_length.v());
-#endif
 
   // Start at the latitude furthest from the Equator
   const bool swap_latitudes{beta_a.sin().abs() < beta_b.sin().abs()};
@@ -301,8 +296,8 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
     // Northbound equator crossing
     const trig::UnitNegRange<T> sin_omega1{clairaut.v() * beta1.sin().v()};
     const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};
-    const Angle<T> omega1{sin_omega1.v(), cos_omega1};
-    const Angle<T> sigma1{beta1.sin().v(), cos_omega1};
+    const auto omega1{Angle<T>::from_y_x(sin_omega1.v(), cos_omega1)};
+    const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
 
     // Calculate azimuth at the end point
     alpha2 = calculate_end_azimuth(beta1, beta2, alpha1);
@@ -311,21 +306,24 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
     // Northbound equator crossing
     const trig::UnitNegRange<T> sin_omega2{clairaut.v() * beta2.sin().v()};
     const auto cos_omega2{calculate_cos_omega(beta2, alpha2.cos())};
-    const Angle<T> omega2{sin_omega2.v(), cos_omega2};
-    const Angle<T> sigma2{beta2.sin().v(), cos_omega2};
+    const auto omega2{Angle<T>::from_y_x(sin_omega2.v(), cos_omega2)};
+    const auto sigma2{Angle<T>::from_y_x(beta2.sin().v(), cos_omega2)};
 
     // Calculate Longitude difference on the auxiliary sphere
     auto omega12 = omega2 - omega1;
     // clamp to range 0 to Pi
     if (omega12.sin().v() < T())
-      omega12 = (omega12.cos().v() < T()) ? Angle<T>(T(), T(-1))
-                                          : Angle<T>(T(), T(1));
+      omega12 = (omega12.cos().v() < T()) ? Angle<T>(trig::UnitNegRange(T()),
+                                                     trig::UnitNegRange(T(-1)))
+                                          : Angle<T>();
 
     // Calculate great circle length on the auxiliary sphere
     Angle<T> sc_sigma12{sigma2 - sigma1};
     if (sc_sigma12.sin().v() < T()) // clamp to range 0 to Pi
-      sc_sigma12 = (sc_sigma12.cos().v() < T()) ? Angle<T>(T(), T(-1))
-                                                : Angle<T>(T(), T(1));
+      sc_sigma12 =
+          (sc_sigma12.cos().v() < T())
+              ? Angle<T>(trig::UnitNegRange(T()), trig::UnitNegRange(T(-1)))
+              : Angle<T>();
     sigma12 = sc_sigma12.abs().to_radians();
 
     // Calculate difference between geodesic and great circle longitudes
@@ -374,9 +372,7 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
   if (lambda12_negative)
     alpha1 = -alpha1;
 
-#ifndef PYBIND11_VERSION_MAJOR
   Ensures(T() < sigma12.v());
-#endif
 
   return {alpha1, sigma12};
 }
@@ -434,9 +430,8 @@ template <typename T>
 auto calculate_azimuth_aux_length(const LatLong<T> &a, const LatLong<T> &b,
                                   const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>> {
-#ifndef PYBIND11_VERSION_MAJOR
   Expects(a.is_valid() && b.is_valid());
-#endif
+
   // calculate the parametric latitudes on the auxiliary sphere
   const Angle<T> beta_a{
       ellipsoid.calculate_parametric_latitude(Angle<T>(a.lat()))};
@@ -466,8 +461,8 @@ constexpr auto convert_radians_to_metres(const Angle<T> &beta1,
     -> Metres<T> {
   // Calculate the distance from the first equator crossing
   const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};
-  const Angle<T> sigma1(beta1.sin().v(), cos_omega1);
-  const Angle<T> sigma_sum{sigma1 + Angle<T>(gc_distance)};
+  const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
+  const auto sigma_sum{sigma1 + Angle<T>(gc_distance)};
 
   // Calculate the ellipsoid coefficients
   const trig::UnitNegRange<T> clairaut(alpha1.sin().v() * beta1.cos().v());

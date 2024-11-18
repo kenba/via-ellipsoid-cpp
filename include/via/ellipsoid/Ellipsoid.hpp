@@ -81,35 +81,68 @@ public:
 
   /// A singleton function to a WGS84 Ellipsoid
   /// @return a const reference to a WGS84 Ellipsoid
+  [[nodiscard("Pure Function")]]
   constexpr static auto wgs84() -> const Ellipsoid<T> & {
     static constexpr Ellipsoid<T> wgs84_ellipsoid(wgs84::A<T>, wgs84::F<T>);
     return wgs84_ellipsoid;
   }
 
   /// Accessor for the Semimajor axis of the ellipsoid.
-  constexpr Metres<T> a() const noexcept { return a_; }
+  [[nodiscard("Pure Function")]]
+  constexpr Metres<T> a() const noexcept {
+    return a_;
+  }
+
   /// Accessor for the flattening of the ellipsoid, a ratio.
-  constexpr T f() const noexcept { return f_; }
+  [[nodiscard("Pure Function")]]
+  constexpr T f() const noexcept {
+    return f_;
+  }
+
   /// Accessor for the Semiminor axis of the ellipsoid.
-  constexpr Metres<T> b() const noexcept { return b_; }
+  [[nodiscard("Pure Function")]]
+  constexpr Metres<T> b() const noexcept {
+    return b_;
+  }
 
   /// Accessor for one minus the flattening of the ellipsoid.
-  constexpr T one_minus_f() const noexcept { return one_minus_f_; }
+  [[nodiscard("Pure Function")]]
+  constexpr T one_minus_f() const noexcept {
+    return one_minus_f_;
+  }
+
   /// Accessor for the reciprocal of one minus the flattening of the
-  constexpr T recip_one_minus_f() const noexcept { return recip_one_minus_f_; }
+  [[nodiscard("Pure Function")]]
+  constexpr T recip_one_minus_f() const noexcept {
+    return recip_one_minus_f_;
+  }
 
   /// Accessor for the square of the Eccentricity of the ellipsoid.
-  constexpr T e_2() const noexcept { return e_2_; }
+  [[nodiscard("Pure Function")]]
+  constexpr T e_2() const noexcept {
+    return e_2_;
+  }
+
   /// Accessor for the square of the second Eccentricity of the ellipsoid.
-  constexpr T ep_2() const noexcept { return ep_2_; }
+  [[nodiscard("Pure Function")]]
+  constexpr T ep_2() const noexcept {
+    return ep_2_;
+  }
+
   /// Accessor for the third flattening of the ellipsoid.
-  constexpr T n() const noexcept { return n_; }
+  [[nodiscard("Pure Function")]]
+  constexpr T n() const noexcept {
+    return n_;
+  }
 
   /// Accessor for the A3 series coefficients of the ellipsoid.
+  [[nodiscard("Pure Function")]]
   constexpr const std::array<T, SeriesOrder> &a3() const noexcept {
     return a3_;
   }
+
   /// Accessor for the C3x series coefficients of the ellipsoid.
+  [[nodiscard("Pure Function")]]
   constexpr const std::array<T, SeriesOrder *(SeriesOrder - 1) / 2> &
   c3x() const noexcept {
     return c3x_;
@@ -118,6 +151,7 @@ public:
   /// Calculate epsilon, the variable used in series expansions.
   /// Note: epsilon is positive and small.
   /// @param clairaut - Clairaut's constant.
+  [[nodiscard("Pure Function")]]
   constexpr auto
   calculate_epsilon(trig::UnitNegRange<T> clairaut) const noexcept -> T {
     return ellipsoid::calculate_epsilon(clairaut, ep_2_);
@@ -127,6 +161,7 @@ public:
   /// sphere.
   /// @param lat the the geodetic Latitude in an Angle.
   /// @return the parametric Latitude on the auxiliary sphere in an Angle.
+  [[nodiscard("Pure Function")]]
   constexpr auto
   calculate_parametric_latitude(const Angle<T> &lat) const noexcept
       -> Angle<T> {
@@ -137,6 +172,7 @@ public:
   /// Latitude.
   /// @param lat the the geodetic Latitude in an Angle.
   /// @return the geodetic Latitude in an Angle.
+  [[nodiscard("Pure Function")]]
   constexpr auto calculate_geodetic_latitude(const Angle<T> &lat) const noexcept
       -> Angle<T> {
     return ellipsoid::calculate_geodetic_latitude(lat, one_minus_f_);

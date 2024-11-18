@@ -30,13 +30,14 @@
 namespace via {
 namespace ellipsoid {
 /// Calculate the Semiminor axis of an ellipsoid.
-/// @pre a < 0
+/// @pre a > 0
 /// @pre f != 0
 /// @param a the Semimajor axis of an ellipsoid.
 /// @param f the flattening ratio.
 /// @return Semiminor axis of an ellipsoid.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_minor_axis(const Metres<T> a, const T f) noexcept
     -> Metres<T> {
   return Metres<T>(a.v() * (T(1) - f));
@@ -48,6 +49,7 @@ constexpr auto calculate_minor_axis(const Metres<T> a, const T f) noexcept
 /// @return square of the Eccentricity of an ellipsoid.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_sq_eccentricity(const T f) noexcept -> T {
   return f * (2 - f);
 }
@@ -58,6 +60,7 @@ constexpr auto calculate_sq_eccentricity(const T f) noexcept -> T {
 /// @return square of the Eccentricity of an ellipsoid.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_sq_2nd_eccentricity(const T f) noexcept -> T {
   const T one_minus_f{1 - f};
   return calculate_sq_eccentricity(f) / (one_minus_f * one_minus_f);
@@ -69,6 +72,7 @@ constexpr auto calculate_sq_2nd_eccentricity(const T f) noexcept -> T {
 /// @return third flattening of an ellipsoid.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_3rd_flattening(const T f) noexcept -> T {
   return f / (2 - f);
 }
@@ -84,6 +88,7 @@ constexpr auto calculate_3rd_flattening(const T f) noexcept -> T {
 /// @return epsilon
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_epsilon(const trig::UnitNegRange<T> clairaut,
                                  const T ep_2) noexcept -> T {
   // Clairaut's constant is sin alpha0; sq_cos_alpha0 is 1 - clairaut^2
@@ -102,6 +107,7 @@ constexpr auto calculate_epsilon(const trig::UnitNegRange<T> clairaut,
 /// @return the sine of the parametric Latitude on the auxiliary sphere.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto
 calculate_parametric_sin_latitude(const trig::UnitNegRange<T> sin_lat,
                                   const T e_2) noexcept
@@ -120,6 +126,7 @@ calculate_parametric_sin_latitude(const trig::UnitNegRange<T> sin_lat,
 /// @return the sine of the geodetic Latitude.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto
 calculate_geodetic_sin_latitude(const trig::UnitNegRange<T> sin_lat,
                                 const T e_2) noexcept -> trig::UnitNegRange<T> {
@@ -134,6 +141,7 @@ calculate_geodetic_sin_latitude(const trig::UnitNegRange<T> sin_lat,
 /// @return the parametric Latitude on the auxiliary sphere in an Angle.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_parametric_latitude(const Angle<T> &lat,
                                              const T one_minus_f) noexcept
     -> Angle<T> {
@@ -147,6 +155,7 @@ constexpr auto calculate_parametric_latitude(const Angle<T> &lat,
 /// @return the geodetic Latitude in an Angle.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_geodetic_latitude(const Angle<T> &lat,
                                            const T one_minus_f) noexcept
     -> Angle<T> {

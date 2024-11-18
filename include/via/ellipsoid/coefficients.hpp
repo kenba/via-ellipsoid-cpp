@@ -40,6 +40,7 @@ namespace ellipsoid {
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_A1(const T eps) noexcept -> T {
   const T eps2{eps * eps};
 
@@ -63,6 +64,7 @@ constexpr auto evaluate_A1(const T eps) noexcept -> T {
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_A2(const T eps) noexcept -> T {
   const T eps2{eps * eps};
   if constexpr (std::is_same<T, long double>::value) {
@@ -84,6 +86,7 @@ constexpr auto evaluate_A2(const T eps) noexcept -> T {
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_coeffs_A3(const T n) noexcept -> std::array<T, order> {
   if constexpr (std::is_same<T, long double>::value)
     return std::array<T, order>{T(1),
@@ -113,6 +116,7 @@ constexpr auto evaluate_coeffs_A3(const T n) noexcept -> std::array<T, order> {
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_coeffs_C1(const T eps) noexcept
     -> std::array<T, order + 1> {
   const T eps2{eps * eps};
@@ -151,6 +155,7 @@ constexpr auto evaluate_coeffs_C1(const T eps) noexcept
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_coeffs_C1p(const T eps) noexcept
     -> std::array<T, order> {
   const T eps2{eps * eps};
@@ -181,6 +186,7 @@ constexpr auto evaluate_coeffs_C1p(const T eps) noexcept
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_coeffs_C2(const T eps) noexcept
     -> std::array<T, order + 1> {
   const T eps2{eps * eps};
@@ -218,6 +224,7 @@ constexpr auto evaluate_coeffs_C2(const T eps) noexcept
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_coeffs_C3x(const T n) noexcept
     -> std::array<T, order *(order - 1) / 2> {
   const T n2(n * n);
@@ -280,6 +287,7 @@ constexpr auto evaluate_coeffs_C3x(const T n) noexcept
 /// @return the result of evaluating the polynomial.
 template <typename T, typename IteratorType>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto polyval(const T x, const IteratorType first,
                        const IteratorType last) -> T {
   Expects(1 <= std::distance(first, last));
@@ -300,6 +308,7 @@ constexpr auto polyval(const T x, const IteratorType first,
 /// @return the result of evaluating the polynomial.
 template <typename T, typename S>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto polyval_n(const T x, const S *coeffs, size_t n) -> T {
   Expects(0 < n);
 
@@ -345,6 +354,7 @@ constexpr auto polyval_n(const T x, const S *coeffs, size_t n) -> T {
 /// @return the result of evaluating the polynomial.
 template <typename T, typename Coeffs>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto evaluate_poynomial(const T x, Coeffs const &coeffs) -> T {
   return polyval_n(x, coeffs.data(), coeffs.size());
 }
@@ -360,6 +370,7 @@ constexpr auto evaluate_poynomial(const T x, Coeffs const &coeffs) -> T {
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto
 evaluate_coeffs_C3y(std::array<T, order *(order - 1) / 2> const &coeffs2, T eps)
     -> std::array<T, order> {
@@ -389,6 +400,7 @@ evaluate_coeffs_C3y(std::array<T, order *(order - 1) / 2> const &coeffs2, T eps)
 /// @return the result of evaluating the polynomial.
 template <typename T, typename Coeffs>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto sin_cos_series(const Angle<T> angle, Coeffs const &coeffs)
     -> Radians<T> {
   const Angle<T> angle2x{angle.x2()};

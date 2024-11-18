@@ -150,6 +150,7 @@ public:
 
   /// Test whether a `Geodesic` is valid.
   /// Whether latitude <= 90.0 and `aux_length` is positive and less than PI.
+  [[nodiscard("Pure Function")]]
   constexpr auto is_valid() const noexcept -> bool {
     return T() <= aux_length_.v() && aux_length_.v() <= trig::PI<T> &&
            beta_.cos().v() >= T();
@@ -157,15 +158,24 @@ public:
 
   /// Accessor for the start latitude on the auxiliary sphere.
   /// @return beta_.
-  constexpr auto beta() const noexcept -> Angle<T> { return beta_; }
+  [[nodiscard("Pure Function")]]
+  constexpr auto beta() const noexcept -> Angle<T> {
+    return beta_;
+  }
 
   /// Accessor for the start longitude.
   /// @return lon_.
-  constexpr auto lon() const noexcept -> Angle<T> { return lon_; }
+  [[nodiscard("Pure Function")]]
+  constexpr auto lon() const noexcept -> Angle<T> {
+    return lon_;
+  }
 
   /// Accessor for the start azimuth.
   /// @return azi_.
-  constexpr auto azi() const noexcept -> Angle<T> { return azi_; }
+  [[nodiscard("Pure Function")]]
+  constexpr auto azi() const noexcept -> Angle<T> {
+    return azi_;
+  }
 
   /// Set the `aux_length_`
   /// @param aux_length the new aux_length
@@ -175,30 +185,35 @@ public:
 
   /// Accessor for the arc length on the auxiliary sphere in radians.
   /// @return The arc length on the auxiliary sphere in radians.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_length() const noexcept -> Radians<T> {
     return aux_length_;
   }
 
   /// Accessor for the reference to the underlying `Ellipsoid`.
   /// @return a const reference to the Ellipsoid.
+  [[nodiscard("Pure Function")]]
   constexpr auto ellipsoid() const noexcept -> const Ellipsoid<T> & {
     return ellipsoid_;
   }
 
   /// Accessor for the start point on the auxiliary sphere.
   /// @return start point
+  [[nodiscard("Pure Function")]]
   constexpr auto a() const noexcept -> V {
     return vector::to_point<T>(beta_, lon_);
   }
 
   /// Accessor for the start pole on the auxiliary sphere.
   /// @return start pole
+  [[nodiscard("Pure Function")]]
   constexpr auto pole() const noexcept -> V {
     return vector::calculate_pole<T>(beta_, lon_, azi_);
   }
 
   /// Accessor for the start direction on the auxiliary sphere.
   /// @return start direction
+  [[nodiscard("Pure Function")]]
   constexpr auto direction() const noexcept -> V {
     return vector::calculate_direction<T>(beta_, lon_, azi_);
   }
@@ -206,18 +221,23 @@ public:
   /// Accessor for Clairaut's constant.
   /// Clairaut's constant = sin min azimuth = cos max parametric latitude.
   /// @return Clairaut's constant.
+  [[nodiscard("Pure Function")]]
   constexpr auto clairaut() const noexcept -> trig::UnitNegRange<T> {
     return azi0_.sin();
   }
 
   /// Accessor for the integration constant: epsilon.
   /// @return eps_.
-  constexpr auto epsilon() const noexcept -> T { return eps_; }
+  [[nodiscard("Pure Function")]]
+  constexpr auto epsilon() const noexcept -> T {
+    return eps_;
+  }
 
   /// Convert a distance in metres on the ellipsoid to radians on the
   /// auxiliary sphere.
   /// @param distance_m the distance along the Geodesic in metres.
   /// @return the distance along the auxiliary sphere great circle in radians.
+  [[nodiscard("Pure Function")]]
   constexpr auto metres_to_radians(const Metres<T> distance_m) const
       -> Radians<T> {
     if (std::abs(distance_m.v()) < great_circle::MIN_VALUE<T>)
@@ -236,6 +256,7 @@ public:
   /// @param gc_distance the distance along the auxiliary sphere great circle in
   /// radians.
   /// @return the distance along the Geodesic in metres.
+  [[nodiscard("Pure Function")]]
   constexpr auto radians_to_metres(const Radians<T> gc_distance) const
       -> Metres<T> {
     if (gc_distance.abs().v() < great_circle::MIN_VALUE<T>)
@@ -252,6 +273,7 @@ public:
 
   /// Accessor for the length of the Geodesic in metres.
   /// @return The length of the Geodesic in metres.
+  [[nodiscard("Pure Function")]]
   constexpr auto length() const -> Metres<T> {
     return radians_to_metres(aux_length_);
   }
@@ -259,6 +281,7 @@ public:
   /// Calculate the parametric latitude at the great circle length.
   /// @param length the length on the auxiliary sphere as an Angle.
   /// @return the parametric latitude.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_beta(const Angle<T> length) const -> Angle<T> {
     const trig::UnitNegRange sin_beta{length.cos().v() * beta_.sin().v() +
                                       length.sin().v() * beta_.cos().v() *
@@ -274,6 +297,7 @@ public:
   /// @param gc_length the great circle length on the auxiliary sphere, in
   /// radians.
   /// @return the geodetic latitude of the position at `gc_length`.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_latitude(const Radians<T> gc_length) const -> Angle<T> {
     return ellipsoid_.calculate_geodetic_latitude(
         aux_beta(Angle<T>(gc_length)));
@@ -282,6 +306,7 @@ public:
   /// Calculate the geodetic latitude at the length along the geodesic.
   /// @param length_m the length along the geodesic, in metres.
   /// @return the geodetic latitude.
+  [[nodiscard("Pure Function")]]
   constexpr auto latitude(const Metres<T> length_m) const -> Angle<T> {
     if (std::abs(length_m.v()) < great_circle::MIN_VALUE<T>)
       return ellipsoid_.calculate_geodetic_latitude(beta_);
@@ -293,6 +318,7 @@ public:
   /// @param gc_length the great circle arc length on the auxiliary sphere,
   /// in radians.
   /// @return the azimuth of the geodesic/great circle at `gc_length`.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_azimuth(const Radians<T> gc_length = Radians(T())) const
       -> Angle<T> {
     static constexpr T MAX_LAT{T(1) - great_circle::MIN_VALUE<T>};
@@ -316,6 +342,7 @@ public:
   /// Calculate the azimuth at the length along the geodesic.
   /// @param length the length along the geodesic, in metres.
   /// @return the azimuth of the geodesic/great circle at length.
+  [[nodiscard("Pure Function")]]
   constexpr auto azimuth(const Metres<T> length_m = Metres(T())) const
       -> Angle<T> {
     return aux_azimuth(metres_to_radians(length_m));
@@ -326,6 +353,7 @@ public:
   /// @param gc_length the great circle length on the auxiliary sphere,
   /// in radians.
   /// @return the longitude difference from the start point.
+  [[nodiscard("Pure Function")]]
   constexpr auto delta_longitude(const Radians<T> gc_length) const -> Angle<T> {
     if (gc_length.abs().v() <= great_circle::MIN_VALUE<T>)
       return Angle<T>();
@@ -354,6 +382,7 @@ public:
   /// @param gc_length the great circle length on the auxiliary sphere,
   /// in radians.
   /// @return the geodesic longitude as an Angle.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_longitude(const Radians<T> gc_length) const -> Angle<T> {
     return lon_ + delta_longitude(gc_length);
   }
@@ -361,6 +390,7 @@ public:
   /// Calculate the geodesic longitude at the length along the geodesic.
   /// @param length_m the length along the geodesic, in metres.
   /// @return the geodesic longitude as an Angle.
+  [[nodiscard("Pure Function")]]
   constexpr auto longitude(const Metres<T> length_m) const -> Angle<T> {
     return aux_longitude(metres_to_radians(length_m));
   }
@@ -370,6 +400,7 @@ public:
   /// @param gc_length the great circle length on the auxiliary sphere,
   /// in Radians.
   /// @return the `LatLong` of the geodesic position at `gc_length`.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_lat_long(const Radians<T> gc_length) const -> LatLong<T> {
     return LatLong<T>(aux_latitude(gc_length).to_degrees(),
                       aux_longitude(gc_length).to_degrees());
@@ -378,6 +409,7 @@ public:
   /// Calculate the geodesic `LatLong` at the length along the `Geodesic`.
   /// @param length_m the length along the geodesic, in metres.
   /// @return the `LatLong` of the geodesic position at `length_m`.
+  [[nodiscard("Pure Function")]]
   constexpr auto lat_long(const Metres<T> length_m) const -> LatLong<T> {
     return aux_lat_long(metres_to_radians(length_m));
   }
@@ -386,6 +418,7 @@ public:
   /// great circle arc length.
   /// @param gc_length the great circle arc length, in radians.
   /// @return the point on the auxiliary sphere at `gc_length`.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_point(const Radians<T> gc_length) const -> V {
     if (gc_length.abs().v() < great_circle::MIN_VALUE<T>)
       return a();
@@ -397,11 +430,15 @@ public:
 
   /// Calculate the end point on the geodesic.
   /// @return end point
-  constexpr auto b() const -> V { return aux_point(aux_length_); }
+  [[nodiscard("Pure Function")]]
+  constexpr auto b() const -> V {
+    return aux_point(aux_length_);
+  }
 
   /// Calculate the point on the auxiliary sphere at the mid point of the
   /// `Geodesic`.
   /// @return end point
+  [[nodiscard("Pure Function")]]
   constexpr auto mid_point() const -> V {
     return aux_point(metres_to_radians(Metres<T>(length().v() / T(2))));
   }
@@ -412,6 +449,7 @@ public:
   /// radians.
   /// @return the point and pole projected onto the auxiliary sphere at at
   /// gc_length.
+  [[nodiscard("Pure Function")]]
   constexpr auto aux_point_and_pole(const Radians<T> gc_length) const
       -> std::tuple<V, V> {
     auto point{a()};
@@ -445,6 +483,7 @@ public:
   ///
   /// @return the along and across track distances to the position in `Radians`.
   template <unsigned MAX_ITERATIONS = 10u>
+  [[nodiscard("Pure Function")]]
   constexpr auto calculate_aux_atd_and_xtd(const Angle<T> beta, Angle<T> lon,
                                            Radians<T> precision) const
       -> std::tuple<Radians<T>, Radians<T>, unsigned> {
@@ -494,6 +533,12 @@ public:
     return {atd, xtd, iterations};
   }
 
+  /// Calculate along and across track distances to a position from a geodesic.
+  /// @param position the position as a `LatLong`
+  /// @param precision the required precision, in Metres
+  ///
+  /// @return the along and across track distances to the position in `Metres`.
+  [[nodiscard("Pure Function")]]
   constexpr auto calculate_atd_and_xtd(const LatLong<T> position,
                                        Metres<T> precision_m) const
       -> std::tuple<Metres<T>, Metres<T>, unsigned> {

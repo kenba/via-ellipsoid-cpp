@@ -32,6 +32,7 @@ namespace ellipsoid {
 /// within precision of arc_length
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto clamp_length(const T ref_length, const T arc_length,
                             const T precision) noexcept -> T {
   if (std::abs(ref_length) < precision)
@@ -51,6 +52,7 @@ constexpr auto clamp_length(const T ref_length, const T arc_length,
 /// in radians.
 template <typename T, unsigned MAX_ITERATIONS = 10u>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 auto calculate_geodesic_intersection_distances(
     const Geodesic<T> &g1, const Geodesic<T> &g2, const T sq_precision,
     const bool use_antipodal_intersection,
@@ -97,6 +99,7 @@ auto calculate_geodesic_intersection_distances(
 /// the number of iterations required.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
                                           const Geodesic<T> &g2,
                                           Radians<T> precision)
@@ -148,6 +151,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
 /// their closest (reference) points if the Geodesics do not intersect.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 auto calculate_intersection_distances(const Geodesic<T> &g1,
                                       const Geodesic<T> &g2,
                                       Metres<T> precision)

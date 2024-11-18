@@ -41,6 +41,7 @@ namespace ellipsoid {
 /// @return k the solution of the astroid.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_astroid(const T x, const T y) -> T {
   const T p{x * x};
   const T q{y * y};
@@ -86,6 +87,7 @@ constexpr auto calculate_astroid(const T x, const T y) -> T {
 /// Calculate: m12b = (reduced length)/_b
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
                                         const Angle<T> sigma1, const T dn1,
                                         const Angle<T> sigma2, const T dn2)
@@ -124,6 +126,7 @@ constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
 /// @return the estimate of the initial azimuth on the auxiliary sphere.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
                                                   const Angle<T> beta2,
                                                   const Angle<T> lambda12,
@@ -169,6 +172,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
 /// latitude is very close to the equator.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_cos_omega(const Angle<T> beta,
                                    const trig::UnitNegRange<T> cos_azimuth)
     -> T {
@@ -181,6 +185,7 @@ constexpr auto calculate_cos_omega(const Angle<T> beta,
 /// @pre 0 <= alpha1.sin()
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto calculate_end_azimuth(const Angle<T> beta1, const Angle<T> beta2,
                                      const Angle<T> alpha1) -> Angle<T> {
   const trig::UnitNegRange<T> clairaut{alpha1.sin().v() * beta1.cos().v()};
@@ -218,6 +223,7 @@ constexpr auto calculate_end_azimuth(const Angle<T> beta1, const Angle<T> beta2,
 /// ellipsoid in radians.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
                              const Radians<T> sigma12, const Angle<T> sigma1,
                              const Angle<T> sigma2,
@@ -244,6 +250,7 @@ constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
 /// great circle length on the auxiliary sphere
 template <typename T, int MAX_ITERS = 20>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                  const Angle<T> lambda12,
                                  const Radians<T> gc_length,
@@ -386,6 +393,7 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
 /// auxiliary sphere in Radians.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
                                const Angle<T> delta_long,
                                const Ellipsoid<T> &ellipsoid)
@@ -427,6 +435,7 @@ auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
 /// start of the geodesic.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 auto calculate_azimuth_aux_length(const LatLong<T> &a, const LatLong<T> &b,
                                   const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>> {
@@ -454,6 +463,7 @@ auto calculate_azimuth_aux_length(const LatLong<T> &a, const LatLong<T> &b,
 /// @return the geodesic distance in Metres.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 constexpr auto convert_radians_to_metres(const Angle<T> &beta1,
                                          const Angle<T> &alpha1,
                                          Radians<T> gc_distance,

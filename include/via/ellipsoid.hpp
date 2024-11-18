@@ -38,6 +38,7 @@ namespace ellipsoid {
 /// or std::nullopt if the points do not intersect.
 template <typename T>
   requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
 auto calculate_intersection_point(const Geodesic<T> &g1, const Geodesic<T> &g2,
                                   Metres<T> precision)
     -> std::optional<LatLong<T>> {

@@ -477,6 +477,7 @@ public:
   }
 
   /// Calculate along and across track distances to a position from a geodesic.
+  /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
   /// @param beta the parametric latitude of the position
   /// @param lon the longitude of the position
   /// @param precision the required precision, in Radians
@@ -534,10 +535,12 @@ public:
   }
 
   /// Calculate along and across track distances to a position from a geodesic.
+  /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
   /// @param position the position as a `LatLong`
   /// @param precision the required precision, in Metres
   ///
   /// @return the along and across track distances to the position in `Metres`.
+  template <unsigned MAX_ITERATIONS = 10u>
   [[nodiscard("Pure Function")]]
   constexpr auto calculate_atd_and_xtd(const LatLong<T> position,
                                        Metres<T> precision_m) const
@@ -551,7 +554,7 @@ public:
     const Angle<T> lon(position.lon());
 
     const auto [atd, xtd,
-                iterations]{calculate_aux_atd_and_xtd(beta, lon, precision)};
+                iterations]{calculate_aux_atd_and_xtd<MAX_ITERATIONS>(beta, lon, precision)};
 
     // calculate the parametric latitude and azimuth at the abeam point
     const Angle<T> beta_x{aux_beta(Angle<T>(atd))};

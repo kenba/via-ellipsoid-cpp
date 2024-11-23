@@ -384,7 +384,7 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
   return {alpha1, sigma12};
 }
 
-/// Calculate the initial aziumth and great circle length between a pair
+/// Calculate the initial azimuth and great circle length between a pair
 /// of points on the auxiliary sphere.
 /// @param beta1, beta2 the parametric latitudes of the start and finish
 ///     points on the auxiliary sphere.

@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_SUITE(Test_Geodesic_double)
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
-  const Metres<double> length{9'000'000.0};
+  const units::si::Metres<double> length{9'000'000.0};
   const Radians aux_length{trig::PI_2<double>};
 
   // Ensure that two Geodesics can fit on a cache line.
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
     const Geodesic<double> geodesic1(a, azimuth, length);
     BOOST_CHECK(geodesic1.is_valid());
 
-    const Angle<double> azi0{geodesic1.azimuth(Metres(0.0))};
+    const Angle<double> azi0{geodesic1.azimuth(units::si::Metres(0.0))};
     BOOST_CHECK_CLOSE(trig::deg2rad<double>(i), azi0.to_radians().v(),
                       2 * CALCULATION_TOLERANCE);
 
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   BOOST_CHECK_CLOSE(istanbul.lon().v(), g1.lon().to_degrees().v(),
                     CALCULATION_TOLERANCE);
 
-  const auto lat_long{g1.lat_long(Metres(0.0))};
+  const auto lat_long{g1.lat_long(units::si::Metres(0.0))};
   BOOST_CHECK_CLOSE(istanbul.lat().v(), lat_long.lat().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(istanbul.lon().v(), lat_long.lon().v(),
@@ -121,8 +121,8 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
                     vector::longitude(start_point).to_degrees().v(),
                     CALCULATION_TOLERANCE);
 
-  const auto [atd, xtd,
-              iterations]{g1.calculate_atd_and_xtd(istanbul, Metres(1e-3))};
+  const auto [atd, xtd, iterations]{
+      g1.calculate_atd_and_xtd(istanbul, units::si::Metres(1e-3))};
   BOOST_CHECK_EQUAL(0.0, atd.v());
   BOOST_CHECK_EQUAL(0.0, xtd.v());
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
                     CALCULATION_TOLERANCE);
 
   // test mid position
-  const Metres<double> half_length{0.5 * g1.length().v()};
+  const units::si::Metres<double> half_length{0.5 * g1.length().v()};
   const auto mid_position{g1.lat_long(half_length)};
 
   BOOST_CHECK_CLOSE(54.86379153725445, mid_position.lat().v(),
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   BOOST_CHECK_SMALL(xtd2.v(), 100 * precision.v());
 
   const auto [atd3, xtd3, iterations3]{
-      g1.calculate_atd_and_xtd(mid_position, Metres(1e-3))};
+      g1.calculate_atd_and_xtd(mid_position, units::si::Metres(1e-3))};
   BOOST_CHECK_CLOSE(half_length.v(), atd3.v(), 100 * precision.v());
   BOOST_CHECK_SMALL(xtd3.v(), 100 * precision.v());
 }
@@ -228,8 +228,8 @@ BOOST_AUTO_TEST_CASE(test_calculate_atd_and_xtd) {
   const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
 
   // Calculate geodesic along track and across track distances to 1mm precision.
-  const auto [atd, xtd,
-              iterations]{g1.calculate_atd_and_xtd(reyjavik, Metres(1e-3))};
+  const auto [atd, xtd, iterations]{
+      g1.calculate_atd_and_xtd(reyjavik, units::si::Metres(1e-3))};
   BOOST_CHECK_CLOSE(3928788.572, atd.v(), 100 * 1e-3);
   BOOST_CHECK_CLOSE(-1010585.9988368, xtd.v(), 100 * 1e-3);
 
@@ -251,8 +251,8 @@ BOOST_AUTO_TEST_CASE(test_calculate_atd_and_xtd) {
 
   // opposite geodesic
   const Geodesic<double> g3(washington, istanbul);
-  const auto [atd2, xtd2,
-              iterations2]{g3.calculate_atd_and_xtd(reyjavik, Metres(1e-3))};
+  const auto [atd2, xtd2, iterations2]{
+      g3.calculate_atd_and_xtd(reyjavik, units::si::Metres(1e-3))};
   BOOST_CHECK_CLOSE(g1.length().v() - 3928788.572, atd2.v(), 100 * 1e-3);
   BOOST_CHECK_CLOSE(1010585.9988368, xtd2.v(), 100 * 1e-3);
 }

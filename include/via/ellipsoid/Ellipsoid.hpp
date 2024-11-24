@@ -45,11 +45,11 @@ class Ellipsoid final {
 #ifdef PYBIND11_NUMPY_DTYPE
 public:
 #endif
-  Metres<T> a_; ///< The Semimajor axis of the ellipsoid.
-  T f_;         ///< The flattening of the ellipsoid, a ratio.
+  units::si::Metres<T> a_; ///< The Semimajor axis of the ellipsoid.
+  T f_;                    ///< The flattening of the ellipsoid, a ratio.
 
-  Metres<T> b_;         ///< The Semiminor axis of the ellipsoid.
-  T one_minus_f_;       ///< One minus the flattening ratio.
+  units::si::Metres<T> b_; ///< The Semiminor axis of the ellipsoid.
+  T one_minus_f_;          ///< One minus the flattening ratio.
   T recip_one_minus_f_; ///< The reciprocal of one minus the flattening ratio.
   T e_2_;               ///< The square of the Eccentricity of the ellipsoid.
   T ep_2_; ///< The square of the second Eccentricity of the ellipsoid.
@@ -69,7 +69,7 @@ public:
   /// Constructor.
   /// @param a the Semimajor axis of the ellipsoid, in Metres.
   /// @param f the flattening of the ellipsoid, a ratio.
-  constexpr Ellipsoid(const Metres<T> a, const T f) noexcept
+  constexpr Ellipsoid(const units::si::Metres<T> a, const T f) noexcept
       : a_{a}, f_{f}, b_{calculate_minor_axis(a, f)}, one_minus_f_{1 - f},
         recip_one_minus_f_{1 / (1 - f)}, e_2_{calculate_sq_eccentricity(f)},
         ep_2_{calculate_sq_2nd_eccentricity(f)},
@@ -89,7 +89,7 @@ public:
 
   /// Accessor for the Semimajor axis of the ellipsoid.
   [[nodiscard("Pure Function")]]
-  constexpr Metres<T> a() const noexcept {
+  constexpr units::si::Metres<T> a() const noexcept {
     return a_;
   }
 
@@ -101,7 +101,7 @@ public:
 
   /// Accessor for the Semiminor axis of the ellipsoid.
   [[nodiscard("Pure Function")]]
-  constexpr Metres<T> b() const noexcept {
+  constexpr units::si::Metres<T> b() const noexcept {
     return b_;
   }
 

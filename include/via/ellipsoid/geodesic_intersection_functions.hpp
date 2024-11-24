@@ -154,7 +154,7 @@ template <typename T>
 [[nodiscard("Pure Function")]]
 auto calculate_intersection_distances(const Geodesic<T> &g1,
                                       const Geodesic<T> &g2,
-                                      Metres<T> precision)
+                                      units::si::Metres<T> precision)
     -> std::tuple<Radians<T>, Radians<T>> {
   const Radians<T> precision_r{precision.v() / g1.ellipsoid().a().v()};
   const auto [distance1, distance2, _iterations]{

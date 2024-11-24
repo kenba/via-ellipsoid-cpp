@@ -26,7 +26,7 @@
 /// From Eurocontrol [WGS 84 Implementation Manual
 /// Version 2.4](https://www.icao.int/safety/pbn/Documentation/EUROCONTRL/Eurocontrol%20WGS%2084%20Implementation%20Manual.pdf)
 /// Chapter 3, page 14.
-#include "Metres.hpp"
+#include <via/units.hpp>
 
 namespace via {
 namespace ellipsoid {
@@ -35,7 +35,7 @@ namespace wgs84 {
 /// This is the radius at the equator.
 template <typename T>
   requires std::floating_point<T>
-constexpr Metres<T> A{6'378'137};
+constexpr units::si::Metres<T> A{6'378'137};
 
 /// The WGS 84 flattening, a ratio.
 /// This is the flattening of the ellipsoid at the poles.

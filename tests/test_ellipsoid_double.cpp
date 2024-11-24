@@ -48,8 +48,8 @@ BOOST_AUTO_TEST_CASE(test_calculate_atd_and_xtd_karney) {
   const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
 
   // Calculate geodesic along track and across track distances to 1mm precision.
-  const auto [atd, xtd,
-              iterations]{g1.calculate_atd_and_xtd(reyjavik, Metres(1e-3))};
+  const auto [atd, xtd, iterations]{
+      g1.calculate_atd_and_xtd(reyjavik, units::si::Metres(1e-3))};
   BOOST_CHECK_CLOSE(3928788.572, atd.v(), 100 * 1e-3);
   BOOST_CHECK_CLOSE(-1010585.9988368, xtd.v(), 100 * 1e-3);
 
@@ -74,14 +74,16 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_lengths_baselga_1) {
   const Geodesic<double> g1(a1, b1);
   const Geodesic<double> g2(a2, b2);
 
-  const auto result1{calculate_intersection_point(g1, g2, Metres(1e-3))};
+  const auto result1{
+      calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
   BOOST_CHECK(result1.has_value());
 
   BOOST_CHECK_CLOSE(51.86566538889, result1.value().lat().v(), 100 * 1e-3);
   BOOST_CHECK_CLOSE(5.22745711111, result1.value().lon().v(), 100 * 1e-3);
 
   // Swap geodesics
-  const auto result2{calculate_intersection_point(g2, g1, Metres(1e-3))};
+  const auto result2{
+      calculate_intersection_point(g2, g1, units::si::Metres(1e-3))};
   BOOST_CHECK(result2.has_value());
 
   BOOST_CHECK_CLOSE(51.86566538889, result2.value().lat().v(), 100 * 1e-3);
@@ -102,14 +104,16 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_karney) {
   const Geodesic<double> g1(istanbul, washington);
   const Geodesic<double> g2(reyjavik, accra);
 
-  const auto result1{calculate_intersection_point(g1, g2, Metres(1e-3))};
+  const auto result1{
+      calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
   BOOST_CHECK(result1.has_value());
 
   BOOST_CHECK_CLOSE(54.717029611, result1.value().lat().v(), 100 * 1e-3);
   BOOST_CHECK_CLOSE(-14.56385575, result1.value().lon().v(), 100 * 1e-3);
 
   // Swap geodesics
-  const auto result2{calculate_intersection_point(g2, g1, Metres(1e-3))};
+  const auto result2{
+      calculate_intersection_point(g2, g1, units::si::Metres(1e-3))};
   BOOST_CHECK(result2.has_value());
 
   BOOST_CHECK_CLOSE(54.717029611, result2.value().lat().v(), 100 * 1e-3);
@@ -130,14 +134,16 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_lengths_baselga_3) {
   const Geodesic<double> g1(a1, b1);
   const Geodesic<double> g2(a2, b2);
 
-  const auto result1{calculate_intersection_point(g1, g2, Metres(1e-3))};
+  const auto result1{
+      calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
   BOOST_CHECK(result1.has_value());
 
   BOOST_CHECK_CLOSE(50.47909744, result1.value().lat().v(), 100 * 1e-3);
   BOOST_CHECK_CLOSE(-79.2828016944, result1.value().lon().v(), 100 * 1e-3);
 
   // Swap geodesics
-  const auto result2{calculate_intersection_point(g2, g1, Metres(1e-3))};
+  const auto result2{
+      calculate_intersection_point(g2, g1, units::si::Metres(1e-3))};
   BOOST_CHECK(result2.has_value());
 
   BOOST_CHECK_CLOSE(50.47909744, result2.value().lat().v(), 100 * 1e-3);
@@ -155,7 +161,8 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_non_intersecting) {
   const Geodesic<double> g1(istanbul, accra);
   const Geodesic<double> g2(reyjavik, washington);
 
-  const auto result1{calculate_intersection_point(g1, g2, Metres(1e-3))};
+  const auto result1{
+      calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
   BOOST_CHECK(!result1.has_value());
 }
 //////////////////////////////////////////////////////////////////////////////

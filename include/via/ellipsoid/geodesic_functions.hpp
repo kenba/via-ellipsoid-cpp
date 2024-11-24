@@ -468,7 +468,7 @@ constexpr auto convert_radians_to_metres(const Angle<T> &beta1,
                                          const Angle<T> &alpha1,
                                          Radians<T> gc_distance,
                                          const Ellipsoid<T> &ellipsoid) noexcept
-    -> Metres<T> {
+    -> units::si::Metres<T> {
   // Calculate the distance from the first equator crossing
   const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};
   const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
@@ -482,7 +482,8 @@ constexpr auto convert_radians_to_metres(const Angle<T> &beta1,
   const auto b11{ellipsoid::sin_cos_series(sigma1, c1)};
   const auto b12{ellipsoid::sin_cos_series(sigma_sum, c1)};
 
-  return Metres<T>(ellipsoid.b().v() * a1 * (gc_distance + b12 - b11).v());
+  return units::si::Metres<T>(ellipsoid.b().v() * a1 *
+                              (gc_distance + b12 - b11).v());
 }
 
 } // namespace ellipsoid

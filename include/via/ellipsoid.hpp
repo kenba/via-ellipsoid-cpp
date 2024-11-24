@@ -40,7 +40,7 @@ template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 auto calculate_intersection_point(const Geodesic<T> &g1, const Geodesic<T> &g2,
-                                  Metres<T> precision)
+                                  units::si::Metres<T> precision)
     -> std::optional<LatLong<T>> {
   const auto [distance1,
               distance2]{calculate_intersection_distances(g1, g2, precision)};

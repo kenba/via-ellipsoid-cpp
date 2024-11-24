@@ -46,6 +46,10 @@ if (WIN32)
   set(Eigen_DIR $ENV{Eigen_DIR})
   include_directories(${Eigen_DIR})
 
+  # Add the Via Units Library include files
+  set(ViaUnits_DIR $ENV{ViaUnits_DIR})
+  include_directories(${ViaUnits_DIR}/include)
+
   # Add the Via Angle Library include files
   set(ViaAngle_DIR $ENV{ViaAngle_DIR})
   include_directories(${ViaAngle_DIR}/include)

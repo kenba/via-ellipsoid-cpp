@@ -24,8 +24,8 @@
 /// @file ellipsoid_functions.hpp
 /// @brief Contains the via::ellipsoid template functions.
 //////////////////////////////////////////////////////////////////////////////
-#include "Metres.hpp"
 #include <via/angle.hpp>
+#include <via/units.hpp>
 
 namespace via {
 namespace ellipsoid {
@@ -38,9 +38,10 @@ namespace ellipsoid {
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-constexpr auto calculate_minor_axis(const Metres<T> a, const T f) noexcept
-    -> Metres<T> {
-  return Metres<T>(a.v() * (T(1) - f));
+constexpr auto calculate_minor_axis(const units::si::Metres<T> a,
+                                    const T f) noexcept
+    -> units::si::Metres<T> {
+  return units::si::Metres<T>(a.v() * (T(1) - f));
 }
 
 /// Calculate the square of the Eccentricity of an ellipsoid.

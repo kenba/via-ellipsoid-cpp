@@ -121,7 +121,7 @@ public:
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
   constexpr Geodesic(const LatLong<T> &a, const Angle<T> &azimuth,
-                     const Metres<T> length,
+                     const units::si::Metres<T> length,
                      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : Geodesic(ellipsoid.calculate_parametric_latitude(Angle<T>(a.lat())),
                  Angle<T>(a.lon()), azimuth, Radians(T()), ellipsoid) {
@@ -238,7 +238,7 @@ public:
   /// @param distance_m the distance along the Geodesic in metres.
   /// @return the distance along the auxiliary sphere great circle in radians.
   [[nodiscard("Pure Function")]]
-  constexpr auto metres_to_radians(const Metres<T> distance_m) const
+  constexpr auto metres_to_radians(const units::si::Metres<T> distance_m) const
       -> Radians<T> {
     if (std::abs(distance_m.v()) < great_circle::MIN_VALUE<T>)
       return Radians(T());
@@ -258,23 +258,23 @@ public:
   /// @return the distance along the Geodesic in metres.
   [[nodiscard("Pure Function")]]
   constexpr auto radians_to_metres(const Radians<T> gc_distance) const
-      -> Metres<T> {
+      -> units::si::Metres<T> {
     if (gc_distance.abs().v() < great_circle::MIN_VALUE<T>)
-      return Metres(T());
+      return units::si::Metres(T());
 
     // Calculate Great circle distance from Northward Equator crossing.
     const Angle<T> sigma_sum{sigma1_ + Angle<T>(gc_distance)};
     const auto c1{evaluate_coeffs_C1<T>(eps_)};
     const auto b12{sin_cos_series(sigma_sum, c1)};
 
-    return Metres<T>(ellipsoid().b().v() * a1_ *
-                     (gc_distance + b12 - b11_).v());
+    return units::si::Metres<T>(ellipsoid().b().v() * a1_ *
+                                (gc_distance + b12 - b11_).v());
   }
 
   /// Accessor for the length of the Geodesic in metres.
   /// @return The length of the Geodesic in metres.
   [[nodiscard("Pure Function")]]
-  constexpr auto length() const -> Metres<T> {
+  constexpr auto length() const -> units::si::Metres<T> {
     return radians_to_metres(aux_length_);
   }
 
@@ -307,7 +307,8 @@ public:
   /// @param length_m the length along the geodesic, in metres.
   /// @return the geodetic latitude.
   [[nodiscard("Pure Function")]]
-  constexpr auto latitude(const Metres<T> length_m) const -> Angle<T> {
+  constexpr auto latitude(const units::si::Metres<T> length_m) const
+      -> Angle<T> {
     if (std::abs(length_m.v()) < great_circle::MIN_VALUE<T>)
       return ellipsoid_.calculate_geodetic_latitude(beta_);
 
@@ -343,7 +344,8 @@ public:
   /// @param length the length along the geodesic, in metres.
   /// @return the azimuth of the geodesic/great circle at length.
   [[nodiscard("Pure Function")]]
-  constexpr auto azimuth(const Metres<T> length_m = Metres(T())) const
+  constexpr auto
+  azimuth(const units::si::Metres<T> length_m = units::si::Metres(T())) const
       -> Angle<T> {
     return aux_azimuth(metres_to_radians(length_m));
   }
@@ -391,7 +393,8 @@ public:
   /// @param length_m the length along the geodesic, in metres.
   /// @return the geodesic longitude as an Angle.
   [[nodiscard("Pure Function")]]
-  constexpr auto longitude(const Metres<T> length_m) const -> Angle<T> {
+  constexpr auto longitude(const units::si::Metres<T> length_m) const
+      -> Angle<T> {
     return aux_longitude(metres_to_radians(length_m));
   }
 
@@ -410,7 +413,8 @@ public:
   /// @param length_m the length along the geodesic, in metres.
   /// @return the `LatLong` of the geodesic position at `length_m`.
   [[nodiscard("Pure Function")]]
-  constexpr auto lat_long(const Metres<T> length_m) const -> LatLong<T> {
+  constexpr auto lat_long(const units::si::Metres<T> length_m) const
+      -> LatLong<T> {
     return aux_lat_long(metres_to_radians(length_m));
   }
 
@@ -440,7 +444,8 @@ public:
   /// @return end point
   [[nodiscard("Pure Function")]]
   constexpr auto mid_point() const -> V {
-    return aux_point(metres_to_radians(Metres<T>(length().v() / T(2))));
+    return aux_point(
+        metres_to_radians(units::si::Metres<T>(length().v() / T(2))));
   }
 
   /// Calculate the geodesic point and pole at the arc length along the
@@ -543,8 +548,8 @@ public:
   template <unsigned MAX_ITERATIONS = 10u>
   [[nodiscard("Pure Function")]]
   constexpr auto calculate_atd_and_xtd(const LatLong<T> position,
-                                       Metres<T> precision_m) const
-      -> std::tuple<Metres<T>, Metres<T>, unsigned> {
+                                       units::si::Metres<T> precision_m) const
+      -> std::tuple<units::si::Metres<T>, units::si::Metres<T>, unsigned> {
     // convert precision to Radians
     const Radians<T> precision{precision_m.v() / ellipsoid_.a().v()};
 
@@ -553,8 +558,8 @@ public:
         ellipsoid_.calculate_parametric_latitude(Angle<T>(position.lat()))};
     const Angle<T> lon(position.lon());
 
-    const auto [atd, xtd,
-                iterations]{calculate_aux_atd_and_xtd<MAX_ITERATIONS>(beta, lon, precision)};
+    const auto [atd, xtd, iterations]{
+        calculate_aux_atd_and_xtd<MAX_ITERATIONS>(beta, lon, precision)};
 
     // calculate the parametric latitude and azimuth at the abeam point
     const Angle<T> beta_x{aux_beta(Angle<T>(atd))};
@@ -562,7 +567,6 @@ public:
     return {radians_to_metres(atd),
             convert_radians_to_metres(beta_x, alpha, xtd, ellipsoid_),
             iterations};
-    // return {Metres(T()), Metres(T()), iterations};
   }
 };
 

@@ -322,7 +322,7 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto aux_azimuth(const Radians<T> gc_length = Radians(T())) const
       -> Angle<T> {
-    static constexpr T MAX_LAT{T(1) - great_circle::MIN_VALUE<T>};
+    constexpr T MAX_LAT{T(1) - great_circle::MIN_VALUE<T>};
 
     if (gc_length.abs().v() <= great_circle::MIN_VALUE<T>)
       return azi_;

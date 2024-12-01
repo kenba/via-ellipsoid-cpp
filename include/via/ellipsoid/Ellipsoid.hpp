@@ -82,8 +82,8 @@ public:
   /// A singleton function to a WGS84 Ellipsoid
   /// @return a const reference to a WGS84 Ellipsoid
   [[nodiscard("Pure Function")]]
-  constexpr static auto wgs84() -> const Ellipsoid<T> & {
-    static constexpr Ellipsoid<T> wgs84_ellipsoid(wgs84::A<T>, wgs84::F<T>);
+  const static auto wgs84() -> const Ellipsoid<T> & {
+    const static Ellipsoid<T> wgs84_ellipsoid(wgs84::A<T>, wgs84::F<T>);
     return wgs84_ellipsoid;
   }
 

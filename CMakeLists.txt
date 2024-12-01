@@ -113,8 +113,13 @@ if (CPP_UNIT_TESTS)
         target_compile_options(${PROJECT_NAME}_test PRIVATE -Wall -Wextra -Wpedantic)
 
         if (CODE_COVERAGE)
-        target_compile_options(${PROJECT_NAME}_test PRIVATE --coverage)
-        target_link_libraries(${PROJECT_NAME}_test PRIVATE --coverage)
+            target_compile_options(${PROJECT_NAME}_test PRIVATE --coverage)
+            target_link_libraries(${PROJECT_NAME}_test PRIVATE --coverage)
+
+            find_program(LCOV lcov REQUIRED)
+            add_custom_target(coverage
+                COMMAND ${LCOV} --directory . --capture --output-file lcov.info
+            )
         endif()
     endif()
 

@@ -1,0 +1,93 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [develop]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: install boost unzip and lcov
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install libboost-test-dev lcov unzip
+
+      - name: create build environment
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: install Microsoft GSL library
+        working-directory: ${{github.workspace}}/build
+        run: |
+          wget --no-check-certificate https://github.com/microsoft/GSL/archive/refs/tags/v4.1.0.zip
+          unzip v4.1.0.zip
+          sudo cp -ar GSL-4.1.0/include/gsl /usr/include
+          rm v4.1.0.zip
+          rm -rf GSL-4.1.0
+
+      - name: install Eigen linear algebra library
+        working-directory: ${{github.workspace}}/build
+        run: |
+          wget --no-check-certificate https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+          unzip eigen-3.4.0.zip
+          sudo cp -ar eigen-3.4.0/Eigen /usr/include
+          rm eigen-3.4.0.zip
+          rm -rf eigen-3.4.0
+
+      - name: install via-units-cpp library
+        working-directory: ${{github.workspace}}/build
+        run: |
+          git clone https://github.com/kenba/via-units-cpp.git
+          cd via-units-cpp
+          cmake -DINSTALL_PYTHON=OFF .
+          sudo make install
+          cd ..
+          rm -rf via-units-cpp
+
+      - name: install via-angle-cpp library
+        working-directory: ${{github.workspace}}/build
+        run: |
+          git clone https://github.com/kenba/via-angle-cpp.git
+          cd via-angle-cpp
+          cmake -DINSTALL_PYTHON=OFF .
+          sudo make install
+          cd ..
+          rm -rf via-angle-cpp
+
+      - name: install via-sphere-cpp library
+        working-directory: ${{github.workspace}}/build
+        run: |
+          git clone https://github.com/kenba/via-sphere-cpp.git
+          cd via-sphere-cpp
+          cmake -DINSTALL_PYTHON=OFF .
+          sudo make install
+          cd ..
+          rm -rf via-sphere-cpp
+
+      - name: configure cmake
+        working-directory: ${{github.workspace}}/build
+        run: cmake -DINSTALL_PYTHON=OFF -DCPP_UNIT_TESTS=ON -DCODE_COVERAGE=ON ${{github.workspace}}
+
+      - name: build
+        working-directory: ${{github.workspace}}/build
+        run: cmake --build .
+
+      - name: test
+        working-directory: ${{github.workspace}}/build
+        run: ctest
+
+      - name: coverage
+        working-directory: ${{github.workspace}}/build
+        run: make coverage
+
+      - name: upload coverage to codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

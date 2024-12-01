@@ -2,12 +2,14 @@
 *.d
 .cache/
 CMakeFiles/
+docs/html/
 python/tests/__pycache__/
 CMakeCache.txt
 Makefile
 cmake_install.cmake
 compile_commands.json
 install_manifest.txt
+docs/Doxyfile.bak
 
 # Compiled Object files
 *.slo

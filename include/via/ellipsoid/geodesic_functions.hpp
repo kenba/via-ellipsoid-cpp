@@ -132,8 +132,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
                                                   const Angle<T> lambda12,
                                                   const Ellipsoid<T> &ellipsoid)
     -> Angle<T> {
-  static const T X_THRESHOLD{1000 *
-                             std::sqrt(std::numeric_limits<T>::epsilon())};
+  constexpr T X_THRESHOLD{1000 * std::sqrt(std::numeric_limits<T>::epsilon())};
   constexpr T Y_TOLERANCE{200 * std::numeric_limits<T>::epsilon()};
 
   Expects(T() <= lambda12.sin().v());
@@ -257,7 +256,7 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                  const Ellipsoid<T> &ellipsoid,
                                  const T precision = great_circle::MIN_VALUE<T>)
     -> std::tuple<Angle<T>, Radians<T>> {
-  static const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
+  const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
   Expects(T() < gc_length.v());
 
   // Start at the latitude furthest from the Equator

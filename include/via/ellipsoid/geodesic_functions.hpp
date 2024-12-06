@@ -132,7 +132,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
                                                   const Angle<T> lambda12,
                                                   const Ellipsoid<T> &ellipsoid)
     -> Angle<T> {
-  constexpr T X_THRESHOLD{1000 * std::sqrt(std::numeric_limits<T>::epsilon())};
+  static const T X_THRESHOLD{1000 * std::sqrt(std::numeric_limits<T>::epsilon())};
   constexpr T Y_TOLERANCE{200 * std::numeric_limits<T>::epsilon()};
 
   Expects(T() <= lambda12.sin().v());

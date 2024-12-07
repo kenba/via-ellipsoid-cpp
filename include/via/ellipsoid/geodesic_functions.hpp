@@ -123,6 +123,7 @@ constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
 /// @param beta1, beta2 the parametric latitudes of the start and
 /// finish points on the auxiliary sphere.
 /// @param lambda12 longitude difference between start and finish points.
+/// @param ellipsoid the `Ellipsoid`.
 /// @return the estimate of the initial azimuth on the auxiliary sphere.
 template <typename T>
   requires std::floating_point<T>
@@ -132,7 +133,8 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
                                                   const Angle<T> lambda12,
                                                   const Ellipsoid<T> &ellipsoid)
     -> Angle<T> {
-  static const T X_THRESHOLD{1000 * std::sqrt(std::numeric_limits<T>::epsilon())};
+  static const T X_THRESHOLD{1000 *
+                             std::sqrt(std::numeric_limits<T>::epsilon())};
   constexpr T Y_TOLERANCE{200 * std::numeric_limits<T>::epsilon()};
 
   Expects(T() <= lambda12.sin().v());
@@ -216,8 +218,10 @@ constexpr auto calculate_end_azimuth(const Angle<T> beta1, const Angle<T> beta2,
 /// @pre 0 < sigma12
 /// @param clairaut Clairaut's constant.
 /// @param eps the integration parameter.
+/// @param sigma12 great circle distance on the auxiliary sphere.
 /// @param sigma1, sigma2 great circle distances on the auxiliary sphere
 /// to the points from the Northward Equator crossing.
+/// @param ellipsoid the `Ellipsoid`.
 /// @return the longitude difference between the auxiliary sphere and
 /// ellipsoid in radians.
 template <typename T>
@@ -244,6 +248,7 @@ constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
 /// @param beta_a, beta_b the geodetic latitudes of the start and finish points.
 /// @param lambda12 the geodesic longitude difference in radians.
 /// @param gc_length the auxiliary sphere great circle length in radians
+/// @param ellipsoid the `Ellipsoid`.
 /// @param precision the precision, default 2 * epsilon.
 /// @return the auxiliary sphere azimuth at the first position and the
 /// great circle length on the auxiliary sphere
@@ -388,6 +393,7 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
 /// @param beta1, beta2 the parametric latitudes of the start and finish
 ///     points on the auxiliary sphere.
 /// @param delta_long the longitude difference.
+/// @param ellipsoid the `Ellipsoid`.
 /// @return the azimuth at the start point and the arc length on the
 /// auxiliary sphere in Radians.
 template <typename T>
@@ -430,6 +436,7 @@ auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
 /// @pre a and b are valid LatLong's'
 /// @post 0 <= aux_length <= PI
 /// @param a, b the start and finish positions in geodetic coordinates.
+/// @param ellipsoid the `Ellipsoid`.
 /// @return the azimuth and great circle length on the auxiliary sphere at the
 /// start of the geodesic.
 template <typename T>

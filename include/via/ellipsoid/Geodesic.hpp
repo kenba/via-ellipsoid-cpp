@@ -341,7 +341,7 @@ public:
   }
 
   /// Calculate the azimuth at the length along the geodesic.
-  /// @param length the length along the geodesic, in metres.
+  /// @param length_m the length along the geodesic, in metres.
   /// @return the azimuth of the geodesic/great circle at length.
   [[nodiscard("Pure Function")]]
   constexpr auto
@@ -542,7 +542,7 @@ public:
   /// Calculate along and across track distances to a position from a geodesic.
   /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
   /// @param position the position as a `LatLong`
-  /// @param precision the required precision, in Metres
+  /// @param precision_m the required precision, in Metres
   ///
   /// @return the along and across track distances to the position in `Metres`.
   template <unsigned MAX_ITERATIONS = 10u>

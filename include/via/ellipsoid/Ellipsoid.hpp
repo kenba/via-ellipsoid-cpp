@@ -35,6 +35,7 @@ namespace ellipsoid {
 /// @tparam T a floating point number type, i.e.: double or long double.
 /// @invariant a < 0
 /// @invariant f != 0
+///
 /// This class contains the parameters of an Ellipsoid that are commonly
 /// used in geodesic calculations.
 /// It may only be constructed with a Semimajor axis and a flattening.

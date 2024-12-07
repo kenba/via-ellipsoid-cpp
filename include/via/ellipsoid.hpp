@@ -24,6 +24,35 @@
 /// @file ellipsoid.hpp
 /// @brief Contains the via::ellipsoid software.
 //////////////////////////////////////////////////////////////////////////////
+/// @mainpage via-ellipsoid-cpp
+///
+/// A library for performing geometric calculations on the
+/// [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid.
+///
+/// This library uses the WGS84 primary parameters defined in Tab. 3-1 of the
+/// [ICAO WGS 84 Implementation
+/// Manual](https://www.icao.int/safety/pbn/Documentation/EUROCONTROL/Eurocontrol%20WGS%2084%20Implementation%20Manual.pdf).
+///
+/// The shortest path between two points on the surface of an ellipsoid is a
+/// [geodesic](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid) -
+/// the equivalent of straight line segments in planar geometry or
+/// [great circles](https://en.wikipedia.org/wiki/Great_circle) on the surface
+/// of a sphere, see *Figure 1*.
+///
+/// <img
+/// src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Geodesic_problem_on_an_ellipsoid.svg/1024px-Geodesic_problem_on_an_ellipsoid.svg.png"
+/// width="400">
+///
+/// *Figure 1 A geodesic between points A and B*
+///
+/// This library uses the correspondence between geodesics on an ellipsoid
+/// and great-circles on the auxiliary sphere together with 3D vectors to
+/// calculate:
+///
+/// - the initial azimuth and length of a geodesic between two positions;
+/// - the along track distance and across track distance of a position relative
+/// to a geodesic;
+/// - and the intersection of a pair of geodesics.
 #include "ellipsoid/geodesic_intersection_functions.hpp"
 
 namespace via {

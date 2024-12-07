@@ -1,0 +1,38 @@
+@startuml
+
+'Copyright (c) 2024 Via Technology Ltd. All Rights Reserved.
+
+' title Ellipsoid dependencies
+
+set namespaceSeparator ::
+    component via_ellipsoid #palegreen
+    package C++ {
+        component eigen
+        component via_angle
+        component via_sphere
+        component via_units
+        component gsl
+        package test {
+            component boost_test
+        } 
+    }
+    package python {
+        component pybind11
+        component numpy
+        package test {
+            component pytest
+        }
+        pybind11 -- numpy
+    }
+    
+    via_ellipsoid -- via_sphere
+    via_ellipsoid -- via_angle
+    via_ellipsoid -- via_units
+    via_ellipsoid -- pybind11
+    via_ellipsoid - gsl
+    via_sphere --  via_angle
+    via_sphere -- eigen
+    via_sphere -- gsl
+    via_angle - gsl
+
+@enduml

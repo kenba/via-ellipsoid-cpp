@@ -1,0 +1,71 @@
+@startuml
+
+'Copyright (c) 2024 Via Technology Ltd. All Rights Reserved.
+
+' title Ellipsoid Class Diagram
+
+set namespaceSeparator ::
+
+    namespace via_ellipsoid {
+
+        class Geodesic {
+            - beta
+            - lon
+            - azi
+            - aux_length
+            - ellipsoid
+            + lat_long()
+            + calculate_atd_and_xtd()
+        }
+
+        class Ellipsoid {
+            - a
+            - f
+            + b()
+            + one_minus_f()
+            + calculate_parametric_latitude()
+            + calculate_geodetic_latitude()
+        }
+
+        Geodesic o-- Ellipsoid
+    }
+
+    namespace via_sphere {
+        class LatLong {
+            - lat
+            - lon
+        }
+    }
+
+    namespace via_angle {
+        
+        class Angle {
+            - sin
+            - cos
+        }
+
+        Angle . Degrees
+        ' Angle .. Radians
+    }
+
+    namespace via_units {
+        namespace si {
+            class Metres {
+
+            }
+        }
+        namespace non_si {
+            class NauticalMiles {
+
+            }
+        }
+    }
+
+    via_ellipsoid::Geodesic . via_sphere::LatLong
+    via_ellipsoid::Geodesic *-- via_angle::Angle
+    via_ellipsoid::Geodesic .. via_angle::Degrees
+    via_ellipsoid::Geodesic *-- via_angle::Radians
+    via_ellipsoid::Geodesic .. via_units::si::Metres
+    via_ellipsoid::Ellipsoid *--via_units::si::Metres
+    via_sphere::LatLong *-- "2" via_angle::Degrees
+@enduml

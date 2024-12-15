@@ -85,7 +85,7 @@ PYBIND11_MODULE(via_ellipsoid, m) {
 
   // Python numpy binding for the Geodesic class
   using GeodesicDouble = via::ellipsoid::Geodesic<double>;
-  py::class_<GeodesicDouble>(m, "GeodesicArc")
+  py::class_<GeodesicDouble>(m, "Geodesic")
       .def(py::init<via::LatLong<double>, via::Angle<double>>())
       .def(py::init<via::LatLong<double>, via::Angle<double>,
                     via::units::si::Metres<double>>())

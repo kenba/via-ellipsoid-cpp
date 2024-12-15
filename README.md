@@ -50,17 +50,17 @@ the surface of an auxiliary sphere. However, it also uses vectors to
 calculate along track distances, across track distances and
 intersections between geodesics.
 
-The `Ellipsoid` class represents an ellipsoid of revolution.  
+The `Ellipsoid` class represents an ellipsoid of revolution.
 
 The singleton `Ellipsoid::wgs84()` represents the WGS 84 `Ellipsoid` which is used
 by the `Geodesic` constructors to create `Geodesic`s on the WGS 84 `Ellipsoid`.
 
-![Ellipsoid Class Diagram](docs/images/ellipsoid_class_diagram.svg)  
+![Ellipsoid Class Diagram](docs/images/ellipsoid_class_diagram.svg)
 *Figure 3 Class Diagram*
 
 ## Example
 
-The following example calculates the intersection between two Great Circle `Arc`s.  
+The following example calculates the intersection between two Great Circle `Arc`s.
 The values are taken from Charles Karney's original solution to
 [Intersection between two geodesic lines](https://sourceforge.net/p/geographiclib/discussion/1026621/thread/21aaff9f/#fe0a).
 
@@ -101,6 +101,40 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_karney) {
 }
 ```
 
+### Python
+```Python
+import pytest
+from numpy.testing import assert_almost_equal
+from via_angle import Angle, Degrees
+from via_sphere import LatLong
+from via_units import Metres
+from via_ellipsoid import Geodesic, calculate_intersection_point
+
+def test_intersection_point_distance():
+    # Karney's example:
+    # Istanbul, Washington, Reyjavik and Accra
+    # from:
+    # <https://sourceforge.net/p/geographiclib/discussion/1026621/thread/21aaff9f/#fe0a>
+    istanbul = LatLong(Degrees(42.0), Degrees(29.0))
+    washington = LatLong(Degrees(39.0), Degrees(-77.0))
+    reyjavik = LatLong(Degrees(64.0), Degrees(-22.0))
+    accra = LatLong(Degrees(6.0), Degrees(0.0))
+
+    g1 = Geodesic(istanbul, washington)
+    g2 = Geodesic(reyjavik, accra)
+
+    intersection_point_1 = calculate_intersection_point(g1, g2, Metres(1e-3))
+    if intersection_point_1:
+        assert_almost_equal(54.7170296089477, intersection_point_1.lat().v())
+        assert_almost_equal(-14.56385574430775, intersection_point_1.lon().v())
+
+    # Swap Geodesics
+    intersection_point_2 = calculate_intersection_point(g2, g1, Metres(1e-3))
+    if intersection_point_2:
+        assert_almost_equal(54.7170296089477, intersection_point_2.lat().v())
+        assert_almost_equal(-14.56385574430775, intersection_point_2.lon().v())
+```
+
 ## Use
 
 The C++ software depends on:
@@ -114,21 +148,21 @@ The C++ software depends on:
 The C++ tests use the [boost.test](https://www.boost.org/doc/libs/1_86_0/libs/test/doc/html/boost_test/intro.html)
 library, see *Figure 4*.
 
-![Ellipsoid Dependencies](docs/images/ellipsoid_dependencies.svg)  
+![Ellipsoid Dependencies](docs/images/ellipsoid_dependencies.svg)
 *Figure 4 Ellipsoid Dependencies*
 
 ### C++
 
 #### Installation
 
-The library is header only, so the library `include` directory just needs to be added to the include path.  
+The library is header only, so the library `include` directory just needs to be added to the include path.
 Alternatively, when using [cmake](https://cmake.org/) the environment variable `ViaEllipsoid_DIR` just needs
 to be set to the location of the `via-ellipsoid-cpp` directory; `cmake` will add it to the include path.
 
 Note: `CMakeLists.txt` is setup to install python by default, so `-DINSTALL_PYTHON=OFF`
 must be passed to `cmake` when building for C++.
 
-`cmake` can also be used to install the library to the relevant include directory on Linux/macOS.  
+`cmake` can also be used to install the library to the relevant include directory on Linux/macOS.
 In the `via-ellipsoid-cpp` directory, run:
 
 ```bash
@@ -178,8 +212,15 @@ pip install ./via-ellipsoid-cpp
 In Python code import the software as `via_ellipsoid`, e.g.:
 
 ```python
-from via_ellipsoid import Ellipsoid, Geodesic 
+from via_angle import Degrees
+from via_sphere import LatLong
+from via_units import Metres
+from via_ellipsoid import Geodesic, calculate_intersection_point
 ```
+Note: `via_angle`, `via_sphere` and `via_units` must also be imported for the
+units used by the `via_ellipsoid` software.
+
+See: [test_Geodesic.py](python/tests/test_Geodesic.py).
 
 ## License
 

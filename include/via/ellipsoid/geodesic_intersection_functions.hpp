@@ -119,7 +119,34 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
   if (sq_d < sq_precision)
     return {Radians(T()), Radians(T()), 0u};
 
-  // Determine whether the great circles on the auxiliary sphere are coincident
+  // Construct a geodesic between geodesic start points
+  const auto [azi, aux_length]{aux_sphere_azimuth_length(
+      g1.beta(), g2.beta(), g2.lon() - g1.lon(), g1.ellipsoid())};
+  const Geodesic g3(g1.beta(), g1.lon(), azi, aux_length, g1.ellipsoid());
+
+  // If the second geodesic start point lies on the first geodesic
+  const auto [_a3, pole3]{g3.aux_point_and_pole(Radians(T()))};
+  if (!vector::intersection::calculate_intersection_point(pole1, pole3)
+           .has_value()) {
+    const auto [atd, _xtd, iterations]{
+        g1.calculate_aux_atd_and_xtd(g2.beta(), g2.lon(), precision)};
+    // If the second geodesic end point lies on the first geodesic
+    const auto [_a4, pole4]{g3.aux_point_and_pole(atd)};
+    if (!vector::intersection::calculate_intersection_point(pole2, pole4)
+             .has_value()) {
+      // The geodesics are coincident
+      const auto distances{
+          vector::intersection::calculate_coincident_arc_distances(
+              atd, pole1.dot(pole2) < T(), g1.aux_length(), g2.aux_length())};
+      return {std::get<0>(distances), std::get<1>(distances), 0u};
+    } else {
+      // The geodesics intersect at the start of the second geodesic
+      return {atd, Radians(0.0), iterations};
+    }
+  }
+
+  // Determine whether the great circles on the auxiliary sphere are
+  // coincident
   const auto c{
       vector::intersection::calculate_intersection_point(pole1, pole2)};
   if (c.has_value()) {

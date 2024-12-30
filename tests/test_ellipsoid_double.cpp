@@ -167,5 +167,48 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_non_intersecting) {
 }
 //////////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
+  const LatLong a(Degrees(1.0), Degrees(0.0));
+  const LatLong b(Degrees(-0.998286322222), Degrees(179.296674991667));
+  const Geodesic<double> g(a, b);
+
+  // Split g into two geodesics
+  const units::si::Metres<double> half_length{g.length().v() / 2.0};
+  const auto half_aux_length{g.metres_to_radians(half_length)};
+
+  // a geodesic from the start of g to its mid point
+  const Geodesic<double> g1(g.beta(), g.lon(), g.azi(), half_aux_length,
+                            g.ellipsoid());
+  // a geodesic from the mid point of g to its end
+  const Geodesic<double> g2(g.aux_beta(Angle<double>(half_aux_length)),
+                            g.aux_longitude(half_aux_length),
+                            g.aux_azimuth(half_aux_length), half_aux_length,
+                            g.ellipsoid());
+
+  // 1mm precision in Radians on the auxiliary sphere
+  const Radians<double> precision{1e-3 / g.ellipsoid().a().v()};
+
+  // geodesics are coincident
+  const auto [distance1, distance2, iterations]{
+      calculate_aux_intersection_distances(g1, g2, precision)};
+  BOOST_CHECK_EQUAL(g1.aux_length().v(), distance1.v());
+  BOOST_CHECK_EQUAL(0.0, distance2.v());
+  BOOST_CHECK_EQUAL(0, iterations);
+
+  // a geodesic from the mid point of g to another point
+  const Geodesic<double> g3(g.aux_beta(Angle<double>(half_aux_length)),
+                            g.aux_longitude(half_aux_length), g.azi(),
+                            half_aux_length, g.ellipsoid());
+
+  // geodesics are NOT coincident
+  const auto [distance3, distance4, iterations2]{
+      calculate_aux_intersection_distances(g1, g3, precision)};
+  BOOST_CHECK_EQUAL(g1.aux_length().v(), distance3.v());
+  BOOST_CHECK_EQUAL(0.0, distance4.v());
+  BOOST_CHECK_EQUAL(2, iterations2);
+}
+//////////////////////////////////////////////////////////////////////////////
+
 BOOST_AUTO_TEST_SUITE_END()
 //////////////////////////////////////////////////////////////////////////////

@@ -97,6 +97,7 @@ if (CPP_UNIT_TESTS)
         target_sources(${PROJECT_NAME}_test
               PRIVATE
               tests/test_geodesic_accuracy_double.cpp
+              tests/test_rtca_do_283b_examples.cpp
           )
     endif(CPP_ACCURACY_TEST)
 

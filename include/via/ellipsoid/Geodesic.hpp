@@ -133,9 +133,10 @@ public:
   /// @param azimuth_length the azimuth, arc length tuple.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
-  constexpr Geodesic(const LatLong<T> &a,
-                     const std::tuple<Angle<T>, Radians<T>> azimuth_length,
-                     const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
+  constexpr Geodesic(
+      const LatLong<T> &a,
+      const std::tuple<Angle<T>, Radians<T>, unsigned> azimuth_length,
+      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : Geodesic(a, std::get<Angle<T>>(azimuth_length),
                  std::get<Radians<T>>(azimuth_length), ellipsoid) {}
 
@@ -512,8 +513,9 @@ public:
 
       // calculate the geodesic azimuth and length to the point from the
       // Geodesic position at atd
-      const auto [azi_p, length]{
-          aux_sphere_azimuth_length(beta_x, beta, lon - lon_x, ellipsoid_)};
+      const auto [azi_p, length, _]{
+          aux_sphere_azimuth_length(beta_x, beta, lon - lon_x, ellipsoid_,
+                                    Radians<T>(great_circle::MIN_VALUE<T>))};
       const auto delta_azi{azi_x - azi_p};
       const Radians<T> delta_atd(
           trig::spherical_cosine_rule(delta_azi.cos().v(), length.v()));

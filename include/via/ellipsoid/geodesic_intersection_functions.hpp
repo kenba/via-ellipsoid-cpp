@@ -120,8 +120,9 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
     return {Radians(T()), Radians(T()), 0u};
 
   // Construct a geodesic between geodesic start points
-  const auto [azi, aux_length]{aux_sphere_azimuth_length(
-      g1.beta(), g2.beta(), g2.lon() - g1.lon(), g1.ellipsoid())};
+  const auto [azi, aux_length, _]{aux_sphere_azimuth_length(
+      g1.beta(), g2.beta(), g2.lon() - g1.lon(), g1.ellipsoid(),
+      Radians<T>(great_circle::MIN_VALUE<T>))};
   const Geodesic g3(g1.beta(), g1.lon(), azi, aux_length, g1.ellipsoid());
 
   // If the second geodesic start point lies on the first geodesic

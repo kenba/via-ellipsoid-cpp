@@ -125,6 +125,8 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
       Radians<T>(great_circle::MIN_VALUE<T>))};
   const Geodesic g3(g1.beta(), g1.lon(), azi, aux_length, g1.ellipsoid());
 
+  // Determine whether the geodesics are coincident
+
   // If the second geodesic start point lies on the first geodesic
   const auto [_a3, pole3]{g3.aux_point_and_pole(Radians(T()))};
   if (!vector::intersection::calculate_intersection_point(pole1, pole3)
@@ -162,6 +164,8 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
     return calculate_geodesic_intersection_distances(
         g1, g2, sq_precision, use_antipodal_intersection, initial_distances);
   } else {
+    // This code should never be executed.
+    // The check for coincident geodesics should cover coincident great circles.
     const auto distances{
         vector::intersection::calculate_coincident_arc_distances(
             vector::calculate_great_circle_atd(a1, pole1, a2),

@@ -80,8 +80,8 @@ constexpr auto calculate_3rd_flattening(const T f) noexcept -> T {
 
 /// Function to calculate epsilon, the variable used in series expansions,
 /// derived from Clairaut's constant. Note: epsilon is positive and small.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eqs 22 & 46,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Algorithms for geodesics: Eqs 9 & 16,
+/// https://arxiv.org/pdf/1109.4448.pdf.
 /// @pre -1 <= clairaut <= 1
 /// @param clairaut Clairaut's constant.
 /// @param ep_2 the square of the second Eccentricity of the ellipsoid,
@@ -94,9 +94,9 @@ constexpr auto calculate_epsilon(const trig::UnitNegRange<T> clairaut,
                                  const T ep_2) noexcept -> T {
   // Clairaut's constant is sin alpha0; sq_cos_alpha0 is 1 - clairaut^2
   const T sq_cos_alpha0{(1 - clairaut.v()) * (1 + clairaut.v())};
-  const T k2{ep_2 * sq_cos_alpha0}; // square of Karney equation 22
+  const T k2{ep_2 * sq_cos_alpha0}; // square of Karney equation 9
   const T sqrt_k2_1{std::sqrt(1 + k2) + 1};
-  return k2 / (sqrt_k2_1 * sqrt_k2_1); // Karney equation 46
+  return k2 / (sqrt_k2_1 * sqrt_k2_1); // Karney equation 16
 }
 
 /// Function to convert an geodetic sine Latitude to a parametric sine

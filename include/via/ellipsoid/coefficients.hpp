@@ -31,8 +31,8 @@
 namespace via {
 namespace ellipsoid {
 /// The scale factor A1.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eq. 48,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Algorithms for geodesics: Eq. 17,
+/// https://arxiv.org/pdf/1109.4448.pdf.
 /// @tparam T a floating point type, e.g.: double or long double.
 /// @param eps epsilon the integration variable derived from Clairaut's
 /// constant.
@@ -55,8 +55,8 @@ constexpr auto evaluate_A1(const T eps) noexcept -> T {
 }
 
 /// The scale factor A2.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eq. 50,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Geodesics on an arbitrary ellipsoid of revolution: Eq. A1,
+/// https://arxiv.org/pdf/2208.00492.pdf.
 /// @tparam T a floating point type, e.g.: double or long double.
 /// @param eps epsilon the integration variable derived from Clairaut's
 /// constant.
@@ -78,8 +78,8 @@ constexpr auto evaluate_A2(const T eps) noexcept -> T {
 }
 
 /// The scale factor A3.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eq. 52,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Algorithms for geodesics: Eq. 23,
+/// https://arxiv.org/pdf/1109.4448.
 /// @tparam T a floating point type, e.g.: double or long double.
 /// @param n the third flattening of the ellipsoid.
 /// @return A3
@@ -107,8 +107,8 @@ constexpr auto evaluate_coeffs_A3(const T n) noexcept -> std::array<T, order> {
 }
 
 /// The coefficients C1[l] in the Fourier expansion of B1.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eq. 49,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Algorithms for geodesics: Eq. 18,
+/// https://arxiv.org/pdf/1109.4448.
 /// @tparam T a floating point type, e.g.: double or long double.
 /// @param eps epsilon the integration variable derived from Clairaut's
 /// constant.
@@ -146,8 +146,8 @@ constexpr auto evaluate_coeffs_C1(const T eps) noexcept
 }
 
 /// The coefficients C1p[l] in the Fourier expansion of B1p.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eq. 58,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Algorithms for geodesics: Eq. 21,
+/// https://arxiv.org/pdf/1109.4448.
 /// @tparam T a floating point type, e.g.: double or long double.
 /// @param eps epsilon the integration variable derived from Clairaut's
 /// constant.
@@ -183,6 +183,12 @@ constexpr auto evaluate_coeffs_C1p(const T eps) noexcept
 }
 
 /// The coefficients C2[l] in the Fourier expansion of B2.
+/// @see CFF Karney, Algorithms for geodesics: Eq. 42,
+/// https://arxiv.org/pdf/1109.4448.
+/// @tparam T a floating point type, e.g.: double or long double.
+/// @param eps epsilon the integration variable derived from Clairaut's
+/// constant.
+/// @return C2 coefficients array.
 template <typename T,
           size_t order = std::is_same<T, long double>::value ? 8u : 6u>
   requires std::floating_point<T>
@@ -216,8 +222,8 @@ constexpr auto evaluate_coeffs_C2(const T eps) noexcept
 }
 
 /// The coefficients C3x[l] in the Fourier expansion of C3.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eq. 53,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Algorithms for geodesics: Eq. 25,
+/// https://arxiv.org/pdf/1109.4448.
 /// @tparam T a floating point type, e.g.: double or long double.
 /// @param n the third flattening of the ellipsoid.
 /// @return C3x coefficients array.
@@ -360,8 +366,8 @@ constexpr auto evaluate_poynomial(const T x, Coeffs const &coeffs) -> T {
 }
 
 /// The coefficients C3[l] in the Fourier expansion of C3.
-/// @see CFF Karney, Geodesics on an ellipsoid of revolution: Eq. 53,
-/// https://arxiv.org/pdf/1102.1215.pdf.
+/// @see CFF Karney, Algorithms for geodesics: Eq. 53,
+/// https://arxiv.org/pdf/1109.4448.
 /// @tparam T a floating point type, e.g.: double or long double.
 /// @param eps epsilon the integration variable derived from Clairaut's
 /// constant.

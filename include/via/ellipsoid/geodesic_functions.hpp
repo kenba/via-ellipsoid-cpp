@@ -233,15 +233,13 @@ template <typename T>
 constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
                              const Radians<T> sigma12, const Angle<T> sigma1,
                              const Angle<T> sigma2,
-                             const Ellipsoid<T> &ellipsoid) -> T {
-  const T a3f{evaluate_poynomial(eps, ellipsoid.a3())};
-  const T a3c{T(ellipsoid.f()) * clairaut.v() * a3f};
-
+                             const Ellipsoid<T> &ellipsoid) -> Radians<T> {
   const auto c3{evaluate_coeffs_C3y<T>(ellipsoid.c3x(), eps)};
   const Radians<T> b31{sin_cos_series(sigma1, c3)};
   const Radians<T> b32{sin_cos_series(sigma2, c3)};
 
-  return a3c * (sigma12.v() + (b32.v() - b31.v()));
+  const T a3c{ellipsoid.calculate_a3c(clairaut, eps)};
+  return Radians<T>(a3c * (sigma12.v() + (b32.v() - b31.v())));
 }
 
 /// Find the aziumth and great circle length on the auxiliary sphere.
@@ -344,9 +342,9 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
 
     // Calculate difference between geodesic and great circle longitudes
     const auto eta{(omega12 - abs_lambda12).to_radians()};
-    const T domg12{
+    const auto domg12{
         delta_omega12(clairaut, eps, sigma12, sigma1, sigma2, ellipsoid)};
-    const T v{eta.v() - domg12};
+    const T v{eta.v() - domg12.v()};
 
     // Test within tolerance
     if (std::abs(v) <= tolerance.v())

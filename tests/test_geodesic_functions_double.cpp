@@ -95,28 +95,30 @@ BOOST_AUTO_TEST_CASE(test_delta_omega12_double) {
 
   // 0.0, 0.0 to 30.0, 90.0
   const auto clairaut_30_90{Angle(Degrees(60.0)).sin()};
-  const double lam12_30_90{delta_omega12(
+  const auto lam12_30_90{delta_omega12(
       clairaut_30_90, calculate_epsilon(clairaut_30_90, WGS84_EP_2),
       Radians(trig::PI_2<double>), Angle<double>(), Angle(Degrees(90.0)),
       Ellipsoid<double>::wgs84())};
-  BOOST_CHECK_CLOSE(0.0045600360192803542, lam12_30_90, CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(0.0045600360192803542, lam12_30_90.v(),
+                    CALCULATION_TOLERANCE);
 
   // 0.0, 0.0 to 45.0, 90.0
   const auto clairaut_45_90{Angle(Degrees(45.0)).sin()};
-  const double lam12_45_90{delta_omega12(
+  const auto lam12_45_90{delta_omega12(
       clairaut_45_90, calculate_epsilon(clairaut_45_90, WGS84_EP_2),
       Radians(trig::PI_2<double>), Angle<double>(), Angle(Degrees(90.0)),
       Ellipsoid<double>::wgs84())};
-  BOOST_CHECK_CLOSE(0.0037224722989948442, lam12_45_90,
+  BOOST_CHECK_CLOSE(0.0037224722989948442, lam12_45_90.v(),
                     2 * CALCULATION_TOLERANCE);
 
   // 0.0, 0.0 to 60.0, 90.0
   const auto clairaut_60_90{Angle(Degrees(30.0)).sin()};
-  const double lam12_60_90{delta_omega12(
+  const auto lam12_60_90{delta_omega12(
       clairaut_60_90, calculate_epsilon(clairaut_60_90, WGS84_EP_2),
       Radians(trig::PI_2<double>), Angle<double>(), Angle(Degrees(90.0)),
       Ellipsoid<double>::wgs84())};
-  BOOST_CHECK_CLOSE(0.0026316334829412581, lam12_60_90, CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(0.0026316334829412581, lam12_60_90.v(),
+                    CALCULATION_TOLERANCE);
 }
 //////////////////////////////////////////////////////////////////////////////
 

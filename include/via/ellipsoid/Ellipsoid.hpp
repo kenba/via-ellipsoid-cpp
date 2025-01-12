@@ -158,6 +158,25 @@ public:
     return ellipsoid::calculate_epsilon(clairaut, ep_2_);
   }
 
+  /// Calculate a3c from the A3 series `coefficients` of the ellipsoid.
+  ///
+  /// @param clairaut Clairaut's constant.
+  /// @param eps epsilon
+  /// @return the parameter a3c
+  [[nodiscard("Pure Function")]]
+  constexpr auto calculate_a3c(trig::UnitNegRange<T> clairaut,
+                               const T eps) const noexcept -> T {
+    return f_ * clairaut.v() * ellipsoid::evaluate_poynomial(eps, a3_);
+  }
+
+  /// Calculate the coefficients `C3[l]` in the Fourier expansion of `C3`.
+  /// @param eps epsilon
+  /// @return the coefficients `C3[l]` in the Fourier expansion of `C3`
+  [[nodiscard("Pure Function")]]
+  constexpr auto calculate_c3y(const T eps) const noexcept -> T {
+    return ellipsoid::evaluate_coeffs_C3y<T>(c3x_, eps);
+  }
+
   /// Cconvert a `geodetic` Latitude to a `parametric` Latitude on the auxiliary
   /// sphere.
   /// @param lat the the geodetic Latitude in an Angle.

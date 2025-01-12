@@ -81,7 +81,8 @@ BOOST_AUTO_TEST_CASE(test_rtca_do_283b_geodesic_examples) {
       const Degrees<double> lon1d{lon1};
       const Degrees<double> lat2d{lat2};
       const Degrees<double> lon2d{lon2};
-      const auto [azimuth, aux_length]{ellipsoid::calculate_azimuth_aux_length(
+      const auto [azimuth, aux_length,
+                  iterations]{ellipsoid::calculate_azimuth_aux_length(
           LatLong(lat1d, lon1d), LatLong(lat2d, lon2d), WGS84_ELLIPSOID)};
 
       // Compare azimuth

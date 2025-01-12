@@ -267,7 +267,7 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   Expects(beta1 <= beta2);
   Expects(T() < abs_lambda12.sin().v());
-  Expects((T() < alpha1.sin().v()) && (alpha1.sin().v() < T(1)));
+  Expects((T() < alpha1.sin().v()) && (alpha1.sin().v() <= T(1)));
   Expects((T() < sigma12.v()) && (sigma12.v() <= trig::PI<T>));
 
   const T dn1{std::sqrt(T(1) + T(ellipsoid.ep_2()) * beta1.sin().v() *

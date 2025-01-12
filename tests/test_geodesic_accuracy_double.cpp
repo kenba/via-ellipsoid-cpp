@@ -26,23 +26,21 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/test/unit_test.hpp>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 
 using namespace via;
 
 namespace {
 // A function to tokenise a line from the data file
-std::vector<std::string> tokenise(std::string const& s)
-{
+std::vector<std::string> tokenise(std::string const &s) {
   std::vector<std::string> tokens;
   boost::split(tokens, s, boost::is_any_of(", "), boost::token_compress_on);
   return tokens;
 }
 
 // The columns of the data file.
-enum Columns
-{
+enum Columns {
   LAT_1,
   LON_1,
   AZI_1,
@@ -61,9 +59,10 @@ BOOST_AUTO_TEST_SUITE(Test_geodesic_examples_suite)
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
-  // Test reads file from directory, fails if directory environment variable is not present.
+  // Test reads file from directory, fails if directory environment variable is
+  // not present.
   const auto env_var(std::getenv("GEODTEST_DIR"));
-  BOOST_REQUIRE (env_var != nullptr);
+  BOOST_REQUIRE(env_var != nullptr);
 
   const auto filename("GeodTest.dat");
   std::filesystem::path file_path(env_var);
@@ -75,13 +74,11 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
   const auto WGS84_ELLIPSOID{ellipsoid::Ellipsoid<double>::wgs84()};
 
   auto line_number(0u);
-  while (!data_file.eof())
-  {
+  while (!data_file.eof()) {
     // read next line from the file
     std::string line;
     std::getline(data_file, line);
-    if (!line.empty())
-    {
+    if (!line.empty()) {
       const auto params{tokenise(line)};
       const double lat1{std::stod(params[LAT_1])};
       const double lon1{std::stod(params[LON_1])};
@@ -97,27 +94,32 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
       const Degrees<double> lon1d{lon1};
       const Degrees<double> lat2d{lat2};
       const Degrees<double> lon2d{lon2};
-      const auto [azimuth, aux_length]{
-        ellipsoid::calculate_azimuth_aux_length(
+      const auto [azimuth, aux_length,
+                  iterations]{ellipsoid::calculate_azimuth_aux_length(
           LatLong(lat1d, lon1d), LatLong(lat2d, lon2d), WGS84_ELLIPSOID)};
 
       // Compare azimuth
-      const double delta_azimuth{std::abs(azimuth_1 - azimuth.to_degrees().v())};
-      const double azimuth_tolerance{(line_number <= 400000) ? 5.331e-5 : 0.077};
+      const double delta_azimuth{
+          std::abs(azimuth_1 - azimuth.to_degrees().v())};
+      const double azimuth_tolerance{(line_number <= 400000) ? 5.331e-5
+                                                             : 0.077};
       BOOST_CHECK_SMALL(delta_azimuth, 100 * azimuth_tolerance);
 
       // Compare aux sphere great circle length
-      const double delta_aux_length{std::abs(trig::deg2rad(distance_deg) - aux_length.v())};
+      const double delta_aux_length{
+          std::abs(trig::deg2rad(distance_deg) - aux_length.v())};
       const double aux_length_tolerance{3.0e-10};
       BOOST_CHECK_SMALL(delta_aux_length, 100 * aux_length_tolerance);
 
       // Compare geodesic length
-      const auto beta1{WGS84_ELLIPSOID.calculate_parametric_latitude(Angle(lat1d))};
-      const auto result_m{ellipsoid::convert_radians_to_metres(beta1, azimuth, aux_length, WGS84_ELLIPSOID)};
+      const auto beta1{
+          WGS84_ELLIPSOID.calculate_parametric_latitude(Angle(lat1d))};
+      const auto result_m{ellipsoid::convert_radians_to_metres(
+          beta1, azimuth, aux_length, WGS84_ELLIPSOID)};
       const double delta_length_m{std::abs(distance_m - result_m.v())};
 
       // if a short geodesic, compare delta length
-      if (line_number >= 150000 && line_number < 200000 ) {
+      if (line_number >= 150000 && line_number < 200000) {
         BOOST_CHECK_SMALL(delta_length_m, 100 * 9.0e-5);
       } else {
         BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 2.5e-9);

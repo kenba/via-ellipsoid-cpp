@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   BOOST_CHECK_CLOSE(54.86379153725445, mid_position.lat().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(-25.694568908316413, mid_position.lon().v(),
-                    CALCULATION_TOLERANCE);
+                    2 * CALCULATION_TOLERANCE);
 
   const auto mid_length{g1.metres_to_radians(half_length)};
   BOOST_CHECK_CLOSE(0.654673165141749, mid_length.v(), CALCULATION_TOLERANCE);

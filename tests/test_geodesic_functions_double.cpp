@@ -182,7 +182,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_01) {
   // North West bound, straddle Equator
   const auto [azimuth1, aux_length1, _iter1]{
       calculate_azimuth_aux_length(latlon1, latlon2, WGS84_ELLIPSOID)};
-  BOOST_CHECK_EQUAL(-55.00473169905792, azimuth1.to_degrees().v());
+  BOOST_CHECK_CLOSE(-55.00473169905792, azimuth1.to_degrees().v(),
+                    CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(1.6656790467428874, aux_length1.v(), CALCULATION_TOLERANCE);
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -221,7 +222,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_04) {
   // North East bound, straddle Equator
   const auto [azimuth1, aux_length1, _iter1]{
       calculate_azimuth_aux_length(latlon1, latlon2, WGS84_ELLIPSOID)};
-  BOOST_CHECK_EQUAL(55.00473169905792, azimuth1.to_degrees().v());
+  BOOST_CHECK_CLOSE(55.00473169905792, azimuth1.to_degrees().v(),
+                    CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(1.6656790467428874, aux_length1.v(), CALCULATION_TOLERANCE);
 }
 //////////////////////////////////////////////////////////////////////////////

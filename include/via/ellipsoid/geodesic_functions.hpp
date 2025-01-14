@@ -25,8 +25,6 @@
 /// @brief Contains the via::ellipsoid geodesic template functions.
 //////////////////////////////////////////////////////////////////////////////
 #include "Ellipsoid.hpp"
-#include <via/angle/trig.hpp>
-#include <via/sphere.hpp>
 #ifdef OUTPUT_GEOD_ITERATOR_STEPS
 #include <iomanip>
 #include <iostream>
@@ -242,6 +240,47 @@ constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
   return Radians<T>(a3c * (sigma12.v() + (b32.v() - b31.v())));
 }
 
+/// Estimate the initial azimuth on the auxiliary sphere for a normal arcs.
+///
+/// @param beta1, beta2 the parametric latitudes on the auxiliary sphere.
+/// @param lambda12 longitude difference between the points.
+/// @param ellipsoid the `Ellipsoid`.
+/// @return an estimate of the initial azimuth on the auxiliary sphere.
+template <typename T>
+  requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
+constexpr auto
+estimate_initial_azimuth(const Angle<T> beta1, const Angle<T> beta2,
+                         const Angle<T> lambda12, const Ellipsoid<T> &ellipsoid)
+    -> Angle<T> {
+  // Calculate the great circle azimuth between parametric latitudes
+  Angle<T> alpha1{great_circle::calculate_gc_azimuth(beta1, beta2, lambda12)};
+
+  // Calculate Clairaut's constant
+  const trig::UnitNegRange<T> clairaut(alpha1.sin().v() * beta1.cos().v());
+  const T eps{ellipsoid.calculate_epsilon(clairaut)};
+
+  // Calculate sigma1
+  const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};
+  const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
+
+  // Calculate sigma2
+  Angle<T> alpha2{calculate_end_azimuth(beta1, beta2, alpha1)};
+  const auto cos_omega2{calculate_cos_omega(beta2, alpha2.cos())};
+  const auto sigma2{Angle<T>::from_y_x(beta2.sin().v(), cos_omega2)};
+
+  // Calculate omega12
+  const Radians<T> sigma12{sigma2.to_radians() - sigma1.to_radians()};
+
+  // Estimate the difference between aux sphere and geodesic longitude
+  const Angle<T> domg12{
+      delta_omega12(clairaut, eps, sigma12, sigma1, sigma2, ellipsoid)};
+  const auto omega12{lambda12 + domg12};
+
+  // Recalculate the azimuth using the estimated longitude difference
+  return great_circle::calculate_gc_azimuth(beta1, beta2, omega12);
+}
+
 /// Find the aziumth and great circle length on the auxiliary sphere.
 /// It uses Newton's method to solve:
 ///   f(alp1) = lambda12(alp1) - lam12 = 0
@@ -380,7 +419,8 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                  const Angle<T> lambda12,
                                  const Radians<T> gc_length,
                                  const Ellipsoid<T> &ellipsoid,
-                                 const Radians<T> tolerance)
+                                 const Radians<T> tolerance,
+                                 const bool estimate_azimuth)
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
 
@@ -407,6 +447,8 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
       (gc_length.v() >= ANTIPODAL_ARC_THRESHOLD)
           ? estimate_antipodal_initial_azimuth(beta1, beta2, abs_lambda12,
                                                ellipsoid)
+      : estimate_azimuth
+          ? estimate_initial_azimuth(beta1, beta2, abs_lambda12, ellipsoid)
           : great_circle::calculate_gc_azimuth(beta1, beta2, abs_lambda12)};
 
   // Use Newton's method to calculate the initial azimuth and aux length
@@ -444,7 +486,8 @@ template <typename T>
 auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
                                const Angle<T> delta_long,
                                const Ellipsoid<T> &ellipsoid,
-                               const Radians<T> tolerance)
+                               const Radians<T> tolerance,
+                               const bool estimate_azimuth = true)
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   const Angle<T> gc_azimuth{
       great_circle::calculate_gc_azimuth(beta1, beta2, delta_long)};
@@ -469,7 +512,8 @@ auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
     } else {
       // Iterate to find the azimuth and length on the auxiliary sphere
       return find_azimuth_and_aux_length(beta1, beta2, delta_long, gc_length,
-                                         ellipsoid, tolerance);
+                                         ellipsoid, tolerance,
+                                         estimate_azimuth);
     }
   }
 }

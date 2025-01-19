@@ -97,7 +97,9 @@ PYBIND11_MODULE(via_ellipsoid, m) {
                     via::units::si::Metres<double>, EllipsoidDouble>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>,
-                    EllipsoidDouble>())
+                    via::Radians<double>>())
+      .def(py::init<via::LatLong<double>, via::LatLong<double>,
+                    via::Radians<double>, EllipsoidDouble>())
       .def("is_valid", &GeodesicDouble::is_valid)
       .def("beta", &GeodesicDouble::beta)
       .def("lon", &GeodesicDouble::lon)

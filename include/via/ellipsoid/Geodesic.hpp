@@ -143,11 +143,16 @@ public:
   /// Construct a Geodesic between a pair of points.
   /// @pre a.is_valid() && b.s_valid()
   /// @param a, b the start and finish points in geodetic coordinates.
+  /// @param tolerance the tolerance to perform the calculation to in Radians,
+  /// default great_circle::MIN_VALUE.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
-  constexpr Geodesic(const LatLong<T> &a, const LatLong<T> &b,
-                     const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
-      : Geodesic(a, calculate_azimuth_aux_length(a, b, ellipsoid), ellipsoid) {}
+  constexpr Geodesic(
+      const LatLong<T> &a, const LatLong<T> &b,
+      const Radians<T> tolerance = Radians<T>(great_circle::MIN_VALUE<T>),
+      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
+      : Geodesic(a, calculate_azimuth_aux_length(a, b, tolerance, ellipsoid),
+                 ellipsoid) {}
 
   /// Test whether a `Geodesic` is valid.
   /// Whether latitude <= 90.0 and `aux_length` is positive and less than PI.

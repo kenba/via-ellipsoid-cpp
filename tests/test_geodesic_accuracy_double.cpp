@@ -94,9 +94,9 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
       const Degrees<double> lon1d{lon1};
       const Degrees<double> lat2d{lat2};
       const Degrees<double> lon2d{lon2};
-      const auto [azimuth, aux_length,
-                  iterations]{ellipsoid::calculate_azimuth_aux_length(
-          LatLong(lat1d, lon1d), LatLong(lat2d, lon2d), WGS84_ELLIPSOID)};
+      const auto [azimuth, aux_length, iterations]{
+          ellipsoid::calculate_azimuth_aux_length(LatLong(lat1d, lon1d),
+                                                  LatLong(lat2d, lon2d))};
 
       // Compare azimuth
       const double delta_azimuth{
@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
       // Compare geodesic length
       const auto beta1{
           WGS84_ELLIPSOID.calculate_parametric_latitude(Angle(lat1d))};
-      const auto result_m{ellipsoid::convert_radians_to_metres(
-          beta1, azimuth, aux_length, WGS84_ELLIPSOID)};
+      const auto result_m{
+          ellipsoid::convert_radians_to_metres(beta1, azimuth, aux_length)};
       const double delta_length_m{std::abs(distance_m - result_m.v())};
 
       // if a short geodesic, compare delta length

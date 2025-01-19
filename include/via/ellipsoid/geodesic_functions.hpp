@@ -522,8 +522,9 @@ auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
 /// @pre a and b are valid LatLong's'
 /// @post 0 <= aux_length <= PI
 /// @param a, b the start and finish positions in geodetic coordinates.
-/// @param ellipsoid the `Ellipsoid`.
-/// @param tolerance the tolerance to perform the calculation to in Radians.
+/// @param tolerance the tolerance to perform the calculation to in Radians,
+/// default great_circle::MIN_VALUE.
+/// @param ellipsoid the `Ellipsoid`, default WGS 84.
 /// @return the azimuth and great circle length on the auxiliary sphere at the
 /// start of the geodesic and the number of iterations required to calculate
 /// them.
@@ -531,8 +532,9 @@ template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 auto calculate_azimuth_aux_length(
-    const LatLong<T> &a, const LatLong<T> &b, const Ellipsoid<T> &ellipsoid,
-    const Radians<T> tolerance = Radians<T>(great_circle::MIN_VALUE<T>))
+    const LatLong<T> &a, const LatLong<T> &b,
+    const Radians<T> tolerance = Radians<T>(great_circle::MIN_VALUE<T>),
+    const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   Expects(a.is_valid() && b.is_valid());
 
@@ -554,16 +556,15 @@ auto calculate_azimuth_aux_length(
 /// @param alpha1 the azimuth at the start point.
 /// @param gc_distance the great circle distance on the auxiliary sphere in
 /// radians.
-/// @param ellipsoid the `Ellipsoid`.
+/// @param ellipsoid the `Ellipsoid`, default WGS 84.
 ///
 /// @return the geodesic distance in Metres.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-constexpr auto convert_radians_to_metres(const Angle<T> &beta1,
-                                         const Angle<T> &alpha1,
-                                         Radians<T> gc_distance,
-                                         const Ellipsoid<T> &ellipsoid) noexcept
+constexpr auto convert_radians_to_metres(
+    const Angle<T> &beta1, const Angle<T> &alpha1, Radians<T> gc_distance,
+    const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84()) noexcept
     -> units::si::Metres<T> {
   // Calculate the distance from the first equator crossing
   const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};

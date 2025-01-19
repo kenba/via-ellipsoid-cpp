@@ -1,7 +1,7 @@
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -121,8 +121,8 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
 
   // Construct a geodesic between geodesic start points
   const auto [azi, aux_length, _]{aux_sphere_azimuth_length(
-      g1.beta(), g2.beta(), g2.lon() - g1.lon(), g1.ellipsoid(),
-      Radians<T>(great_circle::MIN_VALUE<T>))};
+      g1.beta(), g2.beta(), g2.lon() - g1.lon(),
+      Radians<T>(great_circle::MIN_VALUE<T>), g1.ellipsoid())};
   const Geodesic g3(g1.beta(), g1.lon(), azi, aux_length, g1.ellipsoid());
 
   // Determine whether the geodesics are coincident

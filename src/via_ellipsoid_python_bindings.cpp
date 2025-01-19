@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -70,6 +70,10 @@ PYBIND11_MODULE(via_ellipsoid, m) {
            &EllipsoidDouble::calculate_geodetic_latitude);
 
   // Python bindings for geodesic functions
+  m.def("find_azimuth_and_aux_length",
+        &via::ellipsoid::find_azimuth_and_aux_length<double>,
+        "Calculate the initial azimuth and great circle length between a pair "
+        "of points on the auxiliary sphere.");
   m.def("aux_sphere_azimuth_length",
         &via::ellipsoid::aux_sphere_azimuth_length<double>,
         "Calculate the initial azimuth and great circle length between a pair "

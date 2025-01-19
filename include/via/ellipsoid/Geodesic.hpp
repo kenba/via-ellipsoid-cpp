@@ -1,7 +1,7 @@
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -513,9 +513,9 @@ public:
 
       // calculate the geodesic azimuth and length to the point from the
       // Geodesic position at atd
-      const auto [azi_p, length, _]{
-          aux_sphere_azimuth_length(beta_x, beta, lon - lon_x, ellipsoid_,
-                                    Radians<T>(great_circle::MIN_VALUE<T>))};
+      const auto [azi_p, length, _]{aux_sphere_azimuth_length(
+          beta_x, beta, lon - lon_x, Radians<T>(great_circle::MIN_VALUE<T>),
+          ellipsoid_)};
       const auto delta_azi{azi_x - azi_p};
       const Radians<T> delta_atd(
           trig::spherical_cosine_rule(delta_azi.cos().v(), length.v()));

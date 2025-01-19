@@ -90,8 +90,7 @@ constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
                                         const Angle<T> sigma1, const T dn1,
                                         const Angle<T> sigma2, const T dn2)
     -> T {
-  // TODO investigate why this precondition fails
-  // Expects(T() <= sigma12.v());
+  Expects(T() < sigma12.v());
 
   const T A1{evaluate_A1<T>(eps)};
   const T A2{evaluate_A2<T>(eps)};
@@ -407,8 +406,10 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
 /// @param beta_a, beta_b the geodetic latitudes of the start and finish points.
 /// @param lambda12 the geodesic longitude difference in radians.
 /// @param gc_length the auxiliary sphere great circle length in radians
-/// @param ellipsoid the `Ellipsoid`.
 /// @param tolerance the tolerance to perform the calculation to in Radians.
+/// @param estimate_azimuth a flag to call `estimate_initial_azimuth` before
+/// performing Newton's method.
+/// @param ellipsoid the `Ellipsoid`.
 /// @return the azimuth and great circle length on the auxiliary sphere at the
 /// start of the geodesic and the number of iterations required to calculate
 /// them.
@@ -418,9 +419,9 @@ template <typename T>
 auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                  const Angle<T> lambda12,
                                  const Radians<T> gc_length,
-                                 const Ellipsoid<T> &ellipsoid,
                                  const Radians<T> tolerance,
-                                 const bool estimate_azimuth)
+                                 const bool estimate_azimuth,
+                                 const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
 
@@ -475,8 +476,8 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
 /// @param beta1, beta2 the parametric latitudes of the start and finish
 ///     points on the auxiliary sphere.
 /// @param delta_long the longitude difference.
-/// @param ellipsoid the `Ellipsoid`.
 /// @param tolerance the tolerance to perform the calculation to in Radians.
+/// @param ellipsoid the `Ellipsoid`.
 /// @return the azimuth and great circle length on the auxiliary sphere at the
 /// start of the geodesic and the number of iterations required to calculate
 /// them.
@@ -485,9 +486,8 @@ template <typename T>
 [[nodiscard("Pure Function")]]
 auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
                                const Angle<T> delta_long,
-                               const Ellipsoid<T> &ellipsoid,
                                const Radians<T> tolerance,
-                               const bool estimate_azimuth = true)
+                               const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   const Angle<T> gc_azimuth{
       great_circle::calculate_gc_azimuth(beta1, beta2, delta_long)};
@@ -512,8 +512,7 @@ auto aux_sphere_azimuth_length(const Angle<T> beta1, const Angle<T> beta2,
     } else {
       // Iterate to find the azimuth and length on the auxiliary sphere
       return find_azimuth_and_aux_length(beta1, beta2, delta_long, gc_length,
-                                         ellipsoid, tolerance,
-                                         estimate_azimuth);
+                                         tolerance, true, ellipsoid);
     }
   }
 }
@@ -545,8 +544,8 @@ auto calculate_azimuth_aux_length(
 
   // calculate the longitude difference
   const Angle<T> delta_long{Angle<T>(b.lon(), a.lon())};
-  return aux_sphere_azimuth_length(beta_a, beta_b, delta_long, ellipsoid,
-                                   tolerance);
+  return aux_sphere_azimuth_length(beta_a, beta_b, delta_long, tolerance,
+                                   ellipsoid);
 }
 
 /// Convert a great circle distance on the auxiliary sphere in radians to

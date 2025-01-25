@@ -1,7 +1,7 @@
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -97,42 +97,6 @@ constexpr auto calculate_epsilon(const trig::UnitNegRange<T> clairaut,
   const T k2{ep_2 * sq_cos_alpha0}; // square of Karney equation 9
   const T sqrt_k2_1{std::sqrt(1 + k2) + 1};
   return k2 / (sqrt_k2_1 * sqrt_k2_1); // Karney equation 16
-}
-
-/// Function to convert an geodetic sine Latitude to a parametric sine
-/// Latitude on the auxiliary sphere.
-/// @pre -1.0 <= sin_lat <= 1.0
-/// @post -1.0 <= result <= 1.0
-/// @param sin_lat the sine of the geodetic Latitude.
-/// @param e_2 the square of the Eccentricity of the ellipsoid.
-/// @return the sine of the parametric Latitude on the auxiliary sphere.
-template <typename T>
-  requires std::floating_point<T>
-[[nodiscard("Pure Function")]]
-constexpr auto
-calculate_parametric_sin_latitude(const trig::UnitNegRange<T> sin_lat,
-                                  const T e_2) noexcept
-    -> trig::UnitNegRange<T> {
-  return trig::UnitNegRange<T>::clamp(
-      sin_lat.v() *
-      std::sqrt((1 - e_2) / (1 - e_2 * sin_lat.v() * sin_lat.v())));
-}
-
-/// Function to convert a parametric sine Latitude on the auxiliary sphere
-/// to the geodetic sine Latitude.
-/// @pre -1.0 <= sin_lat <= 1.0
-/// @post -1.0 <= result <= 1.0
-/// @param sin_lat the sine of the parametric Latitude.
-/// @param e_2 the square of the Eccentricity of the ellipsoid.
-/// @return the sine of the geodetic Latitude.
-template <typename T>
-  requires std::floating_point<T>
-[[nodiscard("Pure Function")]]
-constexpr auto
-calculate_geodetic_sin_latitude(const trig::UnitNegRange<T> sin_lat,
-                                const T e_2) noexcept -> trig::UnitNegRange<T> {
-  return trig::UnitNegRange<T>::clamp(
-      sin_lat.v() / std::sqrt(1 - e_2 * (1 - sin_lat.v()) * (1 + sin_lat.v())));
 }
 
 /// Function to convert a `geodetic` Latitude to a `parametric` Latitude on the

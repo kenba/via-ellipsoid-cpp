@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -38,7 +38,7 @@ const auto CALCULATION_TOLERANCE(100 * EPSILON);
 BOOST_AUTO_TEST_SUITE(Test_ellipsoid_functions)
 
 //////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_calculate_parametric_sin_latitude) {
+BOOST_AUTO_TEST_CASE(test_calculate_epsilon) {
   const auto wgs84_ep2{calculate_sq_2nd_eccentricity(wgs84::F<double>)};
   BOOST_CHECK_CLOSE(0.0016792203863837047,
                     calculate_epsilon(trig::UnitNegRange(0.0), wgs84_ep2),
@@ -53,23 +53,6 @@ BOOST_AUTO_TEST_CASE(test_calculate_parametric_sin_latitude) {
                     calculate_epsilon(trig::UnitNegRange(0.75), wgs84_ep2),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, calculate_epsilon(trig::UnitNegRange(1.0), wgs84_ep2));
-}
-//////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_calculate_parametric_and_geodetic_sin_latitude) {
-  const auto wgs84_e2{calculate_sq_eccentricity(wgs84::F<double>)};
-  for (auto latitude(-90); latitude <= 90; ++latitude) {
-    const double radians{latitude * trig::PI<double> / 180.0};
-    const auto sin_lat{trig::UnitNegRange(std::sin(radians))};
-    const auto sin_parametric_lat(
-        calculate_parametric_sin_latitude(sin_lat, wgs84_e2));
-    const auto result(
-        calculate_geodetic_sin_latitude(sin_parametric_lat, wgs84_e2));
-
-    BOOST_CHECK_CLOSE(sin_lat.v(), result.v(), 88 * EPSILON); // 1.94e-14
-    // The largest difference occurs at 35 degrees
-  }
 }
 //////////////////////////////////////////////////////////////////////////////
 

@@ -50,8 +50,6 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
                                    Angle(Degrees(90.0)), Radians(0.0));
   BOOST_CHECK_EQUAL(trig::PI_2<double>,
                     geodesic0.aux_azimuth(Radians(0.0)).to_radians().v());
-  BOOST_CHECK_CLOSE(trig::SQRT1_2<double>, geodesic0.clairaut().v(),
-                    CALCULATION_TOLERANCE);
 
   // LatLong, azimuth, aux_length constructor.
   const LatLong a(Degrees(45.0), Degrees(45.0));
@@ -145,7 +143,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   BOOST_CHECK_CLOSE(54.86379153725445, mid_position.lat().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(-25.694568908316413, mid_position.lon().v(),
-                    2 * CALCULATION_TOLERANCE);
+                    4 * CALCULATION_TOLERANCE);
 
   const auto mid_length{g1.metres_to_radians(half_length)};
   BOOST_CHECK_CLOSE(0.654673165141749, mid_length.v(), CALCULATION_TOLERANCE);

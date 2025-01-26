@@ -79,17 +79,17 @@ public:
                      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : beta_{beta}, lon_{lon}, azi_{azimuth},
         // Calculate the azimuth at the first Equator crossing
-        azi0_(Angle<T>::from_y_x(
-            azi_.sin().v() * beta_.cos().v(),
-            std::hypot(azi_.cos().v(), azi_.sin().v() * beta_.sin().v()))),
+        azi0_(trig::UnitNegRange(azi_.sin().v() * beta_.cos().v()),
+              trig::swap_sin_cos(
+                  trig::UnitNegRange(azi_.sin().v() * beta_.cos().v()))),
         // Calculate the distance to the first Equator crossing
         sigma1_{Angle<T>::from_y_x(beta_.sin().v(),
                                    calculate_cos_omega(beta_, azi_.cos()))},
         aux_length_{aux_length},
         // Calculate eps for calculating coefficients
-        eps_(ellipsoid.calculate_epsilon(clairaut())),
+        eps_(ellipsoid.calculate_epsilon(azi0_.sin())),
         a1_((evaluate_A1<T>(eps_) + T(1))),
-        a3c_(ellipsoid.f() * clairaut().v() *
+        a3c_(ellipsoid.f() * azi0_.sin().v() *
              evaluate_poynomial(eps_, ellipsoid.a3())),
         ellipsoid_(ellipsoid) {
     Expects((T() <= beta.cos().v()) && (T() <= aux_length.v()) &&
@@ -222,14 +222,6 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto direction() const noexcept -> V {
     return vector::calculate_direction<T>(beta_, lon_, azi_);
-  }
-
-  /// Accessor for Clairaut's constant.
-  /// Clairaut's constant = sin min azimuth = cos max parametric latitude.
-  /// @return Clairaut's constant.
-  [[nodiscard("Pure Function")]]
-  constexpr auto clairaut() const noexcept -> trig::UnitNegRange<T> {
-    return azi0_.sin();
   }
 
   /// Accessor for the integration constant: epsilon.

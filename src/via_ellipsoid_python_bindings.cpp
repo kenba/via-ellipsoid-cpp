@@ -110,7 +110,6 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("a", &GeodesicDouble::a)
       .def("pole", &GeodesicDouble::pole)
       .def("direction", &GeodesicDouble::direction)
-      .def("clairaut", &GeodesicDouble::clairaut)
       .def("epsilon", &GeodesicDouble::epsilon)
       .def("metres_to_radians", &GeodesicDouble::metres_to_radians)
       .def("radians_to_metres", &GeodesicDouble::radians_to_metres)

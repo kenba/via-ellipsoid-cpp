@@ -52,7 +52,7 @@ template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 constexpr auto calculate_sq_eccentricity(const T f) noexcept -> T {
-  return f * (2 - f);
+  return f * (T(2) - f);
 }
 
 /// Calculate the square of the second Eccentricity of an ellipsoid.
@@ -63,7 +63,7 @@ template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 constexpr auto calculate_sq_2nd_eccentricity(const T f) noexcept -> T {
-  const T one_minus_f{1 - f};
+  const T one_minus_f{T(1) - f};
   return calculate_sq_eccentricity(f) / (one_minus_f * one_minus_f);
 }
 
@@ -75,7 +75,7 @@ template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 constexpr auto calculate_3rd_flattening(const T f) noexcept -> T {
-  return f / (2 - f);
+  return f / (T(2) - f);
 }
 
 /// Function to calculate epsilon, the variable used in series expansions,
@@ -93,9 +93,9 @@ template <typename T>
 constexpr auto calculate_epsilon(const trig::UnitNegRange<T> clairaut,
                                  const T ep_2) noexcept -> T {
   // Clairaut's constant is sin alpha0; sq_cos_alpha0 is 1 - clairaut^2
-  const T sq_cos_alpha0{(1 - clairaut.v()) * (1 + clairaut.v())};
+  const T sq_cos_alpha0{(T(1) - clairaut.v()) * (T(1) + clairaut.v())};
   const T k2{ep_2 * sq_cos_alpha0}; // square of Karney equation 9
-  const T sqrt_k2_1{std::sqrt(1 + k2) + 1};
+  const T sqrt_k2_1{std::sqrt(T(1) + k2) + T(1)};
   return k2 / (sqrt_k2_1 * sqrt_k2_1); // Karney equation 16
 }
 

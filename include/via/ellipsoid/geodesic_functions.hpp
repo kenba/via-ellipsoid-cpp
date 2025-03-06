@@ -374,9 +374,9 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
                                                   sigma2, dn2) /
                          (alpha2.cos().v() * beta2.cos().v())};
 
-    // Calculate the change in initial azimuth and test within tolerance
+    // Calculate the change in initial azimuth and test within MIN_VALUE<T>
     const T dalpha1{std::clamp<T>(-v / dv, -1, 1)};
-    if (std::abs(dalpha1) <= tolerance.v())
+    if (std::abs(dalpha1) <= great_circle::MIN_VALUE<T>)
       break;
 
 #ifdef OUTPUT_GEOD_ITERATOR_STEPS

@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -24,6 +24,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid.hpp"
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 using namespace via::ellipsoid;
 using namespace via;
@@ -210,5 +211,25 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
 }
 //////////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
+  // Example from Charles Karney email on 31/03/2025
+  const Ellipsoid ellipsoid(units::si::Metres(6.4e6), 1.0/50.0);
+  const LatLong p1(Degrees(-30.0), Degrees(0.0));
+  const LatLong p2(Degrees(29.5), Degrees(179.5));
+  const Geodesic<double> g1(p1, p2, Radians(great_circle::MIN_VALUE<double>), ellipsoid);
+  std::cout << "g1.length:" << g1.length().v() << std::endl;
+
+  const LatLong p3(Degrees(1.0), Degrees(90.0));
+  const LatLong p4(Degrees(-2.0), Degrees(-95.0));
+  const Geodesic<double> g2(p3, p4, Radians(great_circle::MIN_VALUE<double>), ellipsoid);
+  std::cout << "g2.length:" << g2.length().v() << std::endl;
+
+  const auto result{calculate_intersection_point(g1, g2, units::si::Metres(1e-6))};
+  std::cout << "Intersection position:" << result->lat() << "," << result->lon() << std::endl;
+}
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_SUITE_END()
 //////////////////////////////////////////////////////////////////////////////

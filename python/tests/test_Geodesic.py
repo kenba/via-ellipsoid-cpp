@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2019-2024 Ken Barker
+# Copyright (c) 2019-2025 Ken Barker
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,10 @@
 
 import pytest
 from numpy.testing import assert_almost_equal
-from via_angle import Degrees
-from via_sphere import LatLong
+from via_angle import Degrees, Radians
+from via_sphere import LatLong, MIN_VALUE
 from via_units import Metres
-from via_ellipsoid import Geodesic, calculate_intersection_point
+from via_ellipsoid import Ellipsoid, Geodesic, calculate_intersection_point
 
 def test_intersection_point_distance():
     # Karney's example:
@@ -53,6 +53,22 @@ def test_intersection_point_distance():
     if intersection_point_2:
         assert_almost_equal(54.7170296089477, intersection_point_2.lat().v())
         assert_almost_equal(-14.56385574430775, intersection_point_2.lon().v())
+
+
+def test_intersection_point_distance_non_wgs84():
+    # Example from Charles Karney email on 31/03/2025
+    # Issue #1 Python calculate_intersection_point code crashes
+    ell = Ellipsoid(Metres(6.4e6), 1.0/50.0)
+    g1 = Geodesic(LatLong(Degrees(-30), Degrees(0.0)),
+                  LatLong(Degrees(29.5), Degrees(179.5)),
+                  Radians(MIN_VALUE), ell)
+    print(g1.length())
+    g2 = Geodesic(LatLong(Degrees(1), Degrees(90)),
+                  LatLong(Degrees(-2), Degrees(-95)),
+                  Radians(MIN_VALUE), ell)
+    print(g2.length())
+    p = calculate_intersection_point(g1, g2, Metres(1e-6))
+    print(p)
 
 if __name__ == '__main__':
     pytest.main()

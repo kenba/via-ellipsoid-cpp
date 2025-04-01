@@ -144,7 +144,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
       return {std::get<0>(distances), std::get<1>(distances), 0u};
     } else {
       // The geodesics intersect at the start of the second geodesic
-      return {atd, Radians(0.0), iterations};
+      return {atd, Radians<T>(0), iterations};
     }
   }
 

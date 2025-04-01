@@ -499,7 +499,7 @@ public:
 
     // if the point is close to the start point of the Geodesic
     if (gc_d.v() < precision.v())
-      return {Radians(0.0), Radians(0.0), 0};
+      return {Radians<T>(0), Radians<T>(0), 0};
 
     auto [atd, xtd]{vector::calculate_atd_and_xtd(a, pole, point)};
     auto iterations{1u};

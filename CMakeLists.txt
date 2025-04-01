@@ -91,6 +91,7 @@ if (CPP_UNIT_TESTS)
         tests/test_geodesic_functions_double.cpp
         tests/test_Geodesic_double.cpp
         tests/test_ellipsoid_double.cpp
+        tests/test_ellipsoid_long_double.cpp
     )
 
     if (CPP_ACCURACY_TEST)

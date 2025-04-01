@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -90,10 +90,10 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def(py::init<via::LatLong<double>, via::Angle<double>,
                     via::units::si::Metres<double>>())
       .def(py::init<via::LatLong<double>, via::Angle<double>,
-                    via::units::si::Metres<double>, EllipsoidDouble>())
+                    via::units::si::Metres<double>, const EllipsoidDouble &>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>,
-                    EllipsoidDouble>())
+                    const EllipsoidDouble &>())
       .def("is_valid", &GeodesicDouble::is_valid)
       .def("beta", &GeodesicDouble::beta)
       .def("lon", &GeodesicDouble::lon)

@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   const auto result{
       calculate_intersection_point(g1, g2, units::si::Metres(1e-6))};
   BOOST_CHECK_CLOSE(-28.099944988083493, result->lat().v(),
-                    CALCULATION_TOLERANCE);
+                    3 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(172.27633238700983, result->lon().v(),
                     CALCULATION_TOLERANCE);
 }

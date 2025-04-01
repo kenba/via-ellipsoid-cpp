@@ -53,17 +53,20 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   const auto d1{std::get<0>(result)};
   const auto d2{std::get<1>(result)};
   const auto iterations{std::get<2>(result)};
-  std::cout << "Long doube precision (Radians): "
+  std::cout << "Long double precision (Radians): "
             << great_circle::MIN_VALUE<long double> << std::endl;
-  std::cout << "Long doube iterations: " << iterations << std::endl;
+  std::cout << "Long double iterations: " << iterations << std::endl;
   const auto pd1{g1.aux_lat_long(d1)};
+  const auto pd2{g2.aux_lat_long(d2)};
+  // Disable tests since Visual Studio cannot calculate long doubles
+  #ifndef _MSC_VER
   BOOST_CHECK_CLOSE(-1.44147956008236583L, pd1.lat().v(),
                     3 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(27.97257917717199337L, pd1.lon().v(),
                     2 * CALCULATION_TOLERANCE);
-  const auto pd2{g2.aux_lat_long(d2)};
   BOOST_CHECK_CLOSE(pd1.lat().v(), pd2.lat().v(), 5 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(pd1.lon().v(), pd2.lon().v(), CALCULATION_TOLERANCE);
+  #endif
 
   // calculate number of iterations for 1mm precision
   const auto result_2{calculate_aux_intersection_distances(

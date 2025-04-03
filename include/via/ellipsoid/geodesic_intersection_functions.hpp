@@ -148,13 +148,21 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
     }
   }
 
+  // Calculate the intersection of the poles at the mid points of the auxilary
+  // sphere great circle arcs
+  const auto [a1mid, pole1mid]{
+      g1.aux_point_and_pole(Radians(g1.aux_length().v() / 2))};
+  const auto [a2mid, pole2mid]{
+      g2.aux_point_and_pole(Radians(g2.aux_length().v() / 2))};
+  const auto c{
+      vector::intersection::calculate_intersection_point(pole1mid, pole2mid)};
+
   // Determine whether the great circles on the auxiliary sphere are
   // coincident
-  const auto c{
-      vector::intersection::calculate_intersection_point(pole1, pole2)};
   if (c.has_value()) {
-    const vector::Vector3<T> centroid{T(0.5) *
-                                      (g1.mid_point() + g2.mid_point())};
+    // intersesction found, chose the closest intersesction point to the
+    // centroid of the auxilary sphere great circle arc mid points
+    const vector::Vector3<T> centroid{T(0.5) * (a1mid + a2mid)};
     const bool use_antipodal_intersection =
         vector::intersection::use_antipodal_point(c.value(), centroid);
     const auto x{use_antipodal_intersection ? -c.value() : c.value()};

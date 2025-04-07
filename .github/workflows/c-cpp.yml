@@ -23,14 +23,21 @@ jobs:
       - name: create build environment
         run: cmake -E make_directory ${{github.workspace}}/build
 
+      - name: Restore build environment
+        id: build-env-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: /usr/include
+          key: ${{ runner.os }}-linear-algebra-environment
+
       - name: install Microsoft GSL library
         working-directory: ${{github.workspace}}/build
         run: |
-          wget --no-check-certificate https://github.com/microsoft/GSL/archive/refs/tags/v4.1.0.zip
-          unzip v4.1.0.zip
-          sudo cp -ar GSL-4.1.0/include/gsl /usr/include
-          rm v4.1.0.zip
-          rm -rf GSL-4.1.0
+          wget --no-check-certificate https://github.com/microsoft/GSL/archive/refs/tags/v4.2.0.zip
+          unzip v4.2.0.zip
+          sudo cp -ar GSL-4.2.0/include/gsl /usr/include
+          rm v4.2.0.zip
+          rm -rf GSL-4.2.0
 
       - name: install Eigen linear algebra library
         working-directory: ${{github.workspace}}/build
@@ -40,6 +47,13 @@ jobs:
           sudo cp -ar eigen-3.4.0/Eigen /usr/include
           rm eigen-3.4.0.zip
           rm -rf eigen-3.4.0
+
+      - name: Save build environment
+        id: cache-build-env
+        uses: actions/cache/save@v4
+        with:
+          path: /usr/include
+          key: ${{ steps.build-env-restore.outputs.cache-primary-key }}
 
       - name: install via-units-cpp library
         working-directory: ${{github.workspace}}/build

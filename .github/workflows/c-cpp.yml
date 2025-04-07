@@ -23,13 +23,6 @@ jobs:
       - name: create build environment
         run: cmake -E make_directory ${{github.workspace}}/build
 
-      - name: Restore build environment
-        id: build-env-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: /usr/include
-          key: ${{ runner.os }}-ellipsoid-environment
-
       - name: install Microsoft GSL library
         working-directory: ${{github.workspace}}/build
         run: |
@@ -77,13 +70,6 @@ jobs:
           sudo make install
           cd ..
           rm -rf via-sphere-cpp
-
-      - name: Save build environment
-        id: cache-build-env
-        uses: actions/cache/save@v4
-        with:
-          path: /usr/include
-          key: ${{ steps.build-env-restore.outputs.cache-primary-key }}
 
       - name: configure cmake
         working-directory: ${{github.workspace}}/build

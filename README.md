@@ -171,6 +171,9 @@ cmake -DINSTALL_PYTHON=OFF .
 sudo make install
 ```
 
+Note: it will be necessary to delete the `CMakeCache.txt` file created by
+running `cmake` above, before running `cmake` on this library again.
+
 #### Tests
 
 The C++ tests can be built and run using `cmake` by running:

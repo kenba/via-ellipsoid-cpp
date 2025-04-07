@@ -74,8 +74,8 @@ auto calculate_geodesic_intersection_distances(
     // calculate the new intersection point
     const auto c{
         use_antipodal_intersection
-            ? vector::intersection::calculate_intersection_point(pole2, pole1)
-            : vector::intersection::calculate_intersection_point(pole1, pole2)};
+            ? vector::intersection::calculate_intersection(pole2, pole1)
+            : vector::intersection::calculate_intersection(pole1, pole2)};
     if (c.has_value()) {
       const auto [delta1, delta2]{
           vector::intersection::calculate_intersection_distances(
@@ -129,13 +129,12 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
 
   // If the second geodesic start point lies on the first geodesic
   const auto [_a3, pole3]{g3.aux_point_and_pole(Radians(T()))};
-  if (!vector::intersection::calculate_intersection_point(pole1, pole3)
-           .has_value()) {
+  if (!vector::intersection::calculate_intersection(pole1, pole3).has_value()) {
     const auto [atd, _xtd, iterations]{
         g1.calculate_aux_atd_and_xtd(g2.beta(), g2.lon(), precision)};
     // If the second geodesic end point lies on the first geodesic
     const auto [_a4, pole4]{g3.aux_point_and_pole(atd)};
-    if (!vector::intersection::calculate_intersection_point(pole2, pole4)
+    if (!vector::intersection::calculate_intersection(pole2, pole4)
              .has_value()) {
       // The geodesics are coincident
       const auto distances{
@@ -155,7 +154,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
   const auto [a2mid, pole2mid]{
       g2.aux_point_and_pole(Radians(g2.aux_length().v() / 2))};
   const auto c{
-      vector::intersection::calculate_intersection_point(pole1mid, pole2mid)};
+      vector::intersection::calculate_intersection(pole1mid, pole2mid)};
 
   // Determine whether the great circles on the auxiliary sphere are
   // coincident

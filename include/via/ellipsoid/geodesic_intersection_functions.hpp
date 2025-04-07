@@ -91,6 +91,7 @@ auto calculate_geodesic_intersection_distances(
 
 /// Calculate the distances along a pair of Geodesics (in Radians) to their
 /// closest intersection or reference points.
+/// @pre g1.ellipsoid() == g2.ellipsoid()
 /// @param g1, g2 the Geodesics.
 /// @param precision the precision in `Radians`.
 ///
@@ -105,6 +106,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
                                           Radians<T> precision)
     -> std::tuple<Radians<T>, Radians<T>, unsigned> {
   // The Geodesics MUST be on the same `Ellipsoid`
+  Expects(g1.ellipsoid() == g2.ellipsoid());
 
   // Convert precision in `Radians` to the square of Euclidean precision.
   const T e_precision{great_circle::gc2e_distance(precision)};
@@ -147,7 +149,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
     }
   }
 
-  // Calculate the intersection of the poles at the mid points of the auxilary
+  // Calculate the intersection of the poles at the mid points of the unit
   // sphere great circle arcs
   const auto [a1mid, pole1mid]{
       g1.aux_point_and_pole(Radians(g1.aux_length().v() / 2))};
@@ -160,7 +162,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
   // coincident
   if (c.has_value()) {
     // intersesction found, chose the closest intersesction point to the
-    // centroid of the auxilary sphere great circle arc mid points
+    // centroid of the unit sphere great circle arc mid points
     const vector::Vector3<T> centroid{T(0.5) * (a1mid + a2mid)};
     const bool use_antipodal_intersection =
         vector::intersection::use_antipodal_point(c.value(), centroid);

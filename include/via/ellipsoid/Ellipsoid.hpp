@@ -199,5 +199,14 @@ public:
   }
 }; // class Ellipsoid
 
+/// Ellipsoid equality operator
+template <typename T>
+  requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
+constexpr auto operator==(const Ellipsoid<T> &lhs,
+                          const Ellipsoid<T> &rhs) noexcept -> bool {
+  return (lhs.a() == rhs.a()) && (lhs.f() == rhs.f());
+}
+
 } // namespace ellipsoid
 } // namespace via

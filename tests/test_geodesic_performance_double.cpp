@@ -23,6 +23,7 @@
 /// @brief Contains performance tests for geodesics.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid.hpp"
+#include <GeographicLib/Intersect.hpp>
 #include <array>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -180,6 +181,76 @@ BOOST_AUTO_TEST_CASE(test_geodesic_intersection_performance) {
   std::cout << "Intersections time, 1m precision: "
             << geodesic_intersections_ms.count() << " ms\n"
             << "Average time per intersection: "
+            << average_geodesic_intersections_us << " us\n"
+            << std::endl;
+}
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_geographiclib_intersection_performance) {
+  // Test reads file from directory, fails if directory environment variable is
+  // not present.
+  const auto env_var(std::getenv("GEODTEST_DIR"));
+  BOOST_REQUIRE(env_var != nullptr);
+
+  const auto filename("GeodTest.dat");
+  std::filesystem::path file_path(env_var);
+  file_path /= filename;
+
+  std::ifstream data_file(file_path.c_str());
+  BOOST_REQUIRE(data_file.is_open());
+
+  // The position data
+  std::vector<PositionData> data{read_position_data(data_file)};
+
+  // The geodesic data
+  std::vector<GeographicLib::GeodesicLine> geodesic_data{};
+  geodesic_data.reserve(data.size());
+
+  // Create random Geodesics
+  const auto t0{high_resolution_clock::now()};
+  for (const auto &position : data) {
+    const double lat1d{position[LAT_1]};
+    const double lon1d{position[LON_1]};
+    const double lat2d{position[LAT_2]};
+    const double lon2d{position[LON_2]};
+    geodesic_data.emplace_back(GeographicLib::GeodesicLine(
+        GeographicLib::Geodesic::WGS84(), lat1d, lon1d, lat2d, lon2d));
+  }
+  const auto t1{high_resolution_clock::now()};
+
+  // calculate time to create random Geodesics
+  const duration<double, std::milli> create_geodesics_ms{t1 - t0};
+  const auto average_create_geodesics_us{create_geodesics_ms.count() * 1e3 /
+                                         geodesic_data.size()};
+  std::cout << "GeographicLib geodesic_data size: " << geodesic_data.size()
+            << " time: " << create_geodesics_ms.count() << " ms\n"
+            << "GeographicLib average time per GeodesicLine: "
+            << average_create_geodesics_us << " us" << std::endl;
+
+  // Create a reference GeodesicLine
+  // The longest geodesic from the DO-238B set translated to start at 90W
+  const LatLong a(Degrees(1.0), Degrees(-90.0));
+  const GeographicLib::GeodesicLine reference(GeographicLib::Geodesic::WGS84(),
+                                              1.0, -90.0, -0.998286322222,
+                                              89.296674991667);
+
+  GeographicLib::Intersect intersect(GeographicLib::Geodesic::WGS84());
+
+  // Create intersections with random GeodesicLines
+  const auto t2{high_resolution_clock::now()};
+  for (const auto &geodesic : geodesic_data) {
+    const auto _point{intersect.Closest(reference, geodesic)};
+  }
+  const auto t3{high_resolution_clock::now()};
+
+  // calculate time to calculate geodesic intersection points
+  const duration<double, std::milli> geodesic_intersections_ms{t3 - t2};
+  const auto average_geodesic_intersections_us{
+      geodesic_intersections_ms.count() * 1e3 / geodesic_data.size()};
+  std::cout << "GeographicLib intersections time: "
+            << geodesic_intersections_ms.count() << " ms\n"
+            << "GeographicLib average time per intersection: "
             << average_geodesic_intersections_us << " us" << std::endl;
 }
 //////////////////////////////////////////////////////////////////////////////

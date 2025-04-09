@@ -201,6 +201,21 @@ make
 make test
 ```
 
+#### Performance Tests
+
+The performance tests uses Charles Karney's
+[Test data for geodesics](https://geographiclib.sourceforge.io/C++/doc/geodesic.html#testgeod)
+and Charles Karney's [GeographicLib](https://geographiclib.sourceforge.io/) library to measure
+the runtime performance of calculating geodesic segments and geodesic intersections.
+
+Build and run the tests using:
+
+```bash
+cmake -DINSTALL_PYTHON=OFF -DCPP_UNIT_TESTS=ON -DCPP_PERFORMANCE_TESTS=ON -DCMAKE_BUILD_TYPE=Release <via-ellipsoid-cpp directory>
+make
+make test
+```
+
 ### Python
 
 The library uses [pybind11](https://github.com/pybind/pybind11) to provide C++ Python bindings

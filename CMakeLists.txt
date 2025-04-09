@@ -104,6 +104,11 @@ if (CPP_UNIT_TESTS)
     endif(CPP_ACCURACY_TEST)
 
     if (CPP_PERFORMANCE_TESTS)
+        find_package (GeographicLib REQUIRED)
+        target_include_directories(${PROJECT_NAME}_test PRIVATE ${GeographicLib_INCLUDE_DIRS})
+        target_link_libraries(${PROJECT_NAME}_test PRIVATE ${GeographicLib_LIBRARIES})
+        target_compile_definitions(${PROJECT_NAME}_test PRIVATE BOOST_TEST_DYN_LINK)
+
         target_sources(${PROJECT_NAME}_test
               PRIVATE
               tests/test_geodesic_performance_double.cpp

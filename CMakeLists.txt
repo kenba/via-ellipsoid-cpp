@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2024 Ken Barker
+# Copyright (c) 2019-2025 Ken Barker
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ option(INSTALL_PYTHON "Install Python Library." ON)
 option(CPP_UNIT_TESTS "Build C++ Unit Tests." OFF)
 option(CODE_COVERAGE "Add gcc code coverage options." OFF)
 option(CPP_ACCURACY_TEST "Add accuracy test with GeodTest.dat." OFF)
+option(CPP_PERFORMANCE_TESTS "Add performance tests with GeographicLib." OFF)
 
 add_library(${PROJECT_NAME} INTERFACE)
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ellipsoid.hpp)
@@ -101,6 +102,13 @@ if (CPP_UNIT_TESTS)
               tests/test_rtca_do_283b_examples.cpp
           )
     endif(CPP_ACCURACY_TEST)
+
+    if (CPP_PERFORMANCE_TESTS)
+        target_sources(${PROJECT_NAME}_test
+              PRIVATE
+              tests/test_geodesic_performance_double.cpp
+          )
+    endif(CPP_PERFORMANCE_TESTS)
 
     target_compile_definitions(${PROJECT_NAME}_test PRIVATE BOOST_TEST_DYN_LINK)
     target_include_directories(${PROJECT_NAME}_test PRIVATE ${Boost_INCLUDE_DIRS})

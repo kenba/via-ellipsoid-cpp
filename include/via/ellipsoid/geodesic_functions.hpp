@@ -90,7 +90,7 @@ constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
                                         const Angle<T> sigma1, const T dn1,
                                         const Angle<T> sigma2, const T dn2)
     -> T {
-  Expects(T() < sigma12.v());
+  Expects(T() <= sigma12.v());
 
   const T A1{evaluate_A1<T>(eps)};
   const T A2{evaluate_A2<T>(eps)};
@@ -306,7 +306,7 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
   Expects(beta1 <= beta2);
   Expects(T() < abs_lambda12.sin().v());
   Expects((T() < alpha1.sin().v()) && (alpha1.sin().v() <= T(1)));
-  Expects((T() < sigma12.v()) && (sigma12.v() <= trig::PI<T>));
+  Expects((T() <= sigma12.v()) && (sigma12.v() <= trig::PI<T>));
 
   const T dn1{std::sqrt(T(1) + T(ellipsoid.ep_2()) * beta1.sin().v() *
                                    beta1.sin().v())};
@@ -392,7 +392,7 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
     alpha1 = alpha1 + Angle<T>(Radians<T>{dalpha1});
   }
 
-  Ensures(T() < sigma12.v());
+  Ensures(T() <= sigma12.v());
 
   return {alpha1, sigma12, iterations};
 }
@@ -425,7 +425,7 @@ auto find_azimuth_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
 
-  Expects(T() < gc_length.v());
+  Expects(T() <= gc_length.v());
   Expects(std::numeric_limits<T>::epsilon() <= tolerance.v());
 
   // Start at the latitude furthest from the Equator

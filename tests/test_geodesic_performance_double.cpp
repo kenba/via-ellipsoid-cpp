@@ -92,6 +92,8 @@ std::vector<PositionData> read_position_data(std::ifstream &data_file) {
   return data;
 }
 
+// The GeographicLib WGS-84 ellipsoid
+const auto GeographicLibWGS84(GeographicLib::Geodesic::WGS84());
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////////
@@ -214,8 +216,8 @@ BOOST_AUTO_TEST_CASE(test_geographiclib_intersection_performance) {
     const double lon1d{position[LON_1]};
     const double lat2d{position[LAT_2]};
     const double lon2d{position[LON_2]};
-    geodesic_data.emplace_back(GeographicLib::GeodesicLine(
-        GeographicLib::Geodesic::WGS84(), lat1d, lon1d, lat2d, lon2d));
+    geodesic_data.emplace_back(GeographicLibWGS84.InverseLine(
+        lat1d, lon1d, lat2d, lon2d, GeographicLib::Intersect::LineCaps));
   }
   const auto t1{high_resolution_clock::now()};
 
@@ -230,12 +232,14 @@ BOOST_AUTO_TEST_CASE(test_geographiclib_intersection_performance) {
 
   // Create a reference GeodesicLine
   // The longest geodesic from the DO-238B set translated to start at 90W
-  const LatLong a(Degrees(1.0), Degrees(-90.0));
-  const GeographicLib::GeodesicLine reference(GeographicLib::Geodesic::WGS84(),
-                                              1.0, -90.0, -0.998286322222,
-                                              89.296674991667);
+  const double lat1d{1.0};
+  const double lon1d{-90.0};
+  const double lat2d{-0.998286322222};
+  const double lon2d{89.296674991667};
+  const GeographicLib::GeodesicLine reference(GeographicLibWGS84.InverseLine(
+      lat1d, lon1d, lat2d, lon2d, GeographicLib::Intersect::LineCaps));
 
-  GeographicLib::Intersect intersect(GeographicLib::Geodesic::WGS84());
+  GeographicLib::Intersect intersect(GeographicLibWGS84);
 
   // Create intersections with random GeodesicLines
   const auto t2{high_resolution_clock::now()};

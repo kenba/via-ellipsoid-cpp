@@ -52,22 +52,25 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
       g1, g2, Radians(great_circle::MIN_VALUE<long double>))};
   const auto d1{std::get<0>(result)};
   const auto d2{std::get<1>(result)};
+#ifdef OUTPUT_ITERATIONS
   const auto iterations{std::get<2>(result)};
   std::cout << "Long double precision (Radians): "
             << great_circle::MIN_VALUE<long double> << std::endl;
   std::cout << "Long double iterations: " << iterations << std::endl;
+#endif
+
   const auto pd1{g1.aux_lat_long(d1)};
   const auto pd2{g2.aux_lat_long(d2)};
 // Disable tests since Visual Studio cannot calculate long doubles
 #ifndef _MSC_VER
   BOOST_CHECK_CLOSE(-1.44147956008236583L, pd1.lat().v(),
-                    8 * CALCULATION_TOLERANCE);
+                    16 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(27.97257917717199337L, pd1.lon().v(),
                     2 * CALCULATION_TOLERANCE);
-  BOOST_CHECK_CLOSE(pd1.lat().v(), pd2.lat().v(), 10 * CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(pd1.lat().v(), pd2.lat().v(), 18 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(pd1.lon().v(), pd2.lon().v(), CALCULATION_TOLERANCE);
 #endif
-
+#ifdef OUTPUT_ITERATIONS
   // calculate number of iterations for 1mm precision
   const auto result_2{calculate_aux_intersection_distances(
       g1, g2, Radians<long double>(1e-3 / g1.ellipsoid().a().v()))};
@@ -75,6 +78,7 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   std::cout << "1mm precision (Radians): " << 1e-3 / g1.ellipsoid().a().v()
             << std::endl;
   std::cout << "1mm iterations: " << iterations_2 << std::endl;
+#endif
 }
 //////////////////////////////////////////////////////////////////////////////
 

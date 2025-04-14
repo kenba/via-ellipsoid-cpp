@@ -25,6 +25,8 @@
 /// @brief Contains the via::ellipsoid geodesic intersection functions.
 //////////////////////////////////////////////////////////////////////////////
 #include "Geodesic.hpp"
+#include <cmath>
+#include <via/sphere/great_circle.hpp>
 
 namespace via {
 namespace ellipsoid {
@@ -108,53 +110,56 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
   // The Geodesics MUST be on the same `Ellipsoid`
   Expects(g1.ellipsoid() == g2.ellipsoid());
 
+  // The minimum sin angle between coincident geodesics
+  constexpr T MIN_SIN_ANGLE{16384 * std::numeric_limits<T>::epsilon()};
+
   // Convert precision in `Radians` to the square of Euclidean precision.
   const T e_precision{great_circle::gc2e_distance(precision)};
   const T sq_precision{e_precision * e_precision};
 
-  // Get the start points and poles
-  const auto [a1, pole1]{g1.aux_point_and_pole(Radians(T()))};
-  const auto [a2, pole2]{g2.aux_point_and_pole(Radians(T()))};
-
   // if the start points are within precision of each other
-  const T sq_d{vector::sq_distance(a1, a2)};
-  if (sq_d < sq_precision)
+  const T sq_d{vector::sq_distance(g1.a(), g2.a())};
+  if (sq_d < sq_precision) {
     return {Radians(T()), Radians(T()), 0u};
+  }
 
   // Construct a geodesic between geodesic start points
-  const auto [azi, aux_length, _]{aux_sphere_azimuth_length(
+  const auto [g3_azi, g3_aux_length, _]{aux_sphere_azimuth_length(
       g1.beta(), g2.beta(), g2.lon() - g1.lon(),
       Radians<T>(great_circle::MIN_VALUE<T>), g1.ellipsoid())};
-  const Geodesic g3(g1.beta(), g1.lon(), azi, aux_length, g1.ellipsoid());
 
   // Determine whether the geodesics are coincident
+  const Angle<T> delta_azimuth1_3{g1.azi() - g3_azi};
+  const bool reciprocal{delta_azimuth1_3.sin().v() < T()};
+  const Radians<T> atd{reciprocal ? -g3_aux_length : g3_aux_length};
 
-  // If the second geodesic start point lies on the first geodesic
-  const auto [_a3, pole3]{g3.aux_point_and_pole(Radians(T()))};
-  if (!vector::intersection::calculate_intersection(pole1, pole3).has_value()) {
-    const auto [atd, _xtd, iterations]{
-        g1.calculate_aux_atd_and_xtd(g2.beta(), g2.lon(), precision)};
-    // If the second geodesic end point lies on the first geodesic
-    const auto [_a4, pole4]{g3.aux_point_and_pole(atd)};
-    if (!vector::intersection::calculate_intersection(pole2, pole4)
-             .has_value()) {
+  const bool geodesics_may_be_coincident{delta_azimuth1_3.sin().abs().v() <
+                                         MIN_SIN_ANGLE};
+  if (geodesics_may_be_coincident) {
+    const Geodesic g3(g1.beta(), g1.lon(), g3_azi, g3_aux_length,
+                      g1.ellipsoid());
+    const Angle<T> delta_azimuth2_3{g2.azi() - g3.aux_azimuth(g3_aux_length)};
+
+    const bool geodesics_are_coincident{delta_azimuth2_3.sin().abs().v() <
+                                        MIN_SIN_ANGLE};
+    if (geodesics_are_coincident) {
       // The geodesics are coincident
-      const auto distances{
+      const auto [distance1, distance2]{
           vector::intersection::calculate_coincident_arc_distances(
-              atd, pole1.dot(pole2) < T(), g1.aux_length(), g2.aux_length())};
-      return {std::get<0>(distances), std::get<1>(distances), 0u};
+              atd, reciprocal, g1.aux_length(), g2.aux_length())};
+      return {distance1, distance2, 0u};
     } else {
-      // The geodesics intersect at the start of the second geodesic
-      return {atd, Radians<T>(0), iterations};
+      // The start of the second geodesic lies on the first geodesic
+      return {atd, Radians<T>(0), 0u};
     }
   }
 
   // Calculate the intersection of the poles at the mid points of the unit
   // sphere great circle arcs
-  const auto [a1mid, pole1mid]{
-      g1.aux_point_and_pole(Radians(g1.aux_length().v() / 2))};
-  const auto [a2mid, pole2mid]{
-      g2.aux_point_and_pole(Radians(g2.aux_length().v() / 2))};
+  const Radians<T> half_aux_length1{g1.aux_length().v() / 2};
+  const Radians<T> half_aux_length2{g2.aux_length().v() / 2};
+  const auto [a1mid, pole1mid]{g1.aux_point_and_pole(half_aux_length1)};
+  const auto [a2mid, pole2mid]{g2.aux_point_and_pole(half_aux_length2)};
   const auto c{
       vector::intersection::calculate_intersection(pole1mid, pole2mid)};
 
@@ -167,19 +172,20 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
     const bool use_antipodal_intersection =
         vector::intersection::use_antipodal_point(c.value(), centroid);
     const auto x{use_antipodal_intersection ? -c.value() : c.value()};
-    const auto initial_distances{
-        vector::intersection::calculate_intersection_distances(a1, pole1, a2,
-                                                               pole2, x)};
+
+    auto [d1, d2]{vector::intersection::calculate_intersection_distances(
+        a1mid, pole1mid, a2mid, pole2mid, x)};
+    d1 += half_aux_length1;
+    d2 += half_aux_length2;
     return calculate_geodesic_intersection_distances(
-        g1, g2, sq_precision, use_antipodal_intersection, initial_distances);
+        g1, g2, sq_precision, use_antipodal_intersection, {d1, d2});
   } else {
     // This code should never be executed.
     // The check for coincident geodesics should cover coincident great circles.
-    const auto distances{
+    const auto [distance1, distance2]{
         vector::intersection::calculate_coincident_arc_distances(
-            vector::calculate_great_circle_atd(a1, pole1, a2),
-            pole1.dot(pole2) < T(), g1.aux_length(), g2.aux_length())};
-    return {std::get<0>(distances), std::get<1>(distances), 0u};
+            atd, reciprocal, g1.aux_length(), g2.aux_length())};
+    return {distance1, distance2, 0u};
   }
 }
 

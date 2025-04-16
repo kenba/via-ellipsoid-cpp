@@ -124,7 +124,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
   }
 
   // Construct a geodesic between geodesic start points
-  const auto [g3_azi, g3_aux_length, _]{aux_sphere_azimuth_length(
+  const auto [g3_azi, g3_aux_length, g3_end_azi, _]{aux_sphere_azimuths_length(
       g1.beta(), g2.beta(), g2.lon() - g1.lon(),
       Radians<T>(great_circle::MIN_VALUE<T>), g1.ellipsoid())};
 
@@ -136,9 +136,7 @@ auto calculate_aux_intersection_distances(const Geodesic<T> &g1,
   const bool geodesics_may_be_coincident{delta_azimuth1_3.sin().abs().v() <
                                          MIN_SIN_ANGLE};
   if (geodesics_may_be_coincident) {
-    const Geodesic g3(g1.beta(), g1.lon(), g3_azi, g3_aux_length,
-                      g1.ellipsoid());
-    const Angle<T> delta_azimuth2_3{g2.azi() - g3.aux_azimuth(g3_aux_length)};
+    const Angle<T> delta_azimuth2_3{g2.azi() - g3_end_azi};
 
     const bool geodesics_are_coincident{delta_azimuth2_3.sin().abs().v() <
                                         MIN_SIN_ANGLE};

@@ -70,16 +70,16 @@ PYBIND11_MODULE(via_ellipsoid, m) {
            &EllipsoidDouble::calculate_geodetic_latitude);
 
   // Python bindings for geodesic functions
-  m.def("find_azimuth_and_aux_length",
-        &via::ellipsoid::find_azimuth_and_aux_length<double>,
+  m.def("find_azimuths_and_aux_length",
+        &via::ellipsoid::find_azimuths_and_aux_length<double>,
         "Calculate the initial azimuth and great circle length between a pair "
         "of points on the auxiliary sphere.");
-  m.def("aux_sphere_azimuth_length",
-        &via::ellipsoid::aux_sphere_azimuth_length<double>,
+  m.def("aux_sphere_azimuths_length",
+        &via::ellipsoid::aux_sphere_azimuths_length<double>,
         "Calculate the initial azimuth and great circle length between a pair "
         "of points on the auxiliary sphere.");
-  m.def("calculate_azimuth_aux_length",
-        &via::ellipsoid::calculate_azimuth_aux_length<double>,
+  m.def("calculate_azimuths_aux_length",
+        &via::ellipsoid::calculate_azimuths_aux_length<double>,
         "Calculate the `geodesic` azimuth and great circle length on the "
         "auxiliary sphere between a pair of positions.");
   m.def("convert_radians_to_metres",

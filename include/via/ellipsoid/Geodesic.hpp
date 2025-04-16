@@ -135,10 +135,10 @@ public:
   /// wgs84.
   constexpr Geodesic(
       const LatLong<T> &a,
-      const std::tuple<Angle<T>, Radians<T>, unsigned> azimuth_length,
+      const std::tuple<Angle<T>, Radians<T>, Angle<T>, unsigned> azimuth_length,
       const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
-      : Geodesic(a, std::get<Angle<T>>(azimuth_length),
-                 std::get<Radians<T>>(azimuth_length), ellipsoid) {}
+      : Geodesic(a, std::get<0>(azimuth_length), std::get<1>(azimuth_length),
+                 ellipsoid) {}
 
   /// Construct a Geodesic between a pair of points.
   /// @pre a.is_valid() && b.s_valid()
@@ -151,7 +151,7 @@ public:
       const LatLong<T> &a, const LatLong<T> &b,
       const Radians<T> tolerance = Radians<T>(great_circle::MIN_VALUE<T>),
       const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
-      : Geodesic(a, calculate_azimuth_aux_length(a, b, tolerance, ellipsoid),
+      : Geodesic(a, calculate_azimuths_aux_length(a, b, tolerance, ellipsoid),
                  ellipsoid) {}
 
   /// Test whether a `Geodesic` is valid.
@@ -510,7 +510,7 @@ public:
 
       // calculate the geodesic azimuth and length to the point from the
       // Geodesic position at atd
-      const auto [azi_p, length, _]{aux_sphere_azimuth_length(
+      const auto [azi_p, length, _azi_end_, p_]{aux_sphere_azimuths_length(
           beta_x, beta, lon - lon_x, Radians<T>(great_circle::MIN_VALUE<T>),
           ellipsoid_)};
       const auto delta_azi{azi_x - azi_p};

@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -20,7 +20,7 @@
 // THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////
 /// @file test_geodesic_accuracy_double.cpp
-/// @brief Contains accuracy tests for ellipsoid::calculate_azimuth_aux_length.
+/// @brief Contains accuracy tests for ellipsoid::calculate_azimuths_aux_length.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid/geodesic_functions.hpp"
 #include <boost/algorithm/string/classification.hpp>
@@ -86,6 +86,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
 
       const double lat2{std::stod(params[LAT_2])};
       const double lon2{std::stod(params[LON_2])};
+      const double azimuth_2{std::stod(params[AZI_2])};
 
       const double distance_m{std::stod(params[D_METRES])};
       const double distance_deg{std::stod(params[D_DEGREES])};
@@ -94,9 +95,9 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
       const Degrees<double> lon1d{lon1};
       const Degrees<double> lat2d{lat2};
       const Degrees<double> lon2d{lon2};
-      const auto [azimuth, aux_length, iterations]{
-          ellipsoid::calculate_azimuth_aux_length(LatLong(lat1d, lon1d),
-                                                  LatLong(lat2d, lon2d))};
+      const auto [azimuth, aux_length, end_azimuth, iterations]{
+          ellipsoid::calculate_azimuths_aux_length(LatLong(lat1d, lon1d),
+                                                   LatLong(lat2d, lon2d))};
 
       // Compare azimuth
       const double delta_azimuth{
@@ -124,6 +125,11 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
       } else {
         BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 2.5e-9);
       }
+
+      // Compare end azimuth
+      const double delta_end_azimuth{
+          std::abs(azimuth_2 - end_azimuth.to_degrees().v())};
+      BOOST_CHECK_SMALL(delta_end_azimuth, 100 * azimuth_tolerance);
     }
 
     //  random_df = tests_df[:100000]

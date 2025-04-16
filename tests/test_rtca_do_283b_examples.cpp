@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2024 Ken Barker
+// Copyright (c) 2024-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE(test_rtca_do_283b_geodesic_examples) {
       const Degrees<double> lon1d{lon1};
       const Degrees<double> lat2d{lat2};
       const Degrees<double> lon2d{lon2};
-      const auto [azimuth, aux_length, iterations]{
-          ellipsoid::calculate_azimuth_aux_length(LatLong(lat1d, lon1d),
-                                                  LatLong(lat2d, lon2d))};
+      const auto [azimuth, aux_length, _end_azimuth, iterations]{
+          ellipsoid::calculate_azimuths_aux_length(LatLong(lat1d, lon1d),
+                                                   LatLong(lat2d, lon2d))};
 
       // Compare azimuth
       const double delta_azimuth{

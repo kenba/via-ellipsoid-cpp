@@ -121,52 +121,52 @@ BOOST_AUTO_TEST_CASE(test_delta_omega12_double) {
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_calculate_azimuth_aux_length_meridian_double) {
+BOOST_AUTO_TEST_CASE(test_calculate_azimuths_aux_length_meridian_double) {
   const LatLong latlon1(Degrees(-70.0), Degrees(40.0));
   const LatLong latlon2(Degrees(80.0), Degrees(40.0));
 
   // Northbound geodesic along a meridian
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   BOOST_CHECK_EQUAL(0.0, azimuth1.to_degrees().v());
   BOOST_CHECK_CLOSE(2.6163378712682306, aux_length1.v(), CALCULATION_TOLERANCE);
 
   // Southbound geodesic along a meridian
-  const auto [azimuth2, aux_length2,
-              _iter2]{calculate_azimuth_aux_length(latlon2, latlon1)};
+  const auto [azimuth2, aux_length2, _end_azimuth2,
+              _iter2]{calculate_azimuths_aux_length(latlon2, latlon1)};
   BOOST_CHECK_EQUAL(180.0, azimuth2.to_degrees().v());
   BOOST_CHECK_CLOSE(2.6163378712682306, aux_length2.v(), CALCULATION_TOLERANCE);
 
   // Northbound geodesic past the North pole
   const LatLong latlon3(Degrees(80.0), Degrees(-140.0));
-  const auto [azimuth3, aux_length3,
-              _iter3]{calculate_azimuth_aux_length(latlon2, latlon3)};
+  const auto [azimuth3, aux_length3, _end_azimuth3,
+              _iter3]{calculate_azimuths_aux_length(latlon2, latlon3)};
   BOOST_CHECK_EQUAL(0.0, azimuth3.to_degrees().v());
   BOOST_CHECK_CLOSE(0.3502163200513691, aux_length3.v(), CALCULATION_TOLERANCE);
 }
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_calculate_azimuth_aux_length_equator_double) {
+BOOST_AUTO_TEST_CASE(test_calculate_azimuths_aux_length_equator_double) {
   const LatLong latlon1(Degrees(0.0), Degrees(-40.0));
   const LatLong latlon2(Degrees(0.0), Degrees(50.0));
 
   // Eastbound geodesic along the equator
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   BOOST_CHECK_EQUAL(90.0, azimuth1.to_degrees().v());
   BOOST_CHECK_CLOSE(1.5760806267286946, aux_length1.v(), CALCULATION_TOLERANCE);
 
   // Westbound geodesic along the equator
-  const auto [azimuth2, aux_length2,
-              _iter2]{calculate_azimuth_aux_length(latlon2, latlon1)};
+  const auto [azimuth2, aux_length2, _end_azimuth2,
+              _iter2]{calculate_azimuths_aux_length(latlon2, latlon1)};
   BOOST_CHECK_EQUAL(-90.0, azimuth2.to_degrees().v());
   BOOST_CHECK_CLOSE(1.5760806267286946, aux_length2.v(), CALCULATION_TOLERANCE);
 
   // Long Eastbound geodesic along the equator
   const LatLong latlon3(Degrees(0.0), Degrees(135.0));
-  const auto [azimuth3, aux_length3,
-              _iter3]{calculate_azimuth_aux_length(latlon1, latlon3)};
+  const auto [azimuth3, aux_length3, _end_azimuth3,
+              _iter3]{calculate_azimuths_aux_length(latlon1, latlon3)};
   BOOST_CHECK_EQUAL(90.0, azimuth3.to_degrees().v());
   BOOST_CHECK_CLOSE(3.0646012186391296, aux_length3.v(), CALCULATION_TOLERANCE);
 }
@@ -178,8 +178,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_01) {
   const LatLong latlon2(Degrees(30.0), Degrees(0.0));
 
   // North West bound, straddle Equator
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   BOOST_CHECK_CLOSE(-55.00473169905792, azimuth1.to_degrees().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(1.6656790467428874, aux_length1.v(), CALCULATION_TOLERANCE);
@@ -192,8 +192,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_02) {
   const LatLong latlon2(Degrees(-40.0), Degrees(0.0));
 
   // South West bound, straddle Equator
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   BOOST_CHECK_EQUAL(-133.52938983286407, azimuth1.to_degrees().v());
   BOOST_CHECK_CLOSE(1.6656790467428874, aux_length1.v(), CALCULATION_TOLERANCE);
 }
@@ -205,8 +205,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_03) {
   const LatLong latlon2(Degrees(-40.0), Degrees(70.0));
 
   // South East bound, straddle Equator
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   BOOST_CHECK_EQUAL(133.52938983286407, azimuth1.to_degrees().v());
   BOOST_CHECK_CLOSE(1.6656790467428874, aux_length1.v(), CALCULATION_TOLERANCE);
 }
@@ -218,8 +218,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_04) {
   const LatLong latlon2(Degrees(30.0), Degrees(70.0));
 
   // North East bound, straddle Equator
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   BOOST_CHECK_CLOSE(55.00473169905792, azimuth1.to_degrees().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(1.6656790467428874, aux_length1.v(), CALCULATION_TOLERANCE);
@@ -231,8 +231,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_05) {
   const LatLong latlon1(Degrees(0.0), Degrees(0.0));
   const LatLong latlon2(Degrees(0.5), Degrees(179.98));
 
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   BOOST_CHECK_CLOSE(1.0420381519981656,
                     azimuth1.to_degrees().v(), // 1.0420381519981552
                     CALCULATION_TOLERANCE);
@@ -247,8 +247,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_aux_length_aziumth_normal_06) {
   const LatLong latlon2(Degrees(-89.985810803761488692),
                         Degrees(179.999716989078075251));
 
-  const auto [azimuth1, aux_length1,
-              _iter1]{calculate_azimuth_aux_length(latlon1, latlon2)};
+  const auto [azimuth1, aux_length1, _end_azimuth1,
+              _iter1]{calculate_azimuths_aux_length(latlon1, latlon2)};
   // TODO investigate why they fail
   // BOOST_CHECK_CLOSE(90.00013317691077, azimuth1.to_degrees().v(),
   //                   CALCULATION_TOLERANCE);

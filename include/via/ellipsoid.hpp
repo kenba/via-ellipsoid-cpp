@@ -1,7 +1,7 @@
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -43,38 +43,41 @@
 /// src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Geodesic_problem_on_an_ellipsoid.svg/1024px-Geodesic_problem_on_an_ellipsoid.svg.png"
 /// width="400">
 ///
-/// *Figure 1 A geodesic between points A and B*
+/// *Figure 1 A geodesic segment between points A and B*
 ///
-/// This library uses the correspondence between geodesics on an ellipsoid
-/// and great-circles on the auxiliary sphere together with 3D vectors to
-/// calculate:
+/// This library uses the correspondence between geodesic segments on an
+/// ellipsoid and great-circle arcs on the auxiliary sphere together with 3D
+/// vectors to calculate:
 ///
-/// - the initial azimuth and length of a geodesic between two positions;
+/// - the initial azimuth and length of a geodesic segment between two
+/// positions;
 /// - the along track distance and across track distance of a position relative
-/// to a geodesic;
-/// - and the intersection of a pair of geodesics.
+/// to a geodesic segment;
+/// - and the intersection of a pair of geodesic segments.
 #include "ellipsoid/geodesic_intersection_functions.hpp"
 
 namespace via {
 namespace ellipsoid {
 
 /// Calculate the position (Latitude and Longitude) where a pair of
-/// `Geodesic`s intersect, or None if the `Geodesic`s do not intersect.
-/// @param g1, g2 the Geodesics.
+/// `GeodesicSegment`s intersect, or None if the `GeodesicSegment`s do not
+/// intersect.
+/// @param g1, g2 the GeodesicSegments.
 /// @param precision the precision in `Metres`.
 ///
-/// @return the LatLong of the intersection point if the points intersect,
-/// or std::nullopt if the points do not intersect.
+/// @return the LatLong of the intersection point if the `GeodesicSegment`s
+/// intersect, or std::nullopt if the points do not intersect.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto calculate_intersection_point(const Geodesic<T> &g1, const Geodesic<T> &g2,
+auto calculate_intersection_point(const GeodesicSegment<T> &g1,
+                                  const GeodesicSegment<T> &g2,
                                   units::si::Metres<T> precision)
     -> std::optional<LatLong<T>> {
   const auto [distance1,
               distance2]{calculate_intersection_distances(g1, g2, precision)};
-  if (vector::intersection::is_within(distance1.v(), g1.aux_length().v()) &&
-      vector::intersection::is_within(distance2.v(), g2.aux_length().v()))
+  if (vector::intersection::is_within(distance1.v(), g1.arc_length().v()) &&
+      vector::intersection::is_within(distance2.v(), g2.arc_length().v()))
     return g1.aux_lat_long(distance1);
   else
     return std::nullopt;

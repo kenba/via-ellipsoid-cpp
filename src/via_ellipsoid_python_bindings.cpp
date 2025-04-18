@@ -70,16 +70,16 @@ PYBIND11_MODULE(via_ellipsoid, m) {
            &EllipsoidDouble::calculate_geodetic_latitude);
 
   // Python bindings for geodesic functions
-  m.def("find_azimuths_and_aux_length",
-        &via::ellipsoid::find_azimuths_and_aux_length<double>,
+  m.def("find_azimuths_and_arc_length",
+        &via::ellipsoid::find_azimuths_and_arc_length<double>,
         "Calculate the initial azimuth and great circle length between a pair "
         "of points on the auxiliary sphere.");
   m.def("aux_sphere_azimuths_length",
         &via::ellipsoid::aux_sphere_azimuths_length<double>,
         "Calculate the initial azimuth and great circle length between a pair "
         "of points on the auxiliary sphere.");
-  m.def("calculate_azimuths_aux_length",
-        &via::ellipsoid::calculate_azimuths_aux_length<double>,
+  m.def("calculate_azimuths_arc_length",
+        &via::ellipsoid::calculate_azimuths_arc_length<double>,
         "Calculate the `geodesic` azimuth and great circle length on the "
         "auxiliary sphere between a pair of positions.");
   m.def("convert_radians_to_metres",
@@ -87,9 +87,9 @@ PYBIND11_MODULE(via_ellipsoid, m) {
         "Convert a great circle distance on the auxiliary sphere in radians to "
         "metres on the ellipsoid.");
 
-  // Python numpy binding for the Geodesic class
-  using GeodesicDouble = via::ellipsoid::Geodesic<double>;
-  py::class_<GeodesicDouble>(m, "Geodesic")
+  // Python numpy binding for the GeodesicSegment class
+  using GeodesicSegmentDouble = via::ellipsoid::GeodesicSegment<double>;
+  py::class_<GeodesicSegmentDouble>(m, "GeodesicSegment")
       .def(py::init<via::LatLong<double>, via::Angle<double>>())
       .def(py::init<via::LatLong<double>, via::Angle<double>,
                     via::units::si::Metres<double>>())
@@ -100,53 +100,55 @@ PYBIND11_MODULE(via_ellipsoid, m) {
                     via::Radians<double>>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>,
                     via::Radians<double>, const EllipsoidDouble &>())
-      .def("is_valid", &GeodesicDouble::is_valid)
-      .def("beta", &GeodesicDouble::beta)
-      .def("lon", &GeodesicDouble::lon)
-      .def("azi", &GeodesicDouble::azi)
-      .def("set_aux_length", &GeodesicDouble::set_aux_length)
-      .def("aux_length", &GeodesicDouble::aux_length)
-      .def("ellipsoid", &GeodesicDouble::ellipsoid)
-      .def("a", &GeodesicDouble::a)
-      .def("pole", &GeodesicDouble::pole)
-      .def("direction", &GeodesicDouble::direction)
-      .def("epsilon", &GeodesicDouble::epsilon)
-      .def("metres_to_radians", &GeodesicDouble::metres_to_radians)
-      .def("radians_to_metres", &GeodesicDouble::radians_to_metres)
-      .def("length", &GeodesicDouble::length)
-      .def("aux_beta", &GeodesicDouble::aux_beta)
-      .def("aux_latitude", &GeodesicDouble::aux_latitude)
-      .def("latitude", &GeodesicDouble::latitude)
-      .def("aux_azimuth", &GeodesicDouble::aux_azimuth)
-      .def("azimuth", &GeodesicDouble::azimuth)
-      .def("delta_longitude", &GeodesicDouble::delta_longitude)
-      .def("aux_longitude", &GeodesicDouble::aux_longitude)
-      .def("longitude", &GeodesicDouble::longitude)
-      .def("aux_lat_long", &GeodesicDouble::aux_lat_long)
-      .def("lat_long", &GeodesicDouble::lat_long)
-      .def("aux_point", &GeodesicDouble::aux_point)
-      .def("b", &GeodesicDouble::b)
-      .def("mid_point", &GeodesicDouble::mid_point)
-      .def("aux_point_and_pole", &GeodesicDouble::aux_point_and_pole)
+      .def("is_valid", &GeodesicSegmentDouble::is_valid)
+      .def("beta", &GeodesicSegmentDouble::beta)
+      .def("lon", &GeodesicSegmentDouble::lon)
+      .def("azi", &GeodesicSegmentDouble::azi)
+      .def("set_arc_length", &GeodesicSegmentDouble::set_arc_length)
+      .def("arc_length", &GeodesicSegmentDouble::arc_length)
+      .def("ellipsoid", &GeodesicSegmentDouble::ellipsoid)
+      .def("a", &GeodesicSegmentDouble::a)
+      .def("pole", &GeodesicSegmentDouble::pole)
+      .def("direction", &GeodesicSegmentDouble::direction)
+      .def("epsilon", &GeodesicSegmentDouble::epsilon)
+      .def("metres_to_radians", &GeodesicSegmentDouble::metres_to_radians)
+      .def("radians_to_metres", &GeodesicSegmentDouble::radians_to_metres)
+      .def("length", &GeodesicSegmentDouble::length)
+      .def("aux_beta", &GeodesicSegmentDouble::aux_beta)
+      .def("aux_latitude", &GeodesicSegmentDouble::aux_latitude)
+      .def("latitude", &GeodesicSegmentDouble::latitude)
+      .def("aux_azimuth", &GeodesicSegmentDouble::aux_azimuth)
+      .def("azimuth", &GeodesicSegmentDouble::azimuth)
+      .def("delta_longitude", &GeodesicSegmentDouble::delta_longitude)
+      .def("aux_longitude", &GeodesicSegmentDouble::aux_longitude)
+      .def("longitude", &GeodesicSegmentDouble::longitude)
+      .def("aux_lat_long", &GeodesicSegmentDouble::aux_lat_long)
+      .def("lat_long", &GeodesicSegmentDouble::lat_long)
+      .def("aux_point", &GeodesicSegmentDouble::aux_point)
+      .def("b", &GeodesicSegmentDouble::b)
+      .def("mid_point", &GeodesicSegmentDouble::mid_point)
+      .def("aux_point_and_pole", &GeodesicSegmentDouble::aux_point_and_pole)
       .def("calculate_aux_atd_and_xtd",
-           &GeodesicDouble::calculate_aux_atd_and_xtd<10>)
-      .def("calculate_atd_and_xtd", &GeodesicDouble::calculate_atd_and_xtd<10>);
+           &GeodesicSegmentDouble::calculate_aux_atd_and_xtd<10>)
+      .def("calculate_atd_and_xtd",
+           &GeodesicSegmentDouble::calculate_atd_and_xtd<10>);
 
-  // Python bindings for Geodesic intersection functions
+  // Python bindings for GeodesicSegment intersection functions
   m.def("calculate_geodesic_intersection_distances",
         &via::ellipsoid::calculate_geodesic_intersection_distances<double>,
         "Calculate the auxiliary Great Circle arc lengths to an intersection "
         "point of two geodesics.");
   m.def("calculate_aux_intersection_distances",
         &via::ellipsoid::calculate_aux_intersection_distances<double>,
-        "Calculate the distances along a pair of Geodesics (in Radians) to "
-        "their closest intersection or reference points.");
+        "Calculate the distances along a pair of GeodesicSegments (in Radians) "
+        "to their closest intersection or reference points.");
   m.def("calculate_intersection_distances",
         &via::ellipsoid::calculate_intersection_distances<double>,
-        "Calculate the distances along a pair of Geodesics (in Radians) to "
-        "their closest intersection or reference points.");
+        "Calculate the distances along a pair of GeodesicSegments (in Radians) "
+        "to their closest intersection or reference points.");
   m.def("calculate_intersection_point",
         &via::ellipsoid::calculate_intersection_point<double>,
         "Calculate the position (Latitude and Longitude) where a pair of "
-        "`Geodesic`s intersect, or None if the `Geodesic`s do not intersect.");
+        "`GeodesicSegment`s intersect, or None if the `GeodesicSegment`s do "
+        "not intersect.");
 }

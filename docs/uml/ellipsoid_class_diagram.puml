@@ -1,6 +1,6 @@
 @startuml
 
-'Copyright (c) 2024 Via Technology Ltd. All Rights Reserved.
+'Copyright (c) 2024-2025 Via Technology Ltd. All Rights Reserved.
 
 ' title Ellipsoid Class Diagram
 
@@ -8,11 +8,11 @@ set namespaceSeparator ::
 
     namespace via_ellipsoid {
 
-        class Geodesic {
+        class GeodesicSegment {
             - beta
             - lon
             - azi
-            - aux_length
+            - arc_length
             - ellipsoid
             + lat_long()
             + calculate_atd_and_xtd()
@@ -27,7 +27,7 @@ set namespaceSeparator ::
             + calculate_geodetic_latitude()
         }
 
-        Geodesic o-- Ellipsoid
+        GeodesicSegment o-- Ellipsoid
     }
 
     namespace via_sphere {
@@ -38,7 +38,7 @@ set namespaceSeparator ::
     }
 
     namespace via_angle {
-        
+
         class Angle {
             - sin
             - cos
@@ -61,11 +61,11 @@ set namespaceSeparator ::
         }
     }
 
-    via_ellipsoid::Geodesic . via_sphere::LatLong
-    via_ellipsoid::Geodesic *-- via_angle::Angle
-    via_ellipsoid::Geodesic .. via_angle::Degrees
-    via_ellipsoid::Geodesic *-- via_angle::Radians
-    via_ellipsoid::Geodesic .. via_units::si::Metres
+    via_ellipsoid::GeodesicSegment . via_sphere::LatLong
+    via_ellipsoid::GeodesicSegment *-- via_angle::Angle
+    via_ellipsoid::GeodesicSegment .. via_angle::Degrees
+    via_ellipsoid::GeodesicSegment *-- via_angle::Radians
+    via_ellipsoid::GeodesicSegment .. via_units::si::Metres
     via_ellipsoid::Ellipsoid *--via_units::si::Metres
     via_sphere::LatLong *-- "2" via_angle::Degrees
 @enduml

@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -19,10 +19,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////
-/// @file test_Geodesic_double.cpp
-/// @brief Contains unit tests for the via::ellipsoid Geodesic class.
+/// @file test_GeodesicSegment_double.cpp
+/// @brief Contains unit tests for the via::ellipsoid GeodesicSegment class.
 //////////////////////////////////////////////////////////////////////////////
-#include "via/ellipsoid/Geodesic.hpp"
+#include "via/ellipsoid/GeodesicSegment.hpp"
 #include <boost/test/unit_test.hpp>
 #include <via/angle/trig.hpp>
 
@@ -40,24 +40,25 @@ BOOST_AUTO_TEST_SUITE(Test_Geodesic_double)
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
   const units::si::Metres<double> length{9'000'000.0};
-  const Radians aux_length{trig::PI_2<double>};
+  const Radians arc_length{trig::PI_2<double>};
 
   // Ensure that two Geodesics can fit on a cache line.
-  BOOST_CHECK_EQUAL(128u, sizeof(Geodesic<double>));
+  BOOST_CHECK_EQUAL(128u, sizeof(GeodesicSegment<double>));
 
   // Latitude, longitude, azimuth, "direct" constructor.
-  const Geodesic<double> geodesic0(Angle(Degrees(45.0)), Angle(Degrees(0.0)),
-                                   Angle(Degrees(90.0)), Radians(0.0));
+  const GeodesicSegment<double> geodesic0(Angle(Degrees(45.0)),
+                                          Angle(Degrees(0.0)),
+                                          Angle(Degrees(90.0)), Radians(0.0));
   BOOST_CHECK_EQUAL(trig::PI_2<double>,
                     geodesic0.aux_azimuth(Radians(0.0)).to_radians().v());
 
-  // LatLong, azimuth, aux_length constructor.
+  // LatLong, azimuth, arc_length constructor.
   const LatLong a(Degrees(45.0), Degrees(45.0));
 
   // Increase azimuth around compass from due South to due North
   for (auto i{-179}; i <= 180; ++i) {
     const Angle<double> azimuth{Degrees<double>(i)};
-    const Geodesic<double> geodesic1(a, azimuth, length);
+    const GeodesicSegment<double> geodesic1(a, azimuth, length);
     BOOST_CHECK(geodesic1.is_valid());
 
     const Angle<double> azi0{geodesic1.azimuth(units::si::Metres(0.0))};
@@ -67,15 +68,15 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
     const auto len0{geodesic1.length()};
     BOOST_CHECK_CLOSE(length.v(), len0.v(), CALCULATION_TOLERANCE);
 
-    const Geodesic<double> geodesic2(a, azimuth, aux_length);
+    const GeodesicSegment<double> geodesic2(a, azimuth, arc_length);
     BOOST_CHECK(geodesic2.is_valid());
 
     const Angle<double> azi2{geodesic2.aux_azimuth(Radians(0.0))};
     BOOST_CHECK_CLOSE(trig::deg2rad<double>(i), azi2.to_radians().v(),
                       2 * CALCULATION_TOLERANCE);
 
-    const auto len2{geodesic2.aux_length()};
-    BOOST_CHECK_CLOSE(aux_length.v(), len2.v(), CALCULATION_TOLERANCE);
+    const auto len2{geodesic2.arc_length()};
+    BOOST_CHECK_CLOSE(arc_length.v(), len2.v(), CALCULATION_TOLERANCE);
   }
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -85,7 +86,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   const LatLong istanbul(Degrees(42.0), Degrees(29.0));
   const LatLong washington(Degrees(39.0), Degrees(-77.0));
 
-  const Geodesic<double> g1(istanbul, washington);
+  const GeodesicSegment<double> g1(istanbul, washington);
   BOOST_CHECK(g1.is_valid());
 
   const auto end_azimuth{g1.azimuth(g1.length())};
@@ -125,8 +126,8 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   BOOST_CHECK_EQUAL(0.0, xtd.v());
 
   // test end position
-  const auto aux_length{g1.aux_length()};
-  BOOST_CHECK_CLOSE(1.309412846249522, aux_length.v(), CALCULATION_TOLERANCE);
+  const auto arc_length{g1.arc_length()};
+  BOOST_CHECK_CLOSE(1.309412846249522, arc_length.v(), CALCULATION_TOLERANCE);
 
   const auto length{g1.length()};
   BOOST_CHECK_CLOSE(8339863.136005359, length.v(), CALCULATION_TOLERANCE);
@@ -173,12 +174,12 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
 BOOST_AUTO_TEST_CASE(test_meridonal_Geodesic) {
   const LatLong a(Degrees(45.0), Degrees(0.0));
   const LatLong b(Degrees(45.0), Degrees(180.0));
-  const Geodesic<double> g1(a, b);
+  const GeodesicSegment<double> g1(a, b);
   BOOST_CHECK(g1.is_valid());
   const auto [_point, pole0]{g1.aux_point_and_pole(Radians(0.0))};
 
   // Calculate the azimuth at the North pole
-  const Radians mid_length(0.5 * g1.aux_length().v());
+  const Radians mid_length(0.5 * g1.arc_length().v());
   const auto azimuth{g1.aux_azimuth(mid_length)};
   BOOST_CHECK_EQUAL(180.0, azimuth.to_degrees().v());
 
@@ -192,10 +193,10 @@ BOOST_AUTO_TEST_CASE(test_meridonal_Geodesic) {
 BOOST_AUTO_TEST_CASE(test_Geodesic_90n_0n_0e) {
   const LatLong a(Degrees(90.0), Degrees(0.0));
   const LatLong b(Degrees(0.0), Degrees(0.0));
-  const Geodesic<double> g1(a, b);
+  const GeodesicSegment<double> g1(a, b);
   BOOST_CHECK(g1.is_valid());
 
-  BOOST_CHECK_CLOSE(trig::PI_2<double>, g1.aux_length().v(),
+  BOOST_CHECK_CLOSE(trig::PI_2<double>, g1.arc_length().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(180.0, g1.azi().to_degrees().v());
 }
@@ -205,10 +206,10 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_90n_0n_0e) {
 BOOST_AUTO_TEST_CASE(test_Geodesic_90s_0n_50e) {
   const LatLong a(Degrees(-90.0), Degrees(0.0));
   const LatLong b(Degrees(0.0), Degrees(50.0));
-  const Geodesic<double> g1(a, b);
+  const GeodesicSegment<double> g1(a, b);
   BOOST_CHECK(g1.is_valid());
 
-  BOOST_CHECK_CLOSE(trig::PI_2<double>, g1.aux_length().v(),
+  BOOST_CHECK_CLOSE(trig::PI_2<double>, g1.arc_length().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, g1.azi().to_degrees().v());
 }
@@ -220,7 +221,7 @@ BOOST_AUTO_TEST_CASE(test_calculate_atd_and_xtd) {
   // Istanbul, Washington and Reyjavik
   const LatLong istanbul(Degrees(42.0), Degrees(29.0));
   const LatLong washington(Degrees(39.0), Degrees(-77.0));
-  const Geodesic<double> g1(istanbul, washington);
+  const GeodesicSegment<double> g1(istanbul, washington);
   BOOST_CHECK(g1.is_valid());
 
   const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
@@ -241,14 +242,14 @@ BOOST_AUTO_TEST_CASE(test_calculate_atd_and_xtd) {
 
   // Test delta_azimuth at interception, should be PI/2
   const auto azimuth_1{g1.azimuth(atd)};
-  const Geodesic<double> g2(position, reyjavik);
+  const GeodesicSegment<double> g2(position, reyjavik);
   const auto azimuth_2{g2.azi()};
   const auto delta_azimuth{azimuth_2 - azimuth_1};
   BOOST_CHECK_CLOSE(trig::PI_2<double>, delta_azimuth.to_radians().v(),
                     200 * CALCULATION_TOLERANCE);
 
   // opposite geodesic
-  const Geodesic<double> g3(washington, istanbul);
+  const GeodesicSegment<double> g3(washington, istanbul);
   const auto [atd2, xtd2, iterations2]{
       g3.calculate_atd_and_xtd(reyjavik, units::si::Metres(1e-3))};
   BOOST_CHECK_CLOSE(g1.length().v() - 3928788.572, atd2.v(), 100 * 1e-3);

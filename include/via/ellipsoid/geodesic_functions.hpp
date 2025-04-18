@@ -290,9 +290,9 @@ estimate_initial_azimuth(const Angle<T> beta1, const Angle<T> beta2,
 /// @param sigma12 the auxiliary sphere great circle length in radians
 /// @param ellipsoid the `Ellipsoid`.
 /// @param tolerance the tolerance to perform the calculation to in radians.
-/// @return the azimuth and great circle length on the auxiliary sphere at the
-/// start of the geodesic and the number of iterations required to calculate
-/// them.
+/// @return the azimuth and great circle arc length on the auxiliary sphere
+/// at the start of the geodesic segment and the number of iterations required
+/// to calculate them.
 template <typename T, int MAX_ITERS = 20>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
@@ -410,13 +410,13 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
 /// @param estimate_azimuth a flag to call `estimate_initial_azimuth` before
 /// performing Newton's method.
 /// @param ellipsoid the `Ellipsoid`.
-/// @return the azimuth at the start of the geodesic, the great circle length
-/// on the auxiliary sphere, the azimuth at the end of geodesic
-/// and the number of iterations required to calculate them.
+/// @return the azimuth at the start of the geodesic segment, the great circle
+/// arc length on the auxiliary sphere, the azimuth at the end of
+/// geodesic segment and the number of iterations required to calculate them.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto find_azimuths_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
+auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                   const Angle<T> lambda12,
                                   const Radians<T> gc_length,
                                   const Radians<T> tolerance,
@@ -482,9 +482,9 @@ auto find_azimuths_and_aux_length(const Angle<T> beta_a, const Angle<T> beta_b,
 /// @param delta_long the longitude difference.
 /// @param tolerance the tolerance to perform the calculation to in Radians.
 /// @param ellipsoid the `Ellipsoid`.
-/// @return the azimuth at the start of the geodesic, the great circle length
-/// on the auxiliary sphere, the azimuth at the end of geodesic
-/// and the number of iterations required to calculate them.
+/// @return the azimuth at the start of the geodesic segment, the great circle
+/// arc length on the auxiliary sphere, the azimuth at the end of
+/// geodesic segment and the number of iterations required to calculate them.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
@@ -519,7 +519,7 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
       return {gc_azimuth, equatorial_length, gc_azimuth, 0U};
     } else {
       // Iterate to find the azimuth and length on the auxiliary sphere
-      return find_azimuths_and_aux_length(beta1, beta2, delta_long, gc_length,
+      return find_azimuths_and_arc_length(beta1, beta2, delta_long, gc_length,
                                           tolerance, true, ellipsoid);
     }
   }
@@ -528,18 +528,18 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
 /// Calculate the `geodesic` azimuth and great circle length on the auxiliary
 /// sphere between a pair of positions.
 /// @pre a and b are valid LatLong's'
-/// @post 0 <= aux_length <= PI
+/// @post 0 <= arc_length <= PI
 /// @param a, b the start and finish positions in geodetic coordinates.
 /// @param tolerance the tolerance to perform the calculation to in Radians,
 /// default great_circle::MIN_VALUE.
 /// @param ellipsoid the `Ellipsoid`, default WGS 84.
-/// @return the azimuth at the start of the geodesic, the great circle length
-/// on the auxiliary sphere, the azimuth at the end of geodesic
-/// and the number of iterations required to calculate them.
+/// @return the azimuth at the start of the geodesic segment, the great circle
+/// arc length on the auxiliary sphere, the azimuth at the end of
+/// geodesic segment and the number of iterations required to calculate them.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto calculate_azimuths_aux_length(
+auto calculate_azimuths_arc_length(
     const LatLong<T> &a, const LatLong<T> &b,
     const Radians<T> tolerance = Radians<T>(great_circle::MIN_VALUE<T>),
     const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())

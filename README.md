@@ -10,7 +10,7 @@ ellipsoid, see *Figure 1*.
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/WGS84_mean_Earth_radius.svg/800px-WGS84_mean_Earth_radius.svg.png" width="400">
 
-*Figure 1 The WGS-84 Ellipsoid (not to scale)  
+*Figure 1 The WGS-84 Ellipsoid (not to scale)
 [Cmglee](https://commons.wikimedia.org/wiki/User:Cmglee), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0), via Wikimedia Commons*
 
 [WGS-84](https://www.icao.int/NACC/Documents/Meetings/2014/ECARAIM/REF08-Doc9674.pdf)
@@ -23,21 +23,21 @@ This library uses the WGS-84 primary parameters defined in Table 3-1 of the
 ## Geodesic navigation
 
 The shortest path between two points on the surface of an ellipsoid is a
-[geodesic](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid) -
+[geodesic segment](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid) -
 the equivalent of straight line segments in planar geometry or
-[great circles](https://en.wikipedia.org/wiki/Great_circle) on the surface of a
+[great circle](https://en.wikipedia.org/wiki/Great_circle) arc on the surface of a
 sphere, see *Figure 2*.
 
 <img src="https://via-technology.aero/img/navigation/ellipsoid/sphere_mercator_long_geodesic.png" width="600">
 
-*Figure 2 A geodesic (orange) path and great circle (blue) path*
+*Figure 2 A geodesic (orange) segment and great circle (blue) arc*
 
-This library uses the correspondence between geodesics on an ellipsoid
-and great-circles on an auxiliary sphere together with 3D vectors to calculate:
+This library uses the correspondence between geodesic segments on an ellipsoid
+and great-circle arcs on an auxiliary sphere together with 3D vectors to calculate:
 
-- the initial azimuth and length of a geodesic between two positions;
-- the along track distance and across track distance of a position relative to a geodesic;
-- and the intersection of a pair of geodesics.
+- the initial azimuth and length of a geodesic segment between two positions;
+- the along track distance and across track distance of a position relative to a geodesic segment;
+- and the intersection of a pair of geodesic segments.
 
 See: [geodesic algorithms](https://via-technology.aero/navigation/geodesic-algorithms/).
 
@@ -45,15 +45,15 @@ See: [geodesic algorithms](https://via-technology.aero/navigation/geodesic-algor
 
 The library is based on Charles Karney's [GeographicLib](https://geographiclib.sourceforge.io/) library.
 
-Like `GeographicLib`, it models geodesic paths as great circles on
-the surface of an auxiliary sphere. However, it also uses vectors to
+Like `GeographicLib`, it models geodesic segments as great circle arcs on
+the surface of a unit sphere. However, it also uses vectors to
 calculate along track distances, across track distances and
-intersections between geodesics.
+intersections between geodesic segments.
 
 The `Ellipsoid` class represents an ellipsoid of revolution.
 
 The singleton `Ellipsoid::wgs84()` represents the WGS-84 `Ellipsoid` which is used
-by the `Geodesic` constructors to create `Geodesic`s on the WGS-84 `Ellipsoid`.
+by the `GeodesicSegment` constructors to create `GeodesicSegment`s on the WGS-84 `Ellipsoid`.
 
 ![Ellipsoid Class Diagram](docs/images/ellipsoid_class_diagram.svg)
 
@@ -82,8 +82,8 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_karney) {
   const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
   const LatLong accra(Degrees(6.0), Degrees(0.0));
 
-  const Geodesic<double> g1(istanbul, washington);
-  const Geodesic<double> g2(reyjavik, accra);
+  const GeodesicSegment<double> g1(istanbul, washington);
+  const GeodesicSegment<double> g2(reyjavik, accra);
 
   const auto result1{
       calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
@@ -109,7 +109,7 @@ from numpy.testing import assert_almost_equal
 from via_angle import Angle, Degrees
 from via_sphere import LatLong
 from via_units import Metres
-from via_ellipsoid import Geodesic, calculate_intersection_point
+from via_ellipsoid import GeodesicSegment, calculate_intersection_point
 
 def test_intersection_point_distance():
     # Karney's example:
@@ -121,15 +121,15 @@ def test_intersection_point_distance():
     reyjavik = LatLong(Degrees(64.0), Degrees(-22.0))
     accra = LatLong(Degrees(6.0), Degrees(0.0))
 
-    g1 = Geodesic(istanbul, washington)
-    g2 = Geodesic(reyjavik, accra)
+    g1 = GeodesicSegment(istanbul, washington)
+    g2 = GeodesicSegment(reyjavik, accra)
 
     intersection_point_1 = calculate_intersection_point(g1, g2, Metres(1e-3))
     if intersection_point_1:
         assert_almost_equal(54.7170296089477, intersection_point_1.lat().v())
         assert_almost_equal(-14.56385574430775, intersection_point_1.lon().v())
 
-    # Swap Geodesics
+    # Swap GeodesicSegments
     intersection_point_2 = calculate_intersection_point(g2, g1, Metres(1e-3))
     if intersection_point_2:
         assert_almost_equal(54.7170296089477, intersection_point_2.lat().v())
@@ -234,12 +234,12 @@ In Python code import the software as `via_ellipsoid`, e.g.:
 from via_angle import Degrees
 from via_sphere import LatLong
 from via_units import Metres
-from via_ellipsoid import Geodesic, calculate_intersection_point
+from via_ellipsoid import GeodesicSegment, calculate_intersection_point
 ```
 Note: `via_angle`, `via_sphere` and `via_units` must also be imported for the
 units used by the `via_ellipsoid` software.
 
-See: [test_Geodesic.py](python/tests/test_Geodesic.py).
+See: [test_GeodesicSegment.py](python/tests/test_GeodesicSegment.py).
 
 ## License
 

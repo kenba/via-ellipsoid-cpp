@@ -20,7 +20,7 @@
 // THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////
 /// @file test_ellipsoid_double.cpp
-/// @brief Contains unit tests for the via::ellipsoid Geodesic class.
+/// @brief Contains unit tests for the via::ellipsoid GeodesicSegment class.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid.hpp"
 #include <boost/test/unit_test.hpp>
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(test_calculate_atd_and_xtd_karney) {
   // Istanbul, Washington and Reyjavik
   const LatLong istanbul(Degrees(42.0), Degrees(29.0));
   const LatLong washington(Degrees(39.0), Degrees(-77.0));
-  const Geodesic<double> g1(istanbul, washington);
+  const GeodesicSegment<double> g1(istanbul, washington);
   BOOST_CHECK(g1.is_valid());
 
   const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_lengths_baselga_1) {
   const LatLong a2(Degrees(51.5), Degrees(4.5));
   const LatLong b2(Degrees(52.0), Degrees(5.5));
 
-  const Geodesic<double> g1(a1, b1);
-  const Geodesic<double> g2(a2, b2);
+  const GeodesicSegment<double> g1(a1, b1);
+  const GeodesicSegment<double> g2(a2, b2);
 
   const auto result1{
       calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
@@ -101,8 +101,8 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_karney) {
   const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
   const LatLong accra(Degrees(6.0), Degrees(0.0));
 
-  const Geodesic<double> g1(istanbul, washington);
-  const Geodesic<double> g2(reyjavik, accra);
+  const GeodesicSegment<double> g1(istanbul, washington);
+  const GeodesicSegment<double> g2(reyjavik, accra);
 
   const auto result1{
       calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
@@ -131,8 +131,8 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_lengths_baselga_3) {
   const LatLong a2(Degrees(-8.0), Degrees(20.0));
   const LatLong b2(Degrees(49.0), Degrees(-95.0));
 
-  const Geodesic<double> g1(a1, b1);
-  const Geodesic<double> g2(a2, b2);
+  const GeodesicSegment<double> g1(a1, b1);
+  const GeodesicSegment<double> g2(a2, b2);
 
   const auto result1{
       calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
@@ -158,8 +158,8 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_non_intersecting) {
   const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
   const LatLong accra(Degrees(6.0), Degrees(0.0));
 
-  const Geodesic<double> g1(istanbul, accra);
-  const Geodesic<double> g2(reyjavik, washington);
+  const GeodesicSegment<double> g1(istanbul, accra);
+  const GeodesicSegment<double> g2(reyjavik, washington);
 
   const auto result1{
       calculate_intersection_point(g1, g2, units::si::Metres(1e-3))};
@@ -171,20 +171,20 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_non_intersecting) {
 BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   const LatLong a(Degrees(1.0), Degrees(0.0));
   const LatLong b(Degrees(-0.998286322222), Degrees(179.296674991667));
-  const Geodesic<double> g(a, b);
+  const GeodesicSegment<double> g(a, b);
 
   // Split g into two geodesics
   const units::si::Metres<double> half_length{g.length().v() / 2.0};
-  const auto half_aux_length{g.metres_to_radians(half_length)};
+  const auto half_arc_length{g.metres_to_radians(half_length)};
 
   // a geodesic from the start of g to its mid point
-  const Geodesic<double> g1(g.beta(), g.lon(), g.azi(), half_aux_length,
-                            g.ellipsoid());
+  const GeodesicSegment<double> g1(g.beta(), g.lon(), g.azi(), half_arc_length,
+                                   g.ellipsoid());
   // a geodesic from the mid point of g to its end
-  const Geodesic<double> g2(g.aux_beta(Angle<double>(half_aux_length)),
-                            g.aux_longitude(half_aux_length),
-                            g.aux_azimuth(half_aux_length), half_aux_length,
-                            g.ellipsoid());
+  const GeodesicSegment<double> g2(g.aux_beta(Angle<double>(half_arc_length)),
+                                   g.aux_longitude(half_arc_length),
+                                   g.aux_azimuth(half_arc_length),
+                                   half_arc_length, g.ellipsoid());
 
   // 1mm precision in Radians on the auxiliary sphere
   const Radians<double> precision{1e-3 / g.ellipsoid().a().v()};
@@ -192,19 +192,19 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   // geodesics are coincident
   const auto [distance1, distance2, iterations]{
       calculate_aux_intersection_distances(g1, g2, precision)};
-  BOOST_CHECK_CLOSE(g1.aux_length().v(), distance1.v(), CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance1.v(), CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, distance2.v());
   BOOST_CHECK_EQUAL(0, iterations);
 
   // a geodesic from the mid point of g to another point
-  const Geodesic<double> g3(g.aux_beta(Angle<double>(half_aux_length)),
-                            g.aux_longitude(half_aux_length), g.azi(),
-                            half_aux_length, g.ellipsoid());
+  const GeodesicSegment<double> g3(g.aux_beta(Angle<double>(half_arc_length)),
+                                   g.aux_longitude(half_arc_length), g.azi(),
+                                   half_arc_length, g.ellipsoid());
 
   // geodesics are NOT coincident
   const auto [distance3, distance4, iterations2]{
       calculate_aux_intersection_distances(g1, g3, precision)};
-  BOOST_CHECK_CLOSE(g1.aux_length().v(), distance3.v(), CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(), CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, distance4.v());
   BOOST_CHECK_EQUAL(0, iterations2);
 }
@@ -216,14 +216,14 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   const Ellipsoid ellipsoid(units::si::Metres(6.4e6), 1.0 / 50.0);
   const LatLong p1(Degrees(-30.0), Degrees(0.0));
   const LatLong p2(Degrees(29.5), Degrees(179.5));
-  const Geodesic<double> g1(p1, p2, Radians(great_circle::MIN_VALUE<double>),
-                            ellipsoid);
+  const GeodesicSegment<double> g1(
+      p1, p2, Radians(great_circle::MIN_VALUE<double>), ellipsoid);
   BOOST_CHECK_CLOSE(19847901.117944598, g1.length().v(), CALCULATION_TOLERANCE);
 
   const LatLong p3(Degrees(1.0), Degrees(90.0));
   const LatLong p4(Degrees(-2.0), Degrees(-95.0));
-  const Geodesic<double> g2(p3, p4, Radians(great_circle::MIN_VALUE<double>),
-                            ellipsoid);
+  const GeodesicSegment<double> g2(
+      p3, p4, Radians(great_circle::MIN_VALUE<double>), ellipsoid);
   BOOST_CHECK_CLOSE(19518466.043349568, g2.length().v(), CALCULATION_TOLERANCE);
 
   const auto result{

@@ -20,15 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#  @file test_Geodesic
-#  @brief Contains unit tests for the via ellipsoid Geodesic class.
+#  @file test_GeodesicSegment
+#  @brief Contains unit tests for the via ellipsoid GeodesicSegment class.
 
 import pytest
 from numpy.testing import assert_almost_equal
 from via_angle import Degrees, Radians
 from via_sphere import LatLong, MIN_VALUE
 from via_units import Metres
-from via_ellipsoid import Ellipsoid, Geodesic, calculate_intersection_point
+from via_ellipsoid import Ellipsoid, GeodesicSegment, calculate_intersection_point
 
 def test_intersection_point_distance():
     # Karney's example:
@@ -40,15 +40,15 @@ def test_intersection_point_distance():
     reyjavik = LatLong(Degrees(64.0), Degrees(-22.0))
     accra = LatLong(Degrees(6.0), Degrees(0.0))
 
-    g1 = Geodesic(istanbul, washington)
-    g2 = Geodesic(reyjavik, accra)
+    g1 = GeodesicSegment(istanbul, washington)
+    g2 = GeodesicSegment(reyjavik, accra)
 
     intersection_point_1 = calculate_intersection_point(g1, g2, Metres(1e-3))
     if intersection_point_1:
         assert_almost_equal(54.7170296089477, intersection_point_1.lat().v())
         assert_almost_equal(-14.56385574430775, intersection_point_1.lon().v())
 
-    # Swap Geodesics
+    # Swap GeodesicSegments
     intersection_point_2 = calculate_intersection_point(g2, g1, Metres(1e-3))
     if intersection_point_2:
         assert_almost_equal(54.7170296089477, intersection_point_2.lat().v())
@@ -59,11 +59,11 @@ def test_intersection_point_distance_non_wgs84():
     # Example from Charles Karney email on 31/03/2025
     # Issue #1 Python calculate_intersection_point code crashes
     ell = Ellipsoid(Metres(6.4e6), 1.0/50.0)
-    g1 = Geodesic(LatLong(Degrees(-30), Degrees(0.0)),
+    g1 = GeodesicSegment(LatLong(Degrees(-30), Degrees(0.0)),
                   LatLong(Degrees(29.5), Degrees(179.5)),
                   Radians(MIN_VALUE), ell)
     print(g1.length())
-    g2 = Geodesic(LatLong(Degrees(1), Degrees(90)),
+    g2 = GeodesicSegment(LatLong(Degrees(1), Degrees(90)),
                   LatLong(Degrees(-2), Degrees(-95)),
                   Radians(MIN_VALUE), ell)
     print(g2.length())

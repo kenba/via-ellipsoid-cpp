@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_intersection_performance) {
   std::vector<PositionData> data{read_position_data(data_file)};
 
   // The geodesic data
-  std::vector<ellipsoid::Geodesic<double>> geodesic_data{};
+  std::vector<ellipsoid::GeodesicSegment<double>> geodesic_data{};
   geodesic_data.reserve(data.size());
 
   // Create random Geodesics
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_intersection_performance) {
     const Degrees<double> lon1d{position[LON_1]};
     const Degrees<double> lat2d{position[LAT_2]};
     const Degrees<double> lon2d{position[LON_2]};
-    geodesic_data.emplace_back(ellipsoid::Geodesic<double>(
+    geodesic_data.emplace_back(ellipsoid::GeodesicSegment<double>(
         LatLong(lat1d, lon1d), LatLong(lat2d, lon2d)));
   }
   const auto t1{high_resolution_clock::now()};
@@ -138,14 +138,14 @@ BOOST_AUTO_TEST_CASE(test_geodesic_intersection_performance) {
                                          geodesic_data.size()};
   std::cout << "Geodesic_data size: " << geodesic_data.size()
             << " time: " << create_geodesics_ms.count() << " ms\n"
-            << "Average time per Geodesic: " << average_create_geodesics_us
-            << " us" << std::endl;
+            << "Average time per GeodesicSegment: "
+            << average_create_geodesics_us << " us" << std::endl;
 
-  // Create a reference Geodesic
+  // Create a reference GeodesicSegment
   // The longest geodesic from the DO-238B set translated to start at 90W
   const LatLong a(Degrees(1.0), Degrees(-90.0));
   const LatLong b(Degrees(-0.998286322222), Degrees(89.296674991667));
-  const ellipsoid::Geodesic<double> reference(a, b);
+  const ellipsoid::GeodesicSegment<double> reference(a, b);
 
   // 1mm precision in Radians on the auxiliary sphere
   const units::si::Metres<double> precision_1mm{1e-3};

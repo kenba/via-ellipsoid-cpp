@@ -90,7 +90,7 @@ if (CPP_UNIT_TESTS)
         tests/test_ellipsoid_functions_double.cpp
         tests/test_Ellipsoid.cpp
         tests/test_geodesic_functions_double.cpp
-        tests/test_Geodesic_double.cpp
+        tests/test_GeodesicSegment_double.cpp
         tests/test_ellipsoid_double.cpp
         tests/test_ellipsoid_long_double.cpp
     )

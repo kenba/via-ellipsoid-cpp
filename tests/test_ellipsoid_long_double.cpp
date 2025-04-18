@@ -20,7 +20,7 @@
 // THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////
 /// @file test_ellipsoid_long_double.cpp
-/// @brief Contains unit tests for the via::ellipsoid Geodesic class.
+/// @brief Contains unit tests for the via::ellipsoid GeodesicSegment class.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid.hpp"
 #include <boost/test/unit_test.hpp>
@@ -42,11 +42,13 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   // Example from Charles Karney email on 01/04/2025
   const LatLong p1(Degrees(4.0L), Degrees(20.0L));
   const Angle a1(Degrees(-56.0L));
-  const Geodesic<long double> g1(p1, a1, Radians(trig::PI<long double> - 0.1L));
+  const GeodesicSegment<long double> g1(p1, a1,
+                                        Radians(trig::PI<long double> - 0.1L));
 
   const LatLong p2(Degrees(-30.0L), Degrees(-40.0L));
   const Angle a2(Degrees(80.0L));
-  const Geodesic<long double> g2(p2, a2, Radians(trig::PI<long double> - 0.1L));
+  const GeodesicSegment<long double> g2(p2, a2,
+                                        Radians(trig::PI<long double> - 0.1L));
 
   const auto result{calculate_aux_intersection_distances(
       g1, g2, Radians(great_circle::MIN_VALUE<long double>))};

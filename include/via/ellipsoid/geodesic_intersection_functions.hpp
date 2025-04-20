@@ -103,9 +103,9 @@ auto iterate_geodesic_intersection_distances(
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto calculate_aux_intersection_distances(const GeodesicSegment<T> &g1,
-                                          const GeodesicSegment<T> &g2,
-                                          Radians<T> precision)
+auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
+                                             const GeodesicSegment<T> &g2,
+                                             Radians<T> precision)
     -> std::tuple<Radians<T>, Radians<T>, unsigned> {
   // The GeodesicSegments MUST be on the same `Ellipsoid`
   Expects(g1.ellipsoid() == g2.ellipsoid());
@@ -204,7 +204,7 @@ auto calculate_intersection_distances(const GeodesicSegment<T> &g1,
     -> std::tuple<Radians<T>, Radians<T>> {
   const Radians<T> precision_r{precision.v() / g1.ellipsoid().a().v()};
   const auto [distance1, distance2, _iterations]{
-      calculate_aux_intersection_distances(g1, g2, precision_r)};
+      calculate_sphere_intersection_distances(g1, g2, precision_r)};
   return {distance1, distance2};
 }
 

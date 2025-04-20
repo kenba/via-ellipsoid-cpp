@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   const GeodesicSegment<long double> g2(p2, a2,
                                         Radians(trig::PI<long double> - 0.1L));
 
-  const auto result{calculate_aux_intersection_distances(
+  const auto result{calculate_sphere_intersection_distances(
       g1, g2, Radians(great_circle::MIN_VALUE<long double>))};
   const auto d1{std::get<0>(result)};
   const auto d2{std::get<1>(result)};
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
 #endif
 #ifdef OUTPUT_ITERATIONS
   // calculate number of iterations for 1mm precision
-  const auto result_2{calculate_aux_intersection_distances(
+  const auto result_2{calculate_sphere_intersection_distances(
       g1, g2, Radians<long double>(1e-3 / g1.ellipsoid().a().v()))};
   const auto iterations_2{std::get<2>(result_2)};
   std::cout << "1mm precision (Radians): " << 1e-3 / g1.ellipsoid().a().v()

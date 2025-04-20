@@ -134,12 +134,12 @@ PYBIND11_MODULE(via_ellipsoid, m) {
            &GeodesicSegmentDouble::calculate_atd_and_xtd<10>);
 
   // Python bindings for GeodesicSegment intersection functions
-  m.def("calculate_geodesic_intersection_distances",
-        &via::ellipsoid::calculate_geodesic_intersection_distances<double>,
-        "Calculate the auxiliary Great Circle arc lengths to an intersection "
-        "point of two geodesics.");
-  m.def("calculate_aux_intersection_distances",
-        &via::ellipsoid::calculate_aux_intersection_distances<double>,
+  m.def("iterate_geodesic_intersection_distances",
+        &via::ellipsoid::iterate_geodesic_intersection_distances<double>,
+        "Iterate the great circle arc lengths to an intersection point of two "
+        "geodesic segments.");
+  m.def("calculate_sphere_intersection_distances",
+        &via::ellipsoid::calculate_sphere_intersection_distances<double>,
         "Calculate the distances along a pair of GeodesicSegments (in Radians) "
         "to their closest intersection or reference points.");
   m.def("calculate_intersection_distances",

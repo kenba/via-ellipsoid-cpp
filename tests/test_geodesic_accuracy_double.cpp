@@ -20,7 +20,7 @@
 // THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////
 /// @file test_geodesic_accuracy_double.cpp
-/// @brief Contains accuracy tests for ellipsoid::calculate_azimuths_aux_length.
+/// @brief Contains accuracy tests for ellipsoid::calculate_azimuths_arc_length.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid/geodesic_functions.hpp"
 #include <boost/algorithm/string/classification.hpp>
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
       const Degrees<double> lat2d{lat2};
       const Degrees<double> lon2d{lon2};
       const auto [azimuth, aux_length, end_azimuth, iterations]{
-          ellipsoid::calculate_azimuths_aux_length(LatLong(lat1d, lon1d),
+          ellipsoid::calculate_azimuths_arc_length(LatLong(lat1d, lon1d),
                                                    LatLong(lat2d, lon2d))};
 
       // Compare azimuth

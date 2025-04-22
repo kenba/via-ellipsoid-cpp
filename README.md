@@ -205,7 +205,7 @@ make test
 
 The performance tests uses Charles Karney's
 [Test data for geodesics](https://geographiclib.sourceforge.io/C++/doc/geodesic.html#testgeod)
-and Charles Karney's [GeographicLib](https://geographiclib.sourceforge.io/) library to measure
+to measure
 the runtime performance of calculating geodesic segments and geodesic intersections.
 
 Build and run the tests using:
@@ -215,6 +215,9 @@ cmake -DINSTALL_PYTHON=OFF -DCPP_UNIT_TESTS=ON -DCPP_PERFORMANCE_TESTS=ON -DCMAK
 make
 make test
 ```
+
+Note: some tests can also be performed using Charles Karney's [GeographicLib](https://geographiclib.sourceforge.io/) library by adding the cmake flag
+`-DUSE_GEOGRAPHICLIB=ON`.
 
 ### Python
 

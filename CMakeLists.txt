@@ -27,7 +27,8 @@ option(INSTALL_PYTHON "Install Python Library." ON)
 option(CPP_UNIT_TESTS "Build C++ Unit Tests." OFF)
 option(CODE_COVERAGE "Add gcc code coverage options." OFF)
 option(CPP_ACCURACY_TEST "Add accuracy test with GeodTest.dat." OFF)
-option(CPP_PERFORMANCE_TESTS "Add performance tests with GeographicLib." OFF)
+option(CPP_PERFORMANCE_TESTS "Add performance tests." OFF)
+option(USE_GEOGRAPHICLIB "Add tests with GeographicLib." OFF)
 
 add_library(${PROJECT_NAME} INTERFACE)
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ellipsoid.hpp)
@@ -104,9 +105,6 @@ if (CPP_UNIT_TESTS)
     endif(CPP_ACCURACY_TEST)
 
     if (CPP_PERFORMANCE_TESTS)
-        find_package (GeographicLib REQUIRED)
-        target_include_directories(${PROJECT_NAME}_test PRIVATE ${GeographicLib_INCLUDE_DIRS})
-        target_link_libraries(${PROJECT_NAME}_test PRIVATE ${GeographicLib_LIBRARIES})
         target_compile_definitions(${PROJECT_NAME}_test PRIVATE BOOST_TEST_DYN_LINK)
 
         target_sources(${PROJECT_NAME}_test
@@ -114,6 +112,13 @@ if (CPP_UNIT_TESTS)
               tests/test_geodesic_performance_double.cpp
           )
     endif(CPP_PERFORMANCE_TESTS)
+
+    if (USE_GEOGRAPHICLIB)
+        find_package (GeographicLib REQUIRED)
+        target_include_directories(${PROJECT_NAME}_test PRIVATE ${GeographicLib_INCLUDE_DIRS})
+        target_link_libraries(${PROJECT_NAME}_test PRIVATE ${GeographicLib_LIBRARIES})
+        target_compile_definitions(${PROJECT_NAME}_test PRIVATE TEST_GEOGRAPHICLIB)
+    endif(USE_GEOGRAPHICLIB)
 
     target_compile_definitions(${PROJECT_NAME}_test PRIVATE BOOST_TEST_DYN_LINK)
     target_include_directories(${PROJECT_NAME}_test PRIVATE ${Boost_INCLUDE_DIRS})

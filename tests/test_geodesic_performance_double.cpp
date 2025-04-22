@@ -23,7 +23,6 @@
 /// @brief Contains performance tests for geodesics.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid.hpp"
-#include <GeographicLib/Intersect.hpp>
 #include <array>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -32,6 +31,9 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#ifdef TEST_GEOGRAPHICLIB
+#include <GeographicLib/Intersect.hpp>
+#endif
 
 using namespace std::chrono;
 using namespace via;
@@ -91,9 +93,6 @@ std::vector<PositionData> read_position_data(std::ifstream &data_file) {
 
   return data;
 }
-
-// The GeographicLib WGS-84 ellipsoid
-const auto GeographicLibWGS84(GeographicLib::Geodesic::WGS84());
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////////
@@ -188,8 +187,11 @@ BOOST_AUTO_TEST_CASE(test_geodesic_intersection_performance) {
 }
 //////////////////////////////////////////////////////////////////////////////
 
+#ifdef TEST_GEOGRAPHICLIB
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_geographiclib_intersection_performance) {
+  // The GeographicLib WGS-84 ellipsoid
+  const auto geoid(GeographicLib::Geodesic::WGS84());
   // Test reads file from directory, fails if directory environment variable is
   // not present.
   const auto env_var(std::getenv("GEODTEST_DIR"));
@@ -216,7 +218,7 @@ BOOST_AUTO_TEST_CASE(test_geographiclib_intersection_performance) {
     const double lon1d{position[LON_1]};
     const double lat2d{position[LAT_2]};
     const double lon2d{position[LON_2]};
-    geodesic_data.emplace_back(GeographicLibWGS84.InverseLine(
+    geodesic_data.emplace_back(geoid.InverseLine(
         lat1d, lon1d, lat2d, lon2d, GeographicLib::Intersect::LineCaps));
   }
   const auto t1{high_resolution_clock::now()};
@@ -236,10 +238,10 @@ BOOST_AUTO_TEST_CASE(test_geographiclib_intersection_performance) {
   const double lon1d{-90.0};
   const double lat2d{-0.998286322222};
   const double lon2d{89.296674991667};
-  const GeographicLib::GeodesicLine reference(GeographicLibWGS84.InverseLine(
+  const GeographicLib::GeodesicLine reference(geoid.InverseLine(
       lat1d, lon1d, lat2d, lon2d, GeographicLib::Intersect::LineCaps));
 
-  GeographicLib::Intersect intersect(GeographicLibWGS84);
+  GeographicLib::Intersect intersect(geoid);
 
   // Create intersections with random GeodesicLines
   const auto t2{high_resolution_clock::now()};
@@ -258,6 +260,7 @@ BOOST_AUTO_TEST_CASE(test_geographiclib_intersection_performance) {
             << average_geodesic_intersections_us << " us" << std::endl;
 }
 //////////////////////////////////////////////////////////////////////////////
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
 //////////////////////////////////////////////////////////////////////////////

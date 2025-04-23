@@ -128,10 +128,12 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
       g1.beta(), g2.beta(), g2.lon() - g1.lon(),
       Radians<T>(great_circle::MIN_VALUE<T>), g1.ellipsoid())};
 
+  // Determine whether the geodesics are reciprocal
+  const bool reciprocal{g1.pole().dot(g2.pole()) < T()};
+  const Radians<T> atd{ reciprocal ? -g3_arc_length : g3_arc_length };
+
   // Determine whether the geodesics are coincident
   const Angle<T> delta_azimuth1_3{g1.azi() - g3_azi};
-  const bool reciprocal{delta_azimuth1_3.sin().v() < T()};
-  const Radians<T> atd{reciprocal ? -g3_arc_length : g3_arc_length};
 
   const bool geodesics_may_be_coincident{delta_azimuth1_3.sin().abs().v() <
                                          MIN_SIN_ANGLE};

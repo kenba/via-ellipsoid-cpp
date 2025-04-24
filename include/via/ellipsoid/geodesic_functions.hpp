@@ -149,12 +149,12 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
 
   // Solve astroid problem
   const T x{lambda12.opposite().to_radians().v() / lamscale};
-  const T y{sine_sum(beta1, beta2).v() / betscale};
+  const T y{(beta1.sin().v() + beta2.sin().v()) / betscale};
 
   // Test x and y params
   if ((y > -Y_TOLERANCE) && (x > T(-1) - X_THRESHOLD)) {
     const trig::UnitNegRange<T> sin_alpha{std::min(-x, T(1))};
-    return Angle<T>(sin_alpha, trig::cosine_from_sine(sin_alpha, T(-1)));
+    return Angle<T>(sin_alpha, trig::swap_sin_cos(sin_alpha));
   } else {
     const T k{calculate_astroid(x, y)};
     const Radians<T> omg12a{lamscale * (-x * k / (1 + k))};
@@ -367,7 +367,7 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
       break;
 
     // Calculate the denominator for Newton's method
-    const T dv{(alpha2.cos().abs().v() <= std::numeric_limits<T>::epsilon())
+    const T dv{(alpha2.cos().abs().v() == 0.0)
                    ? -2 * ellipsoid.one_minus_f() * dn1 / beta1.sin().v()
                    : ellipsoid.one_minus_f() *
                          calculate_reduced_length(eps, sigma12, sigma1, dn1,

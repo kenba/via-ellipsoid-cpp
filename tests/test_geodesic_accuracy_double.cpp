@@ -30,7 +30,7 @@
 #include <fstream>
 #include <iomanip>
 #ifdef TEST_GEOGRAPHICLIB
-#include <GeographicLib/Intersect.hpp>
+#include <GeographicLib/Geodesic.hpp>
 #endif
 
 using namespace via;
@@ -200,11 +200,11 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples_with_geographiclib) {
   std::vector<PositionData> data{read_position_data(data_file)};
 
   auto line_number(0u);
-  auto quadrant_count(0u);
 
   for (const auto &position : data) {
     const double lat1d{position[LAT_1]};
     const double lon1d{position[LON_1]};
+    const double azimuth_1{position[AZI_1]};
     const double lat2d{position[LAT_2]};
     const double lon2d{position[LON_2]};
 
@@ -214,42 +214,43 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples_with_geographiclib) {
 
     // Compare geodesic length
     const double distance_m{position[D_METRES]};
-    const double delta_length_m{std::abs(distance_m - s12)};
+    const double delta_length_m{distance_m - s12};
 
     // if a short geodesic, compare delta length
     if (line_number >= 150000 && line_number < 200000) {
-      BOOST_CHECK_SMALL(delta_length_m, 100 * 9.0e-5);
+      BOOST_CHECK_SMALL(delta_length_m, 100 * 3.0e-11);
     } else {
-      BOOST_CHECK_CLOSE(distance_m, s12, 100 * 2.5e-9);
+      BOOST_CHECK_CLOSE(distance_m, s12, 100 * 5.3e-13);
     }
 
     // Compare start azimuth
-    const double azimuth_1{position[AZI_1]};
-    const double delta_azimuth{std::abs(azimuth_1 - azi1)};
-    const double azimuth_tolerance{(line_number <= 400000) ? 5.331e-5 : 0.077};
-    BOOST_CHECK_SMALL(delta_azimuth, 100 * azimuth_tolerance);
-
-    // Output lines where GeographicLib and GeodTest.dat start azimuth
-    // quadrants are different
-    if ((azimuth_1 > 90 && azi1 < 90) || (azimuth_1 < 90 && azi1 > 90)) {
-      ++quadrant_count;
-      std::cout << std::fixed << std::setprecision(15)
-                << "Line: " << line_number << " ref azimuth: " << azimuth_1
-                << " azimuth: " << azi1 << " end azimuth: " << azi2
-                << " lat1: " << lat1d << " lat2: " << lat2d << " lon: " << lon2d
-                << std::endl;
-    }
+    const double delta_azimuth1{azimuth_1 - azi1};
+    const double azimuth_tolerance{(line_number <= 400000) ? 5.0e-7 : 2.0e-4};
+    BOOST_CHECK_SMALL(delta_azimuth1, 100 * azimuth_tolerance);
 
     // Compare end azimuth
     const double azimuth_2{position[AZI_2]};
-    const double delta_end_azimuth{std::abs(azimuth_2 - azi2)};
-    BOOST_CHECK_SMALL(delta_end_azimuth, 100 * azimuth_tolerance);
+    const double delta_azimuth2{azimuth_2 - azi2};
+    BOOST_CHECK_SMALL(delta_azimuth2, 100 * azimuth_tolerance);
+
+#ifdef OUTPUT_QUADRANT_MISMATCHES
+    // Output lines where GeographicLib and GeodTest.dat start azimuth
+    // quadrants are different
+    if ((azimuth_1 > 90 && azi1 < 90) || (azimuth_1 < 90 && azi1 > 90)) {
+      std::cout << "Line: " << line_number << std::setprecision(15)
+                << " delta length: " << delta_length_m
+                << " delta azimuth: " << delta_azimuth1 << std::fixed
+                << " ref azimuth: " << azimuth_1 << " azimuth: " << azi1
+                << " ref end azimuth: " << azimuth_2 << " end azimuth: " << azi2
+                << " lat1: " << lat1d << " lat2: " << lat2d << " lon: " << lon2d
+                << std::endl;
+    }
+#endif
 
     ++line_number;
   }
 
-  std::cout << "GeographicLib lines: " << line_number
-            << " azimuth quadrant mismatches: " << quadrant_count << std::endl;
+  std::cout << "GeographicLib lines: " << line_number << std::endl;
 }
 //////////////////////////////////////////////////////////////////////////////
 #endif

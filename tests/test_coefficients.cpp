@@ -260,6 +260,27 @@ BOOST_AUTO_TEST_CASE(test_evaluate_poynomial_A3) {
   auto via_A3_8(evaluate_coeffs_A3<long double, 8>(N));
   auto via_A3_8_EPS(evaluate_poynomial(EPS, via_A3_8));
   BOOST_CHECK_EQUAL(boost_A3_8_EPS, via_A3_8_EPS);
+
+  auto result{evaluate_poynomial(0.0, via_A3_6)};
+  BOOST_CHECK_EQUAL(1.0, result);
+
+  result = polyval(0.0, via_A3_6.cbegin(), via_A3_6.cend());
+  BOOST_CHECK_EQUAL(1.0, result);
+
+  result = evaluate_poynomial(0.25, via_A3_6);
+  BOOST_CHECK_EQUAL(0.85838416624767966, result);
+
+  result = polyval(0.25, via_A3_6.cbegin(), via_A3_6.cend());
+  BOOST_CHECK_EQUAL(0.85838416624767966, result);
+
+  result = evaluate_poynomial(0.5, via_A3_6);
+  BOOST_CHECK_EQUAL(0.67635032595433719, result);
+
+  result = evaluate_poynomial(1.0, via_A3_6);
+  BOOST_CHECK_EQUAL(0.11745075936696803, result);
+
+  result = polyval(1.0, via_A3_6.cbegin(), via_A3_6.cend());
+  BOOST_CHECK_EQUAL(0.11745075936696803, result);
 }
 //////////////////////////////////////////////////////////////////////////////
 

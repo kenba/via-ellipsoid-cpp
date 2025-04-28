@@ -1,7 +1,7 @@
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2024 Ken Barker
+// Copyright (c) 2019-2025 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -158,6 +158,15 @@ public:
     return ellipsoid::calculate_epsilon(clairaut, ep_2_);
   }
 
+  /// Calculate a3f from the A3 series `coefficients` of the ellipsoid.
+  ///
+  /// @param eps epsilon
+  /// @return the parameter a3f
+  [[nodiscard("Pure Function")]]
+  constexpr auto calculate_a3f(const T eps) const noexcept -> T {
+    return ellipsoid::evaluate_poynomial(eps, a3_);
+  }
+
   /// Calculate a3c from the A3 series `coefficients` of the ellipsoid.
   ///
   /// @param clairaut Clairaut's constant.
@@ -166,7 +175,7 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto calculate_a3c(trig::UnitNegRange<T> clairaut,
                                const T eps) const noexcept -> T {
-    return f_ * clairaut.v() * ellipsoid::evaluate_poynomial(eps, a3_);
+    return f_ * clairaut.v() * calculate_a3f(eps);
   }
 
   /// Calculate the coefficients `C3[l]` in the Fourier expansion of `C3`.

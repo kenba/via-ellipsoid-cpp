@@ -6,6 +6,7 @@ CMakeFiles/
 docs/html/
 python/tests/__pycache__/
 python/notebooks/.ipynb_checkpoints/
+.vscode/
 CMakeCache.txt
 Makefile
 cmake_install.cmake

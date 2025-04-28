@@ -25,6 +25,9 @@
 /// @brief Contains the via::ellipsoid geodesic template functions.
 //////////////////////////////////////////////////////////////////////////////
 #include "Ellipsoid.hpp"
+#include <cmath>
+#include <limits>
+#include <via/angle/trig.hpp>
 #ifdef OUTPUT_GEOD_ITERATOR_STEPS
 #include <iomanip>
 #include <iostream>
@@ -149,12 +152,12 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
 
   // Solve astroid problem
   const T x{lambda12.opposite().to_radians().v() / lamscale};
-  const T y{(beta1.sin().v() + beta2.sin().v()) / betscale};
+  const T y{(beta1 + beta2).sin().v() / betscale};
 
   // Test x and y params
   if ((y > -Y_TOLERANCE) && (x > T(-1) - X_THRESHOLD)) {
     const trig::UnitNegRange<T> sin_alpha{std::min(-x, T(1))};
-    return Angle<T>(sin_alpha, trig::swap_sin_cos(sin_alpha));
+    return Angle<T>(sin_alpha, trig::swap_sin_cos(sin_alpha)).negate_cos();
   } else {
     const T k{calculate_astroid(x, y)};
     const Radians<T> omg12a{lamscale * (-x * k / (1 + k))};
@@ -177,9 +180,7 @@ template <typename T>
 constexpr auto calculate_cos_omega(const Angle<T> beta,
                                    const trig::UnitNegRange<T> cos_azimuth)
     -> T {
-  return (beta.sin().abs().v() < std::numeric_limits<T>::epsilon())
-             ? T(1)
-             : cos_azimuth.v() * beta.cos().v();
+  return cos_azimuth.v() * beta.cos().v();
 }
 
 /// Calculate the azimuth on the auxiliary sphere at latitude beta2.
@@ -283,7 +284,7 @@ estimate_initial_azimuth(const Angle<T> beta1, const Angle<T> beta2,
 /// Find the aziumth and great circle length on the auxiliary sphere.
 /// It uses Newton's method to solve:
 ///   f(alp1) = lambda12(alp1) - lam12 = 0
-/// @tparam MAX_ITERS the maximum numer of iterations to attempt.
+/// @tparam MAX_ITER1 the first iterations maximum threshold.
 /// @param beta1, beta2 the start and end parametric latitudes.
 /// @param abs_lambda12 the geodesic longitude difference in radians.
 /// @param alpha1 the initial azimuth
@@ -293,7 +294,7 @@ estimate_initial_azimuth(const Angle<T> beta1, const Angle<T> beta2,
 /// @return the azimuth and great circle arc length on the auxiliary sphere
 /// at the start of the geodesic segment and the number of iterations required
 /// to calculate them.
-template <typename T, int MAX_ITERS = 20>
+template <typename T, unsigned MAX_ITER1 = 20>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 auto find_azimuth_length_newtons_method(const Angle<T> beta1,
@@ -303,8 +304,12 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
                                         const Ellipsoid<T> &ellipsoid,
                                         const Radians<T> tolerance)
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
+  // maximum iteration threshold from GeographicLib
+  constexpr unsigned MAX_ITERS{MAX_ITER1 + std::numeric_limits<T>::digits +
+                               10u};
+
   Expects(beta1 <= beta2);
-  Expects(T() < abs_lambda12.sin().v());
+  Expects(T() <= abs_lambda12.sin().v());
   Expects((T() < alpha1.sin().v()) && (alpha1.sin().v() <= T(1)));
   Expects((T() <= sigma12.v()) && (sigma12.v() <= trig::PI<T>));
 
@@ -339,27 +344,28 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
     const auto omega2{Angle<T>::from_y_x(sin_omega2.v(), cos_omega2)};
     const auto sigma2{Angle<T>::from_y_x(beta2.sin().v(), cos_omega2)};
 
+    // Calculate great circle length on the auxiliary sphere
+    const Angle<T> sc_sigma12{sigma2 - sigma1};
+    sigma12 =
+        std::signbit(sc_sigma12.sin().v())
+            ? (std::signbit(sc_sigma12.cos().v()) ? Radians<T>(trig::PI<T>)
+                                                  : Radians<T>())
+            : sc_sigma12.to_radians();
+    const auto domg12{
+        delta_omega12(clairaut, eps, sigma12, sigma1, sigma2, ellipsoid)};
+
     // Calculate Longitude difference on the auxiliary sphere
     auto omega12 = omega2 - omega1;
     // clamp to range 0 to Pi
-    if (omega12.sin().v() < T())
-      omega12 = (omega12.cos().v() < T()) ? Angle<T>(trig::UnitNegRange(T()),
-                                                     trig::UnitNegRange(T(-1)))
-                                          : Angle<T>();
-
-    // Calculate great circle length on the auxiliary sphere
-    Angle<T> sc_sigma12{sigma2 - sigma1};
-    if (sc_sigma12.sin().v() < T()) // clamp to range 0 to Pi
-      sc_sigma12 =
-          (sc_sigma12.cos().v() < T())
+    if (std::signbit(omega12.sin().v())) {
+      omega12 =
+          (std::signbit(omega12.cos().v()))
               ? Angle<T>(trig::UnitNegRange(T()), trig::UnitNegRange(T(-1)))
               : Angle<T>();
-    sigma12 = sc_sigma12.abs().to_radians();
-
-    // Calculate difference between geodesic and great circle longitudes
+    }
     const auto eta{(omega12 - abs_lambda12).to_radians()};
-    const auto domg12{
-        delta_omega12(clairaut, eps, sigma12, sigma1, sigma2, ellipsoid)};
+
+    // Difference between differences
     const T v{eta.v() - domg12.v()};
 
     // Test within tolerance
@@ -429,12 +435,18 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
   Expects(std::numeric_limits<T>::epsilon() <= tolerance.v());
 
   // Start at the latitude furthest from the Equator
-  const bool swap_latitudes{beta_a.sin().abs() < beta_b.sin().abs()};
+  const Angle<T> abs_beta_a{beta_a.abs()};
+  const Angle<T> abs_beta_b{beta_b.abs()};
+  // Note: the algorithm is very sensitive to starting with the largest latitude
+  // so ensure furthest point is used by comparing sines AND cosines
+  const bool swap_latitudes{(abs_beta_a.sin() < abs_beta_b.sin()) ||
+                            (abs_beta_a.cos() > abs_beta_b.cos())};
   Angle<T> beta1{swap_latitudes ? beta_b : beta_a};
   Angle<T> beta2{swap_latitudes ? beta_a : beta_b};
 
   // Start South of the Equator
-  const bool negate_latitude{T() < beta1.sin().v()};
+  // Note: sets negate_latitude if on the Equator for northerly azimuth results
+  const bool negate_latitude{!std::signbit(beta1.sin().v())};
   if (negate_latitude) {
     beta1 = -beta1;
     beta2 = -beta2;
@@ -512,7 +524,7 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
   } else {
     // Determine whether on an equatorial path, i.e. the circle around the
     // equator.
-    if ((gc_azimuth.cos().v() < great_circle::MIN_VALUE<T>) &&
+    if ((gc_azimuth.cos().v() < std::numeric_limits<T>::epsilon()) &&
         (gc_length.v() < MAX_EQUATORIAL_LENGTH) &&
         (beta1.abs().sin().v() < std::numeric_limits<T>::epsilon()) &&
         (beta2.abs().sin().v() < std::numeric_limits<T>::epsilon())) {

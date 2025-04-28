@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(
   // Eastbound geodesic along the equator
   const auto [azimuth1, arc_length1, end_azimuth1,
               _iter1]{calculate_azimuths_arc_length(latlon1, latlon2)};
-  BOOST_CHECK_EQUAL(121.85975983867257, azimuth1.to_degrees().v());
+  BOOST_CHECK_EQUAL(55.966495140158635, azimuth1.to_degrees().v());
   // BOOST_CHECK_CLOSE(1.5760806267286946, arc_length1.v(),
   // CALCULATION_TOLERANCE); BOOST_CHECK_EQUAL(180.0 - 55.94416957702605,
   // azimuth1.to_degrees().v());

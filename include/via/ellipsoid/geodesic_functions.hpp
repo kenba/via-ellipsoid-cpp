@@ -142,7 +142,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
   // Calculate the integration parameter for geodesic
   const auto clairaut{beta1.cos()}; // Note: assumes sin_alpha_1 = 1
   const T eps{ellipsoid.calculate_epsilon(clairaut)};
-  const T a3f{evaluate_poynomial(eps, ellipsoid.a3())};
+  const T a3f{ellipsoid.calculate_a3f(eps)};
 
   const T lamscale{T(ellipsoid.f()) * beta1.cos().v() * a3f * trig::PI<T>};
   const T betscale{lamscale * beta1.cos().v()};
@@ -493,6 +493,8 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
                                 const Radians<T> tolerance,
                                 const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>, Angle<T>, unsigned> {
+  const T MAX_EQUATORIAL_LENGTH{trig::PI<T> * ellipsoid.one_minus_f()};
+
   const Angle<T> gc_azimuth{
       great_circle::calculate_gc_azimuth(beta1, beta2, delta_long)};
   const auto gc_length{
@@ -511,6 +513,7 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
     // Determine whether on an equatorial path, i.e. the circle around the
     // equator.
     if ((gc_azimuth.cos().v() < great_circle::MIN_VALUE<T>) &&
+        (gc_length.v() < MAX_EQUATORIAL_LENGTH) &&
         (beta1.abs().sin().v() < std::numeric_limits<T>::epsilon()) &&
         (beta2.abs().sin().v() < std::numeric_limits<T>::epsilon())) {
       // Calculate the distance around the equator on the auxiliary sphere

@@ -173,6 +173,22 @@ BOOST_AUTO_TEST_CASE(test_calculate_azimuths_arc_length_equator_double) {
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(
+    test_calculate_azimuths_arc_length_equator_nearly_antipodal_double) {
+  const LatLong latlon1(Degrees(0.0), Degrees(0.0));
+  const LatLong latlon2(Degrees(0.0), Degrees(179.5));
+
+  // Eastbound geodesic along the equator
+  const auto [azimuth1, arc_length1, end_azimuth1,
+              _iter1]{calculate_azimuths_arc_length(latlon1, latlon2)};
+  BOOST_CHECK_EQUAL(121.85975983867257, azimuth1.to_degrees().v());
+  // BOOST_CHECK_CLOSE(1.5760806267286946, arc_length1.v(),
+  // CALCULATION_TOLERANCE); BOOST_CHECK_EQUAL(180.0 - 55.94416957702605,
+  // azimuth1.to_degrees().v());
+}
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_geodesic_arc_length_aziumth_normal_01) {
   const LatLong latlon1(Degrees(-40.0), Degrees(70.0));
   const LatLong latlon2(Degrees(30.0), Degrees(0.0));

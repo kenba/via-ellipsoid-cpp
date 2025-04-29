@@ -382,8 +382,6 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
 
     // Calculate the change in initial azimuth and test within MIN_VALUE<T>
     const T dalpha1{std::clamp<T>(-v / dv, -1, 1)};
-    if (std::abs(dalpha1) <= great_circle::MIN_VALUE<T>)
-      break;
 
 #ifdef OUTPUT_GEOD_ITERATOR_STEPS
     const bool converging{std::abs(v) < prev_v};
@@ -514,7 +512,7 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
 
   // Determine whether on a meridian, i.e. a great circle which passes through
   // the North and South poles
-  if (gc_azimuth.abs().sin().v() < great_circle::MIN_VALUE<T>) {
+  if (gc_azimuth.abs().sin().v() < std::numeric_limits<T>::epsilon()) {
     // gc_azimuth is 0° or 180°
     //
     // Use opposite azimuth if points on opposite meridians

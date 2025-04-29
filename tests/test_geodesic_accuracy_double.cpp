@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
     if (line_number >= 150000 && line_number < 200000) {
       BOOST_CHECK_SMALL(delta_length_m, 100 * 3.4e-11);
     } else {
-      BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 2.0e-10);
+      BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 5.0e-13);
     }
 
     // Compare end azimuth

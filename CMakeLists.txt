@@ -131,6 +131,7 @@ if (CPP_UNIT_TESTS)
         target_compile_options(${PROJECT_NAME}_test PRIVATE /W4)
     else()
         target_compile_options(${PROJECT_NAME}_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_link_libraries(${PROJECT_NAME}_test PRIVATE -lstdc++ -lm)
 
         if (CODE_COVERAGE)
             target_compile_options(${PROJECT_NAME}_test PRIVATE --coverage)

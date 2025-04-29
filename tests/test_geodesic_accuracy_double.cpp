@@ -175,7 +175,9 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
     ++line_number;
   }
 
+#ifndef OUTPUT_GEOGRAPHICLIB_VALUES
   std::cout << "lines: " << line_number << std::endl;
+#endif
 }
 //////////////////////////////////////////////////////////////////////////////
 
@@ -233,6 +235,11 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples_with_geographiclib) {
     const double delta_azimuth2{azimuth_2 - azi2};
     BOOST_CHECK_SMALL(delta_azimuth2, 100 * azimuth_tolerance);
 
+#ifdef OUTPUT_GEOGRAPHICLIB_VALUES
+    std::cout << std::setprecision(18) << lat1d << " 0 " << azi1 << " " << lat2d
+              << " " << lon2d << " " << azi2 << " " << s12 << std::endl;
+#endif
+
 #ifdef OUTPUT_QUADRANT_MISMATCHES
     // Output lines where GeographicLib and GeodTest.dat start azimuth
     // quadrants are different
@@ -250,7 +257,9 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples_with_geographiclib) {
     ++line_number;
   }
 
+#ifndef OUTPUT_GEOGRAPHICLIB_VALUES
   std::cout << "GeographicLib lines: " << line_number << std::endl;
+#endif
 }
 //////////////////////////////////////////////////////////////////////////////
 #endif

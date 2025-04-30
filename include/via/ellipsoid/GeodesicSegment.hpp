@@ -87,7 +87,7 @@ public:
                   trig::UnitNegRange(azi_.sin().v() * beta_.cos().v()))),
         // Calculate the distance to the first Equator crossing
         sigma1_{Angle<T>::from_y_x(beta_.sin().v(),
-                                   calculate_cos_omega(beta_, azi_.cos()))},
+                                   beta.cos().v() * azi_.cos().v())},
         arc_length_{arc_length},
         // Calculate eps for calculating coefficients
         eps_(ellipsoid.calculate_epsilon(azi0_.sin())),
@@ -370,9 +370,8 @@ public:
     const Angle<T> sigma_sum(sigma1_ + Angle<T>(gc_length));
 
     // The longitude difference on the auxiliary sphere.
-    const auto omega1{
-        Angle<T>::from_y_x(azi0_.sin().v() * beta_.sin().v(),
-                           calculate_cos_omega(beta_, azi_.cos()))};
+    const auto omega1{Angle<T>::from_y_x(azi0_.sin().v() * beta_.sin().v(),
+                                         beta_.cos().v() * azi_.cos().v())};
     const auto omega2{Angle<T>::from_y_x(azi0_.sin().v() * sigma_sum.sin().v(),
                                          sigma_sum.cos().v())};
     const Angle<T> omega12{omega2 - omega1};

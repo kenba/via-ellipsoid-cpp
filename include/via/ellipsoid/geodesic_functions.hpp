@@ -168,21 +168,6 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
   }
 }
 
-/// Calculate the cosine of the longitude difference from the equator crossing.
-/// @param beta the `parametric` latitude
-/// @param cos_azimuth the cosine of the azimuth at the `parametric` latitude
-///
-/// @return the cosine of the longitude difference, zero if the `parametric`
-/// latitude is very close to the equator.
-template <typename T>
-  requires std::floating_point<T>
-[[nodiscard("Pure Function")]]
-constexpr auto calculate_cos_omega(const Angle<T> beta,
-                                   const trig::UnitNegRange<T> cos_azimuth)
-    -> T {
-  return cos_azimuth.v() * beta.cos().v();
-}
-
 /// Calculate the azimuth on the auxiliary sphere at latitude beta2.
 /// @pre 0 <= alpha1.sin()
 template <typename T>
@@ -261,12 +246,12 @@ estimate_initial_azimuth(const Angle<T> beta1, const Angle<T> beta2,
   const T eps{ellipsoid.calculate_epsilon(clairaut)};
 
   // Calculate sigma1
-  const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};
+  const auto cos_omega1{beta1.cos().v() * alpha1.cos().v()};
   const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
 
   // Calculate sigma2
   Angle<T> alpha2{calculate_end_azimuth(beta1, beta2, alpha1)};
-  const auto cos_omega2{calculate_cos_omega(beta2, alpha2.cos())};
+  const auto cos_omega2{beta2.cos().v() * alpha2.cos().v()};
   const auto sigma2{Angle<T>::from_y_x(beta2.sin().v(), cos_omega2)};
 
   // Calculate omega12
@@ -330,7 +315,7 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
     // Calculate first longitude (omega1) and distance (sigma1) from the
     // Northbound equator crossing
     const trig::UnitNegRange<T> sin_omega1{clairaut.v() * beta1.sin().v()};
-    const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};
+    const auto cos_omega1{beta1.cos().v() * alpha1.cos().v()};
     const auto omega1{Angle<T>::from_y_x(sin_omega1.v(), cos_omega1)};
     const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
 
@@ -340,7 +325,7 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
     // Calculate second longitude (omega2) and distance (sigma2) from the
     // Northbound equator crossing
     const trig::UnitNegRange<T> sin_omega2{clairaut.v() * beta2.sin().v()};
-    const auto cos_omega2{calculate_cos_omega(beta2, alpha2.cos())};
+    const auto cos_omega2{beta2.cos().v() * alpha2.cos().v()};
     const auto omega2{Angle<T>::from_y_x(sin_omega2.v(), cos_omega2)};
     const auto sigma2{Angle<T>::from_y_x(beta2.sin().v(), cos_omega2)};
 
@@ -402,10 +387,10 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
 }
 
 /// Find the aziumth and great circle length on the auxiliary sphere.
-/// It adjusts the latitudes and longitude difference so that the aziumth of the
-/// geodesic lies between 0° and 90°.
-/// It calls find_azimuth_length_newtons_method and then changes the resulting
-/// azimuth to match the orienation of the geodesic.
+/// It adjusts the latitudes and longitude difference so that the aziumth of
+/// the geodesic lies between 0° and 90°.
+/// It calls find_azimuth_length_newtons_method and then changes the
+/// resulting azimuth to match the orienation of the geodesic.
 ///
 /// @param beta_a, beta_b the geodetic latitudes of the start and finish points.
 /// @param lambda12 the geodesic longitude difference in radians.
@@ -443,7 +428,7 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
   Angle<T> beta2{swap_latitudes ? beta_a : beta_b};
 
   // Start South of the Equator
-  // Note: sets negate_latitude if on the Equator for northerly azimuth results
+  // Note: sets negate_latitude on the Equator to favor northerly azimuths
   const bool negate_latitude{!std::signbit(beta1.sin().v())};
   if (negate_latitude) {
     beta1 = -beta1;
@@ -588,7 +573,7 @@ constexpr auto convert_radians_to_metres(
     const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84()) noexcept
     -> units::si::Metres<T> {
   // Calculate the distance from the first equator crossing
-  const auto cos_omega1{calculate_cos_omega(beta1, alpha1.cos())};
+  const auto cos_omega1{beta1.cos().v() * alpha1.cos().v()};
   const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
   const auto sigma_sum{sigma1 + Angle<T>(gc_distance)};
 

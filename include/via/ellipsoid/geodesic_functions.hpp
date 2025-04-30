@@ -85,52 +85,21 @@ constexpr auto calculate_astroid(const T x, const T y) -> T {
   return uv / (std::sqrt(uv + w * w) + w); // guaranteed positive
 }
 
-/// Calculate: m12b = (reduced length)/_b
-template <typename T>
-  requires std::floating_point<T>
-[[nodiscard("Pure Function")]]
-constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
-                                        const Angle<T> sigma1, const T dn1,
-                                        const Angle<T> sigma2, const T dn2)
-    -> T {
-  Expects(T() <= sigma12.v());
-
-  const T A1{evaluate_A1<T>(eps)};
-  const T A2{evaluate_A2<T>(eps)};
-  const T m0x{A1 - A2};
-
-  const T a1p1 = T(1) + A1;
-  const T a2p1 = T(1) + A2;
-
-  const auto Ca{evaluate_coeffs_C1<T>(eps)};
-  auto Cb{evaluate_coeffs_C2<T>(eps)};
-
-  // Assume here that Ca.size() >= Cb.size()
-  // int size(Cb.size() - 1);
-  for (auto i(1u); i < Cb.size(); ++i)
-    Cb[i] = a1p1 * Ca[i] - a2p1 * Cb[i];
-
-  const T J12{m0x * sigma12.v() + (sin_cos_series(sigma2, Cb).v() -
-                                   sin_cos_series(sigma1, Cb).v())};
-  return dn2 * (sigma1.cos().v() * sigma2.sin().v()) -
-         dn1 * (sigma1.sin().v() * sigma2.cos().v()) -
-         sigma1.cos().v() * sigma2.cos().v() * J12;
-}
-
-/// Estimate the initial azimuth on the auxiliary sphere for a nearly antipodal
-/// arc. It calculates and solves the astroid problem.
-/// @pre 0 <= lambda12.sin()
-/// @param beta1, beta2 the parametric latitudes of the start and
-/// finish points on the auxiliary sphere.
-/// @param lambda12 longitude difference between start and finish points.
+/// Estimate the initial azimuth for a nearly antipodal arc.
+/// It calculates and solves the astroid problem.
+///
+/// @pre abs_lambda12 >= 0
+///
+/// @param beta1, beta2 parametric latitudes on the auxiliary sphere.
+/// @param abs_lambda12 longitude difference between start and finish points.
 /// @param ellipsoid the `Ellipsoid`.
-/// @return the estimate of the initial azimuth on the auxiliary sphere.
+/// @return an estimate of the initial azimuth on the auxiliary sphere.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
                                                   const Angle<T> beta2,
-                                                  const Angle<T> lambda12,
+                                                  const Angle<T> abs_lambda12,
                                                   const Ellipsoid<T> &ellipsoid)
     -> Angle<T> {
 #if defined(_MSC_VER) || defined(__clang__)
@@ -140,7 +109,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
 #endif
   constexpr T Y_TOLERANCE{200 * std::numeric_limits<T>::epsilon()};
 
-  Expects(T() <= lambda12.sin().v());
+  Expects(abs_lambda12.sin().v() >= T());
 
   // Calculate the integration parameter for geodesic
   const auto clairaut{beta1.cos()}; // Note: assumes sin_alpha_1 = 1
@@ -151,7 +120,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
   const T betscale{lamscale * beta1.cos().v()};
 
   // Solve astroid problem
-  const T x{lambda12.opposite().to_radians().v() / lamscale};
+  const T x{abs_lambda12.opposite().to_radians().v() / lamscale};
   const T y{(beta1 + beta2).sin().v() / betscale};
 
   // Test x and y params
@@ -168,13 +137,21 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
   }
 }
 
-/// Calculate the azimuth on the auxiliary sphere at latitude beta2.
-/// @pre 0 <= alpha1.sin()
+/// Calculate the azimuth at parametric latitude beta2 from the azimuth
+/// at parametric latitude beta1.
+///
+/// @pre alpha1.sin() > 0
+///
+/// @param beta1, beta2 parametric latitudes on the auxiliary sphere.
+/// @param alpha1 initial azimuth.
+/// @return azimuth at beta2.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 constexpr auto calculate_end_azimuth(const Angle<T> beta1, const Angle<T> beta2,
                                      const Angle<T> alpha1) -> Angle<T> {
+  Expects(alpha1.sin().v() > T());
+
   const trig::UnitNegRange<T> clairaut{alpha1.sin().v() * beta1.cos().v()};
 
   const auto sin_alpha2{
@@ -201,7 +178,9 @@ constexpr auto calculate_end_azimuth(const Angle<T> beta1, const Angle<T> beta2,
 
 /// Calculate the longitude difference between the auxiliary sphere and
 /// ellipsoid.
+///
 /// @pre 0 < sigma12
+///
 /// @param clairaut Clairaut's constant.
 /// @param eps the integration parameter.
 /// @param sigma12 great circle distance on the auxiliary sphere.
@@ -225,78 +204,123 @@ constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
   return Radians<T>(a3c * (sigma12.v() + (b32.v() - b31.v())));
 }
 
-/// Estimate the initial azimuth on the auxiliary sphere for a normal arcs.
+/// Estimate the initial azimuth for a normal geodesic.
 ///
-/// @param beta1, beta2 the parametric latitudes on the auxiliary sphere.
-/// @param lambda12 longitude difference between the points.
+/// @pre abs_lambda12 >= 0
+///
+/// @param beta1, beta2 parametric latitudes on the auxiliary sphere.
+/// @param abs_lambda12 longitude difference between the points.
 /// @param ellipsoid the `Ellipsoid`.
-/// @return an estimate of the initial azimuth on the auxiliary sphere.
+/// @return an estimate of the initial azimuth.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-constexpr auto
-estimate_initial_azimuth(const Angle<T> beta1, const Angle<T> beta2,
-                         const Angle<T> lambda12, const Ellipsoid<T> &ellipsoid)
+constexpr auto estimate_initial_azimuth(const Angle<T> beta1,
+                                        const Angle<T> beta2,
+                                        const Angle<T> abs_lambda12,
+                                        const Ellipsoid<T> &ellipsoid)
     -> Angle<T> {
-  // Calculate the great circle azimuth between parametric latitudes
-  Angle<T> alpha1{great_circle::calculate_gc_azimuth(beta1, beta2, lambda12)};
+
+  Expects(abs_lambda12.sin().v() >= T());
+
+  // Calculate azimuths at the arc ends
+  Angle<T> alpha1{
+      great_circle::calculate_gc_azimuth(beta1, beta2, abs_lambda12)};
+  Angle<T> alpha2{calculate_end_azimuth(beta1, beta2, alpha1)};
+
+  // Calculate arc lengths from the nearest great circle equator crossing
+  const auto sigma1{
+      Angle<T>::from_y_x(beta1.sin().v(), beta1.cos().v() * alpha1.cos().v())};
+  const auto sigma2{
+      Angle<T>::from_y_x(beta2.sin().v(), beta2.cos().v() * alpha2.cos().v())};
+  const Radians<T> sigma12{sigma2.to_radians() - sigma1.to_radians()};
 
   // Calculate Clairaut's constant
   const trig::UnitNegRange<T> clairaut(alpha1.sin().v() * beta1.cos().v());
   const T eps{ellipsoid.calculate_epsilon(clairaut)};
 
-  // Calculate sigma1
-  const auto cos_omega1{beta1.cos().v() * alpha1.cos().v()};
-  const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
-
-  // Calculate sigma2
-  Angle<T> alpha2{calculate_end_azimuth(beta1, beta2, alpha1)};
-  const auto cos_omega2{beta2.cos().v() * alpha2.cos().v()};
-  const auto sigma2{Angle<T>::from_y_x(beta2.sin().v(), cos_omega2)};
-
-  // Calculate omega12
-  const Radians<T> sigma12{sigma2.to_radians() - sigma1.to_radians()};
-
-  // Estimate the difference between aux sphere and geodesic longitude
+  // Estimate the difference between sphere and geodesic longitude
   const Angle<T> domg12{
       delta_omega12(clairaut, eps, sigma12, sigma1, sigma2, ellipsoid)};
-  const auto omega12{lambda12 + domg12};
+  const auto omega12{abs_lambda12 + domg12};
 
-  // Recalculate the azimuth using the estimated longitude difference
+  // Recalculate the azimuth using the estimated geodesic longitude
   return great_circle::calculate_gc_azimuth(beta1, beta2, omega12);
 }
 
-/// Find the aziumth and great circle length on the auxiliary sphere.
+/// Calculate: m12b = (reduced length)/_b
+/// @pre sigma12 > 0
+template <typename T>
+  requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
+constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
+                                        const Angle<T> sigma1, const T dn1,
+                                        const Angle<T> sigma2, const T dn2)
+    -> T {
+  Expects(sigma12.v() > T());
+
+  const T A1{evaluate_A1<T>(eps)};
+  const T A2{evaluate_A2<T>(eps)};
+  const T m0x{A1 - A2};
+
+  const T a1p1 = T(1) + A1;
+  const T a2p1 = T(1) + A2;
+
+  const auto Ca{evaluate_coeffs_C1<T>(eps)};
+  auto Cb{evaluate_coeffs_C2<T>(eps)};
+
+  // Assume here that Ca.size() >= Cb.size()
+  // int size(Cb.size() - 1);
+  for (auto i(1u); i < Cb.size(); ++i)
+    Cb[i] = a1p1 * Ca[i] - a2p1 * Cb[i];
+
+  const T J12{m0x * sigma12.v() + (sin_cos_series(sigma2, Cb).v() -
+                                   sin_cos_series(sigma1, Cb).v())};
+  return dn2 * (sigma1.cos().v() * sigma2.sin().v()) -
+         dn1 * (sigma1.sin().v() * sigma2.cos().v()) -
+         sigma1.cos().v() * sigma2.cos().v() * J12;
+}
+
+/// Find the initial aziumth and arc length on the auxiliary sphere given
+/// estimates of the initial aziumth: alpha1, and arc length: sigma12.
 /// It uses Newton's method to solve:
 ///   f(alp1) = lambda12(alp1) - lam12 = 0
+///
+/// @pre beta2 >= beta1
+/// @pre abs_lambda12.sin() >= 0
+/// @pre alpha1.sin() > 0
+/// @pre 0 < sigma12 <= π
+/// @post alpha1.sin() > 0
+/// @post 0 < sigma12 <= π
+///
 /// @tparam MAX_ITER1 the first iterations maximum threshold.
-/// @param beta1, beta2 the start and end parametric latitudes.
-/// @param abs_lambda12 the geodesic longitude difference in radians.
-/// @param alpha1 the initial azimuth
-/// @param sigma12 the auxiliary sphere great circle length in radians
-/// @param ellipsoid the `Ellipsoid`.
+/// @param beta1, beta2 parametric latitudes on the auxiliary sphere.
+/// @param abs_lambda12 the geodesic longitude difference.
+/// @param alpha1 the initial azimuth.
+/// @param sigma12 the initial arc length.
 /// @param tolerance the tolerance to perform the calculation to in radians.
-/// @return the azimuth and great circle arc length on the auxiliary sphere
+/// @param ellipsoid the `Ellipsoid`.
+/// @return the azimuths at the start of the arc on the auxiliary sphere
+///  and arc length on the auxiliary sphere
 /// at the start of the geodesic segment and the number of iterations required
 /// to calculate them.
 template <typename T, unsigned MAX_ITER1 = 20>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto find_azimuth_length_newtons_method(const Angle<T> beta1,
-                                        const Angle<T> beta2,
-                                        const Angle<T> abs_lambda12,
-                                        Angle<T> alpha1, Radians<T> sigma12,
-                                        const Ellipsoid<T> &ellipsoid,
-                                        const Radians<T> tolerance)
+auto find_azimuth_arc_length_newtons_method(const Angle<T> beta1,
+                                            const Angle<T> beta2,
+                                            const Angle<T> abs_lambda12,
+                                            Angle<T> alpha1, Radians<T> sigma12,
+                                            const Radians<T> tolerance,
+                                            const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>, unsigned> {
   // maximum iteration threshold from GeographicLib
   constexpr unsigned MAX_ITERS{MAX_ITER1 + std::numeric_limits<T>::digits +
                                10u};
-
-  Expects(beta1 <= beta2);
-  Expects(T() <= abs_lambda12.sin().v());
-  Expects((T() < alpha1.sin().v()) && (alpha1.sin().v() <= T(1)));
-  Expects((T() <= sigma12.v()) && (sigma12.v() <= trig::PI<T>));
+  Expects(beta2 >= beta1);
+  Expects(abs_lambda12.sin().v() >= T());
+  Expects(alpha1.sin().v() > T());
+  Expects((T() < sigma12.v()) && (sigma12.v() <= trig::PI<T>));
 
   const T dn1{std::sqrt(T(1) + T(ellipsoid.ep_2()) * beta1.sin().v() *
                                    beta1.sin().v())};
@@ -331,6 +355,7 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
 
     // Calculate great circle length on the auxiliary sphere
     const Angle<T> sc_sigma12{sigma2 - sigma1};
+    // clamp to range 0 to Pi
     sigma12 =
         std::signbit(sc_sigma12.sin().v())
             ? (std::signbit(sc_sigma12.cos().v()) ? Radians<T>(trig::PI<T>)
@@ -381,20 +406,27 @@ auto find_azimuth_length_newtons_method(const Angle<T> beta1,
     alpha1 = alpha1 + Angle<T>(Radians<T>{dalpha1});
   }
 
-  Ensures(T() <= sigma12.v());
+  Ensures(alpha1.sin().v() > T());
+  Ensures((T() < sigma12.v()) && (sigma12.v() <= trig::PI<T>));
 
   return {alpha1, sigma12, iterations};
 }
 
-/// Find the aziumth and great circle length on the auxiliary sphere.
+/// Find the aziumth and arc length on the auxiliary sphere.
 /// It adjusts the latitudes and longitude difference so that the aziumth of
 /// the geodesic lies between 0° and 90°.
-/// It calls find_azimuth_length_newtons_method and then changes the
+/// It calls find_azimuth_arc_length_newtons_method and then changes the
 /// resulting azimuth to match the orienation of the geodesic.
+///
+/// @pre beta_a.cos() >= 0
+/// @pre beta_b.cos() >= 0
+/// @post 0 < arc_length <= π
+/// @pre tolerance >= epsilon
+/// @post 0 < sigma12 <= π
 ///
 /// @param beta_a, beta_b the geodetic latitudes of the start and finish points.
 /// @param lambda12 the geodesic longitude difference in radians.
-/// @param gc_length the auxiliary sphere great circle length in radians
+/// @param arc_length the auxiliary sphere great circle length in radians
 /// @param tolerance the tolerance to perform the calculation to in Radians.
 /// @param estimate_azimuth a flag to call `estimate_initial_azimuth` before
 /// performing Newton's method.
@@ -407,15 +439,17 @@ template <typename T>
 [[nodiscard("Pure Function")]]
 auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                   const Angle<T> lambda12,
-                                  const Radians<T> gc_length,
+                                  const Radians<T> arc_length,
                                   const Radians<T> tolerance,
                                   const bool estimate_azimuth,
                                   const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>, Angle<T>, unsigned> {
   const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
 
-  Expects(T() <= gc_length.v());
-  Expects(std::numeric_limits<T>::epsilon() <= tolerance.v());
+  Expects(beta_a.cos().v() >= T());
+  Expects(beta_b.cos().v() >= T());
+  Expects((T() < arc_length.v()) && (arc_length.v() <= trig::PI<T>));
+  Expects(tolerance.v() >= std::numeric_limits<T>::epsilon());
 
   // Start at the latitude furthest from the Equator
   const Angle<T> abs_beta_a{beta_a.abs()};
@@ -440,7 +474,7 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
 
   // Estimate the azimuth at the start of the geodesic
   Angle<T> alpha0{
-      (gc_length.v() >= ANTIPODAL_ARC_THRESHOLD)
+      (arc_length.v() >= ANTIPODAL_ARC_THRESHOLD)
           ? estimate_antipodal_initial_azimuth(beta1, beta2, abs_lambda12,
                                                ellipsoid)
       : estimate_azimuth
@@ -448,8 +482,9 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
           : great_circle::calculate_gc_azimuth(beta1, beta2, abs_lambda12)};
 
   // Use Newton's method to calculate the initial azimuth and aux length
-  auto [alpha1, sigma12, iterations] = find_azimuth_length_newtons_method<T>(
-      beta1, beta2, abs_lambda12, alpha0, gc_length, ellipsoid, tolerance);
+  auto [alpha1, sigma12, iterations] =
+      find_azimuth_arc_length_newtons_method<T>(
+          beta1, beta2, abs_lambda12, alpha0, arc_length, tolerance, ellipsoid);
 
   // Calculate the correct azimuth for the start and finish points
   Angle<T> alpha2{calculate_end_azimuth(beta1, beta2, alpha1)};
@@ -466,6 +501,8 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
     alpha1 = -alpha1;
     alpha2 = -alpha2;
   }
+
+  Ensures((T() < sigma12.v()) && (sigma12.v() <= trig::PI<T>));
 
   return {alpha1, sigma12, alpha2, iterations};
 }
@@ -499,7 +536,6 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
   // the North and South poles
   if (gc_azimuth.abs().sin().v() < std::numeric_limits<T>::epsilon()) {
     // gc_azimuth is 0° or 180°
-    //
     // Use opposite azimuth if points on opposite meridians
     const auto end_azimuth{(delta_long.cos().v() < T()) ? gc_azimuth.opposite()
                                                         : gc_azimuth};
@@ -558,10 +594,12 @@ auto calculate_azimuths_arc_length(
 
 /// Convert a great circle distance on the auxiliary sphere in radians to
 /// metres on the ellipsoid.
+///
+/// @pre beta1.cos() >= 0
+///
 /// @param beta1 the start parametric Latitude on the auxiliary sphere.
 /// @param alpha1 the azimuth at the start point.
-/// @param gc_distance the great circle distance on the auxiliary sphere in
-/// radians.
+/// @param gc_distance the great circle distance on the auxiliary sphere.
 /// @param ellipsoid the `Ellipsoid`, default WGS 84.
 ///
 /// @return the geodesic distance in Metres.
@@ -572,9 +610,12 @@ constexpr auto convert_radians_to_metres(
     const Angle<T> &beta1, const Angle<T> &alpha1, Radians<T> gc_distance,
     const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84()) noexcept
     -> units::si::Metres<T> {
+
+  Expects(beta1.cos().v() >= T());
+
   // Calculate the distance from the first equator crossing
-  const auto cos_omega1{beta1.cos().v() * alpha1.cos().v()};
-  const auto sigma1{Angle<T>::from_y_x(beta1.sin().v(), cos_omega1)};
+  const auto sigma1{
+      Angle<T>::from_y_x(beta1.sin().v(), beta1.cos().v() * alpha1.cos().v())};
   const auto sigma_sum{sigma1 + Angle<T>(gc_distance)};
 
   // Calculate the ellipsoid coefficients

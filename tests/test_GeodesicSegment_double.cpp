@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
                                           Angle(Degrees(0.0)),
                                           Angle(Degrees(90.0)), Radians(0.0));
   BOOST_CHECK_EQUAL(trig::PI_2<double>,
-                    geodesic0.aux_azimuth(Radians(0.0)).to_radians().v());
+                    geodesic0.arc_azimuth(Radians(0.0)).to_radians().v());
 
   // LatLong, azimuth, arc_length constructor.
   const LatLong a(Degrees(45.0), Degrees(45.0));
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
     const GeodesicSegment<double> geodesic2(a, azimuth, arc_length);
     BOOST_CHECK(geodesic2.is_valid());
 
-    const Angle<double> azi2{geodesic2.aux_azimuth(Radians(0.0))};
+    const Angle<double> azi2{geodesic2.arc_azimuth(Radians(0.0))};
     BOOST_CHECK_CLOSE(trig::deg2rad<double>(i), azi2.to_radians().v(),
                       2 * CALCULATION_TOLERANCE);
 
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
                     CALCULATION_TOLERANCE);
 
   // test start point
-  const auto start_point{g1.aux_point(Radians(0.0))};
+  const auto start_point{g1.arc_point(Radians(0.0))};
   BOOST_CHECK_CLOSE(
       istanbul.lat().v(),
       g1.ellipsoid()
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
 
   const Radians<double> precision(1e-3 / wgs84::A<double>.v());
   const auto [atd2, xtd2, iterations2]{
-      g1.calculate_aux_atd_and_xtd(mid_beta, mid_lon, precision)};
+      g1.calculate_arc_atd_and_xtd(mid_beta, mid_lon, precision)};
   BOOST_CHECK_CLOSE(mid_length.v(), atd2.v(), 100 * precision.v());
   BOOST_CHECK_SMALL(xtd2.v(), 100 * precision.v());
 
@@ -176,15 +176,15 @@ BOOST_AUTO_TEST_CASE(test_meridonal_Geodesic) {
   const LatLong b(Degrees(45.0), Degrees(180.0));
   const GeodesicSegment<double> g1(a, b);
   BOOST_CHECK(g1.is_valid());
-  const auto [_point, pole0]{g1.aux_point_and_pole(Radians(0.0))};
+  const auto [_point, pole0]{g1.arc_point_and_pole(Radians(0.0))};
 
   // Calculate the azimuth at the North pole
   const Radians mid_length(0.5 * g1.arc_length().v());
-  const auto azimuth{g1.aux_azimuth(mid_length)};
+  const auto azimuth{g1.arc_azimuth(mid_length)};
   BOOST_CHECK_EQUAL(180.0, azimuth.to_degrees().v());
 
   // Calculate the point and great circle pole at the North pole
-  const auto [point1, pole1]{g1.aux_point_and_pole(mid_length)};
+  const auto [point1, pole1]{g1.arc_point_and_pole(mid_length)};
   BOOST_CHECK_EQUAL(pole0, pole1);
 }
 //////////////////////////////////////////////////////////////////////////////

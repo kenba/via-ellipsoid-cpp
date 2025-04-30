@@ -114,22 +114,22 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("metres_to_radians", &GeodesicSegmentDouble::metres_to_radians)
       .def("radians_to_metres", &GeodesicSegmentDouble::radians_to_metres)
       .def("length", &GeodesicSegmentDouble::length)
-      .def("aux_beta", &GeodesicSegmentDouble::aux_beta)
-      .def("aux_latitude", &GeodesicSegmentDouble::aux_latitude)
+      .def("arc_beta", &GeodesicSegmentDouble::arc_beta)
+      .def("arc_latitude", &GeodesicSegmentDouble::arc_latitude)
       .def("latitude", &GeodesicSegmentDouble::latitude)
-      .def("aux_azimuth", &GeodesicSegmentDouble::aux_azimuth)
+      .def("arc_azimuth", &GeodesicSegmentDouble::arc_azimuth)
       .def("azimuth", &GeodesicSegmentDouble::azimuth)
       .def("delta_longitude", &GeodesicSegmentDouble::delta_longitude)
-      .def("aux_longitude", &GeodesicSegmentDouble::aux_longitude)
+      .def("arc_longitude", &GeodesicSegmentDouble::arc_longitude)
       .def("longitude", &GeodesicSegmentDouble::longitude)
-      .def("aux_lat_long", &GeodesicSegmentDouble::aux_lat_long)
+      .def("arc_lat_long", &GeodesicSegmentDouble::arc_lat_long)
       .def("lat_long", &GeodesicSegmentDouble::lat_long)
-      .def("aux_point", &GeodesicSegmentDouble::aux_point)
+      .def("arc_point", &GeodesicSegmentDouble::arc_point)
       .def("b", &GeodesicSegmentDouble::b)
       .def("mid_point", &GeodesicSegmentDouble::mid_point)
-      .def("aux_point_and_pole", &GeodesicSegmentDouble::aux_point_and_pole)
-      .def("calculate_aux_atd_and_xtd",
-           &GeodesicSegmentDouble::calculate_aux_atd_and_xtd<10>)
+      .def("arc_point_and_pole", &GeodesicSegmentDouble::arc_point_and_pole)
+      .def("calculate_arc_atd_and_xtd",
+           &GeodesicSegmentDouble::calculate_arc_atd_and_xtd<10>)
       .def("calculate_atd_and_xtd",
            &GeodesicSegmentDouble::calculate_atd_and_xtd<10>);
 

@@ -509,6 +509,12 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
 
 /// Calculate the initial azimuth and great circle length between a pair
 /// of points on the auxiliary sphere.
+///
+/// @pre beta_a.cos() >= 0
+/// @pre beta_b.cos() >= 0
+/// @pre -π <= delta_long <= π
+/// @pre tolerance >= epsilon
+///
 /// @param beta1, beta2 the parametric latitudes of the start and finish
 ///     points on the auxiliary sphere.
 /// @param delta_long the longitude difference.
@@ -561,8 +567,11 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
 
 /// Calculate the `geodesic` azimuth and great circle length on the auxiliary
 /// sphere between a pair of positions.
+///
 /// @pre a and b are valid LatLong's'
+/// @pre tolerance >= epsilon
 /// @post 0 <= arc_length <= PI
+///
 /// @param a, b the start and finish positions in geodetic coordinates.
 /// @param tolerance the tolerance to perform the calculation to in Radians,
 /// default great_circle::MIN_VALUE.

@@ -64,8 +64,8 @@ auto iterate_geodesic_intersection_distances(
 
   auto iterations{1u};
   while (iterations < MAX_ITERATIONS) {
-    const auto [pos1, pole1]{g1.aux_point_and_pole(distance1)};
-    const auto [pos2, pole2]{g2.aux_point_and_pole(distance2)};
+    const auto [pos1, pole1]{g1.arc_point_and_pole(distance1)};
+    const auto [pos2, pole2]{g2.arc_point_and_pole(distance2)};
 
     const T sq_d{vector::sq_distance(pos1, pos2)};
     if (sq_d < sq_precision)
@@ -129,8 +129,9 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
       Radians<T>(great_circle::MIN_VALUE<T>), g1.ellipsoid())};
 
   // Determine whether the geodesics are reciprocal
-  const bool reciprocal{g1.pole().dot(g2.pole()) < T()};
-  const Radians<T> atd{ reciprocal ? -g3_arc_length : g3_arc_length };
+  const Angle<T> delta_azimuth1_2{g1.azi() - g2.azi()};
+  const bool reciprocal{std::signbit(delta_azimuth1_2.cos().v())};
+  const Radians<T> atd{reciprocal ? -g3_arc_length : g3_arc_length};
 
   // Determine whether the geodesics are coincident
   const Angle<T> delta_azimuth1_3{g1.azi() - g3_azi};
@@ -158,8 +159,8 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
   // sphere great circle arcs
   const Radians<T> half_arc_length1{g1.arc_length().v() / 2};
   const Radians<T> half_arc_length2{g2.arc_length().v() / 2};
-  const auto [a1mid, pole1mid]{g1.aux_point_and_pole(half_arc_length1)};
-  const auto [a2mid, pole2mid]{g2.aux_point_and_pole(half_arc_length2)};
+  const auto [a1mid, pole1mid]{g1.arc_point_and_pole(half_arc_length1)};
+  const auto [a2mid, pole2mid]{g2.arc_point_and_pole(half_arc_length2)};
   const auto c{
       vector::intersection::calculate_intersection(pole1mid, pole2mid)};
 

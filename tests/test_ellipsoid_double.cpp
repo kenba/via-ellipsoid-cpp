@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   const GeodesicSegment<double> g1(g.beta(), g.lon(), g.azi(), half_arc_length,
                                    g.ellipsoid());
   // a geodesic from the mid point of g to its end
-  const GeodesicSegment<double> g2(g.aux_beta(Angle<double>(half_arc_length)),
-                                   g.aux_longitude(half_arc_length),
-                                   g.aux_azimuth(half_arc_length),
+  const GeodesicSegment<double> g2(g.arc_beta(Angle<double>(half_arc_length)),
+                                   g.arc_longitude(half_arc_length),
+                                   g.arc_azimuth(half_arc_length),
                                    half_arc_length, g.ellipsoid());
 
   // 1mm precision in Radians on the auxiliary sphere
@@ -192,19 +192,21 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   // geodesics are coincident
   const auto [distance1, distance2, iterations]{
       calculate_sphere_intersection_distances(g1, g2, precision)};
-  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance1.v(), 2 * CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance1.v(),
+                    2 * CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, distance2.v());
   BOOST_CHECK_EQUAL(0, iterations);
 
   // a geodesic from the mid point of g to another point
-  const GeodesicSegment<double> g3(g.aux_beta(Angle<double>(half_arc_length)),
-                                   g.aux_longitude(half_arc_length), g.azi(),
+  const GeodesicSegment<double> g3(g.arc_beta(Angle<double>(half_arc_length)),
+                                   g.arc_longitude(half_arc_length), g.azi(),
                                    half_arc_length, g.ellipsoid());
 
   // geodesics are NOT coincident
   const auto [distance3, distance4, iterations2]{
       calculate_sphere_intersection_distances(g1, g3, precision)};
-  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(), 2 * CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(),
+                    2 * CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, distance4.v());
   BOOST_CHECK_EQUAL(0, iterations2);
 }

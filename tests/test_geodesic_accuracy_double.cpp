@@ -163,6 +163,13 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
         std::abs(azimuth_2 - end_azimuth.to_degrees().v())};
     BOOST_CHECK_SMALL(delta_end_azimuth, 100 * azimuth_tolerance);
 
+#ifdef OUTPUT_VIA_ELLIPSOID_VALUES
+    std::cout << std::setprecision(18) << lat1d << " 0 "
+              << azimuth.to_degrees().v() << " " << lat2d << " " << lon2d << " "
+              << end_azimuth.to_degrees().v() << " " << result_m.v()
+              << std::endl;
+#endif
+
     //  random_df = tests_df[:100000]
     //  antipodal_df = tests_df[100000:150000]
     //  short_df = tests_df[150000:200000]
@@ -175,8 +182,10 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
     ++line_number;
   }
 
+#ifndef OUTPUT_VIA_ELLIPSOID_VALUES
 #ifndef OUTPUT_GEOGRAPHICLIB_VALUES
   std::cout << "lines: " << line_number << std::endl;
+#endif
 #endif
 }
 //////////////////////////////////////////////////////////////////////////////

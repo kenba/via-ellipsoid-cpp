@@ -59,7 +59,6 @@ BOOST_AUTO_TEST_CASE(test_rtca_do_283b_geodesic_examples) {
 
   const auto WGS84_ELLIPSOID{ellipsoid::Ellipsoid<double>::wgs84()};
 
-  auto line_number(0u);
   std::string line;
   // ignore first line in the file
   std::getline(data_file, line);
@@ -101,7 +100,6 @@ BOOST_AUTO_TEST_CASE(test_rtca_do_283b_geodesic_examples) {
       const double distance_tolerance{1e-5};
       BOOST_CHECK_SMALL(delta_length_m, 100 * distance_tolerance);
     }
-    ++line_number;
   }
 }
 //////////////////////////////////////////////////////////////////////////////

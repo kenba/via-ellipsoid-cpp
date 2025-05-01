@@ -49,7 +49,7 @@ public:
 
   /// Azimuth at the Equator.
   Angle<T> azi0_ = Angle<T>(T(), T(1));
-  /// Great circle arc distance from Northward Equator crossing.
+  /// Great circle arc distance to the first Equator crossing.
   Angle<T> sigma1_ = Angle<T>(T(), T(1));
   /// Great circle arc length on the auxiliary sphere in radians.
   Radians<T> arc_length_ = Radians<T>(T());
@@ -282,7 +282,7 @@ public:
     return beta;
   }
 
-  /// Calculate the geodetic latitude at the great circle length.
+  /// Calculate the geodetic latitude at the great circle arc distance.
   /// @param sigma the arc distance on the auxiliary sphere as an Angle.
   /// @return the geodetic latitude of the position at sigma.
   [[nodiscard("Pure Function")]]
@@ -329,7 +329,7 @@ public:
     return arc_azimuth(sigma);
   }
 
-  /// Calculate the geodesic longitude difference at a great circle length
+  /// Calculate the geodesic longitude difference at arc distance
   /// along the auxiliary sphere.
   /// @param arc_distance the great circle arc distance on the auxiliary sphere.
   /// @param sigma the arc_distance as an Angle.
@@ -337,6 +337,9 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto delta_longitude(const Radians<T> arc_distance,
                                  const Angle<T> sigma) const -> Angle<T> {
+    if (arc_distance.abs().v() < great_circle::MIN_VALUE<T>)
+      return Angle<T>();
+
     // The great circle distance from Northward Equator crossing.
     const Angle<T> sigma_sum(sigma1_ + sigma);
 
@@ -414,16 +417,9 @@ public:
     return vector::to_point(beta, lon);
   }
 
-  /// Calculate the end point on the geodesic.
-  /// @return end point
-  [[nodiscard("Pure Function")]]
-  constexpr auto b() const -> V {
-    return arc_point(arc_length_);
-  }
-
   /// Calculate the point on the auxiliary sphere at the mid point of the
   /// `GeodesicSegment`.
-  /// @return end point
+  /// @return mid point
   [[nodiscard("Pure Function")]]
   constexpr auto mid_point() const -> V {
     return arc_point(

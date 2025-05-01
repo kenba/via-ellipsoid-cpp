@@ -67,7 +67,7 @@ constexpr auto calculate_astroid(const T x, const T y) -> T {
     // of precision due to cancellation.
     t3 += std::copysign(std::sqrt(discriminant), t3);
     const T t{std::cbrt(t3)};
-    u += t + (t != T() ? r2 / t : T());
+    u += t + (t == T() ? T() : r2 / t);
   } else {
     // T is complex, but the way u is defined the result is real.
     const T angle{std::atan2(std::sqrt(-discriminant), -(S + r3))};
@@ -125,7 +125,7 @@ constexpr auto estimate_antipodal_initial_azimuth(const Angle<T> beta1,
 
   // Test x and y params
   if ((y > -Y_TOLERANCE) && (x > T(-1) - X_THRESHOLD)) {
-    const trig::UnitNegRange<T> sin_alpha{std::min(-x, T(1))};
+    const auto sin_alpha{trig::UnitNegRange<T>::clamp(-x)};
     return Angle<T>(sin_alpha, trig::swap_sin_cos(sin_alpha)).negate_cos();
   } else {
     const T k{calculate_astroid(x, y)};
@@ -201,10 +201,11 @@ constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
   const Radians<T> b32{sin_cos_series(sigma2, c3)};
 
   const T a3c{ellipsoid.calculate_a3c(clairaut, eps)};
-  return Radians<T>(a3c * (sigma12.v() + (b32.v() - b31.v())));
+  return Radians<T>(a3c * (sigma12 + (b32 - b31)).v());
 }
 
-/// Estimate the initial azimuth for a normal geodesic.
+/// Estimate the initial azimuth on the auxiliary sphere for normal arcs,
+/// i.e. NOT nearly antipodal points.
 ///
 /// @pre abs_lambda12 >= 0
 ///
@@ -608,7 +609,7 @@ auto calculate_azimuths_arc_length(
 ///
 /// @param beta1 the start parametric Latitude on the auxiliary sphere.
 /// @param alpha1 the azimuth at the start point.
-/// @param gc_distance the great circle distance on the auxiliary sphere.
+/// @param arc_distance the great circle distance on the auxiliary sphere.
 /// @param ellipsoid the `Ellipsoid`, default WGS 84.
 ///
 /// @return the geodesic distance in Metres.
@@ -616,7 +617,7 @@ template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 constexpr auto convert_radians_to_metres(
-    const Angle<T> &beta1, const Angle<T> &alpha1, Radians<T> gc_distance,
+    const Angle<T> &beta1, const Angle<T> &alpha1, Radians<T> arc_distance,
     const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84()) noexcept
     -> units::si::Metres<T> {
 
@@ -625,7 +626,7 @@ constexpr auto convert_radians_to_metres(
   // Calculate the distance from the first equator crossing
   const auto sigma1{
       Angle<T>::from_y_x(beta1.sin().v(), beta1.cos().v() * alpha1.cos().v())};
-  const auto sigma_sum{sigma1 + Angle<T>(gc_distance)};
+  const auto sigma_sum{sigma1 + Angle<T>(arc_distance)};
 
   // Calculate the ellipsoid coefficients
   const trig::UnitNegRange<T> clairaut(alpha1.sin().v() * beta1.cos().v());
@@ -636,7 +637,7 @@ constexpr auto convert_radians_to_metres(
   const auto b12{ellipsoid::sin_cos_series(sigma_sum, c1)};
 
   return units::si::Metres<T>(ellipsoid.b().v() * a1 *
-                              (gc_distance + b12 - b11).v());
+                              (arc_distance + b12 - b11).v());
 }
 
 } // namespace ellipsoid

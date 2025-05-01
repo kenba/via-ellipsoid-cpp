@@ -49,15 +49,15 @@ public:
 
   /// Azimuth at the Equator.
   Angle<T> azi0_ = Angle<T>(T(), T(1));
-  /// Great Circle distance from Northward Equator crossing.
+  /// Great circle arc distance from Northward Equator crossing.
   Angle<T> sigma1_ = Angle<T>(T(), T(1));
-  /// The Great Circle length on the auxiliary sphere in radians.
+  /// Great circle arc length on the auxiliary sphere in radians.
   Radians<T> arc_length_ = Radians<T>(T());
-  /// integration constant epsilon, derived from Clairaut's constant.
+  /// Integration constant: epsilon, derived from Clairaut's constant.
   T eps_ = T();
   T a1_ = T(1); ///< constant used to convert geodesic/great circle distances.
   T a3c_ = T(); ///< constant used to convert geodesic/great circle longitudes.
-  /// start point geodesic/great circle distance difference.
+  /// Start parameter for geodesic/great circle distance differences.
   Radians<T> b11_ = Radians<T>(T());
   /// A const reference to the underlying Ellipsoid, default WGS84.
   const Ellipsoid<T> &ellipsoid_{Ellipsoid<T>::wgs84()};
@@ -226,15 +226,15 @@ public:
 
   /// Convert a distance in metres on the ellipsoid to radians on the
   /// auxiliary sphere.
-  /// @param distance_m the distance along the GeodesicSegment in metres.
+  /// @param distance the distance along the GeodesicSegment in metres.
   /// @return the distance along the great circle arc in radians.
   [[nodiscard("Pure Function")]]
-  constexpr auto metres_to_radians(const units::si::Metres<T> distance_m) const
+  constexpr auto metres_to_radians(const units::si::Metres<T> distance) const
       -> Radians<T> {
-    if (std::abs(distance_m.v()) < great_circle::MIN_VALUE<T>)
+    if (std::abs(distance.v()) < great_circle::MIN_VALUE<T>)
       return Radians(T());
 
-    const auto tau12{Radians<T>(distance_m.v() / (ellipsoid_.b().v() * a1_))};
+    const auto tau12{Radians<T>(distance.v() / (ellipsoid_.b().v() * a1_))};
     const auto tau_sum{Angle<T>(b11_ + tau12)};
     const auto c1p{evaluate_coeffs_C1p<T>(eps_)};
     const auto b12{sin_cos_series(sigma1_ + Angle<T>(tau_sum), c1p)};
@@ -244,11 +244,11 @@ public:
 
   /// Convert a distance in radians on the auxiliary sphere to metres
   /// on the ellipsoid.
-  /// @param distance the distance along the great circle arc in Radians.
-  /// @param sigma the distance along the great circle arc as an Angle.
+  /// @param arc_distance the distance along the great circle arc in Radians.
+  /// @param sigma the arc_distance as an Angle.
   /// @return the distance along the GeodesicSegment in metres.
   [[nodiscard("Pure Function")]]
-  constexpr auto radians_to_metres(const Radians<T> distance,
+  constexpr auto radians_to_metres(const Radians<T> arc_distance,
                                    const Angle<T> sigma) const
       -> units::si::Metres<T> {
     // Calculate Great circle distance from Northward Equator crossing.
@@ -257,7 +257,7 @@ public:
     const auto b12{sin_cos_series(sigma_sum, c1)};
 
     return units::si::Metres<T>(ellipsoid().b().v() * a1_ *
-                                (distance + b12 - b11_).v());
+                                (arc_distance + b12 - b11_).v());
   }
 
   /// Accessor for the length of the GeodesicSegment in metres.
@@ -268,8 +268,8 @@ public:
   }
 
   /// Calculate the parametric latitude at the great circle distance.
-  /// @param sigma the distance on the auxiliary sphere as an Angle.
-  /// @return the parametric latitude.
+  /// @param sigma the arc distance on the auxiliary sphere as an Angle.
+  /// @return the parametric latitude at sigma.
   [[nodiscard("Pure Function")]]
   constexpr auto arc_beta(const Angle<T> sigma) const -> Angle<T> {
     const trig::UnitNegRange sin_beta{sigma.cos().v() * beta_.sin().v() +
@@ -283,7 +283,7 @@ public:
   }
 
   /// Calculate the geodetic latitude at the great circle length.
-  /// @param sigma the distance on the auxiliary sphere as an Angle.
+  /// @param sigma the arc distance on the auxiliary sphere as an Angle.
   /// @return the geodetic latitude of the position at sigma.
   [[nodiscard("Pure Function")]]
   constexpr auto arc_latitude(const Angle<T> sigma) const -> Angle<T> {
@@ -292,18 +292,15 @@ public:
 
   /// Calculate the geodetic latitude at distance along the geodesic.
   /// @param distance the distance along the geodesic segment, in metres.
-  /// @return the geodetic latitude.
+  /// @return the geodetic latitude at distance.
   [[nodiscard("Pure Function")]]
   constexpr auto latitude(const units::si::Metres<T> distance) const
       -> Angle<T> {
-    if (std::abs(distance.v()) < great_circle::MIN_VALUE<T>)
-      return ellipsoid_.calculate_geodetic_latitude(beta_);
-
     return arc_latitude(Angle<T>(metres_to_radians(distance)));
   }
 
   /// Calculate the azimuth along the arc at great circle distance sigma.
-  /// @param sigma the distance on the auxiliary sphere as an Angle.
+  /// @param sigma the arc distance on the auxiliary sphere as an Angle.
   /// @return the azimuth at `sigma`.
   [[nodiscard("Pure Function")]]
   constexpr auto arc_azimuth(const Angle<T> sigma) const -> Angle<T> {
@@ -334,11 +331,11 @@ public:
 
   /// Calculate the geodesic longitude difference at a great circle length
   /// along the auxiliary sphere.
-  /// @param distance the great circle distance on the auxiliary sphere.
-  /// @param sigma the great circle distance as an Angle.
+  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @param sigma the arc_distance as an Angle.
   /// @return the longitude difference from the start point.
   [[nodiscard("Pure Function")]]
-  constexpr auto delta_longitude(const Radians<T> distance,
+  constexpr auto delta_longitude(const Radians<T> arc_distance,
                                  const Angle<T> sigma) const -> Angle<T> {
     // The great circle distance from Northward Equator crossing.
     const Angle<T> sigma_sum(sigma1_ + sigma);
@@ -355,18 +352,18 @@ public:
     const auto b32(sin_cos_series(sigma_sum, c3));
 
     return omega12 -
-           Angle<T>(Radians<T>{a3c_ * (distance.v() + (b32.v() - b31.v()))});
+           Angle<T>(Radians<T>{a3c_ * (arc_distance + (b32 - b31)).v()});
   }
 
   /// Calculate the geodesic longitude at the great circle length along
   /// the auxiliary sphere.
-  /// @param distance the great circle distance on the auxiliary sphere.
-  /// @param sigma the great circle distance as an Angle.
-  /// @return the geodesic longitude as an Angle.
+  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @param sigma the arc_distance as an Angle.
+  /// @return the geodesic longitude at arc_distance.
   [[nodiscard("Pure Function")]]
-  constexpr auto arc_longitude(const Radians<T> distance,
+  constexpr auto arc_longitude(const Radians<T> arc_distance,
                                const Angle<T> sigma) const -> Angle<T> {
-    return lon_ + delta_longitude(distance, sigma);
+    return lon_ + delta_longitude(arc_distance, sigma);
   }
 
   /// Calculate the geodesic longitude at the length along the geodesic.
@@ -381,20 +378,20 @@ public:
 
   /// Calculate the geodesic `LatLong` at the great circle length along
   /// the auxiliary sphere.
-  /// @param distance the great circle distance on the auxiliary sphere,
-  /// in Radians.
-  /// @return the `LatLong` of the geodesic position at `distance`.
+  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @param sigma the arc_distance as an Angle.
+  /// @return the `LatLong` of the geodesic position at arc_distance.
   [[nodiscard("Pure Function")]]
-  constexpr auto arc_lat_long(const Radians<T> distance,
+  constexpr auto arc_lat_long(const Radians<T> arc_distance,
                               const Angle<T> sigma) const -> LatLong<T> {
     return LatLong<T>(arc_latitude(sigma).to_degrees(),
-                      arc_longitude(distance, sigma).to_degrees());
+                      arc_longitude(arc_distance, sigma).to_degrees());
   }
 
   /// Calculate the geodesic `LatLong` at a distance along the
   /// `GeodesicSegment`.
   /// @param distance the distance along the geodesic segment, in metres.
-  /// @return the `LatLong` of the geodesic position at `distance`.
+  /// @return the `LatLong` of the geodesic position at distance.
   [[nodiscard("Pure Function")]]
   constexpr auto lat_long(const units::si::Metres<T> distance) const
       -> LatLong<T> {
@@ -404,17 +401,16 @@ public:
 
   /// Calculate the point on the auxiliary sphere at the
   /// great circle arc length.
-  /// @param distance the great circle distance on the auxiliary sphere,
-  /// in Radians.
-  /// @return the point on the auxiliary sphere at `distance`.
+  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @return the point on the auxiliary sphere at arc_distance.
   [[nodiscard("Pure Function")]]
-  constexpr auto arc_point(const Radians<T> distance) const -> V {
-    if (distance.abs().v() < great_circle::MIN_VALUE<T>)
+  constexpr auto arc_point(const Radians<T> arc_distance) const -> V {
+    if (arc_distance.abs().v() < great_circle::MIN_VALUE<T>)
       return a();
 
-    const Angle<T> sigma{distance};
+    const Angle<T> sigma{arc_distance};
     const Angle<T> beta{arc_beta(Angle<T>(sigma))};
-    const Angle<T> lon{arc_longitude(distance, Angle<T>(sigma))};
+    const Angle<T> lon{arc_longitude(arc_distance, Angle<T>(sigma))};
     return vector::to_point(beta, lon);
   }
 
@@ -434,23 +430,40 @@ public:
         metres_to_radians(units::si::Metres<T>(length().v() / T(2))));
   }
 
-  /// Calculate the geodesic point and pole at the arc length along the
-  /// geodesic.
-  /// @param distance the great circle length on the auxiliary sphere, in
-  /// radians.
-  /// @return the point and pole projected onto the auxiliary sphere at at
-  /// distance.
-  [[nodiscard("Pure Function")]]
-  constexpr auto arc_point_and_pole(const Radians<T> distance) const
-      -> std::tuple<V, V> {
-    const Angle<T> sigma{Angle<T>(distance)};
+  /// Calculate the geodesic pole at the great circle arc distance.
+  /// @param arc_distance the great circle distance on the auxiliary sphere
+  /// @return the pole projected onto the auxiliary sphere at at arc_distance.
+  constexpr auto arc_pole(const Radians<T> arc_distance) const -> V {
+    // if point is on a meridional geodesic, use auxiliary sphere point and pole
+    if (azi0_.sin().abs().v() < great_circle::MIN_VALUE<T>) {
+      return vector::calculate_pole(beta_, lon_, azi_);
+    }
+
+    const Angle<T> sigma{Angle<T>(arc_distance)};
     const Angle<T> beta{arc_beta(sigma)};
-    const Angle<T> lon{arc_longitude(distance, sigma)};
+    const Angle<T> lon{arc_longitude(arc_distance, sigma)};
+    const Angle<T> sigma_sum{sigma1_ + sigma};
+    const auto azimuth{Angle<T>::from_y_x(
+        azi0_.sin().v(), azi0_.cos().v() * sigma_sum.cos().v())};
+    return vector::calculate_pole(beta, lon, azimuth);
+  }
+
+  /// Calculate the geodesic point and pole at the arc distance along the
+  /// geodesic.
+  /// @param arc_distance the great circle distance on the auxiliary sphere
+  /// @return the point and pole projected onto the auxiliary sphere at at
+  /// arc_distance.
+  [[nodiscard("Pure Function")]]
+  constexpr auto arc_point_and_pole(const Radians<T> arc_distance) const
+      -> std::tuple<V, V> {
+    const Angle<T> sigma{Angle<T>(arc_distance)};
+    const Angle<T> beta{arc_beta(sigma)};
+    const Angle<T> lon{arc_longitude(arc_distance, sigma)};
     const auto point{vector::to_point(beta, lon)};
 
     // if point is on a meridional geodesic, use auxiliary sphere point and pole
     if (azi0_.sin().abs().v() < great_circle::MIN_VALUE<T>) {
-      const auto pole{vector::calculate_pole(beta, lon, azi_)};
+      const auto pole{vector::calculate_pole(beta_, lon_, azi_)};
       return {point, pole};
     }
 
@@ -514,7 +527,7 @@ public:
     if (xtd.v() < precision.v()) {
       xtd = Radians(T());
     } else {
-      const auto [_a, pole_x]{arc_point_and_pole(atd)};
+      const auto pole_x{arc_pole(atd)};
       const auto sign{pole_x.dot(point)};
       xtd = Radians<T>(std::copysign(xtd.v(), sign));
     }

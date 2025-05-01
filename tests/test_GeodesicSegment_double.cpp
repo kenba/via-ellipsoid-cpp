@@ -49,8 +49,9 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
   const GeodesicSegment<double> geodesic0(Angle(Degrees(45.0)),
                                           Angle(Degrees(0.0)),
                                           Angle(Degrees(90.0)), Radians(0.0));
-  BOOST_CHECK_EQUAL(trig::PI_2<double>,
-                    geodesic0.arc_azimuth(Radians(0.0)).to_radians().v());
+  BOOST_CHECK_EQUAL(
+      trig::PI_2<double>,
+      geodesic0.arc_azimuth(Angle(Radians(0.0))).to_radians().v());
 
   // LatLong, azimuth, arc_length constructor.
   const LatLong a(Degrees(45.0), Degrees(45.0));
@@ -71,7 +72,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
     const GeodesicSegment<double> geodesic2(a, azimuth, arc_length);
     BOOST_CHECK(geodesic2.is_valid());
 
-    const Angle<double> azi2{geodesic2.arc_azimuth(Radians(0.0))};
+    const Angle<double> azi2{geodesic2.arc_azimuth(Angle(Radians(0.0)))};
     BOOST_CHECK_CLOSE(trig::deg2rad<double>(i), azi2.to_radians().v(),
                       2 * CALCULATION_TOLERANCE);
 
@@ -180,7 +181,7 @@ BOOST_AUTO_TEST_CASE(test_meridonal_Geodesic) {
 
   // Calculate the azimuth at the North pole
   const Radians mid_length(0.5 * g1.arc_length().v());
-  const auto azimuth{g1.arc_azimuth(mid_length)};
+  const auto azimuth{g1.arc_azimuth(Angle(mid_length))};
   BOOST_CHECK_EQUAL(180.0, azimuth.to_degrees().v());
 
   // Calculate the point and great circle pole at the North pole

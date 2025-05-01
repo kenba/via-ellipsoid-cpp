@@ -47,13 +47,14 @@ public:
   Angle<T> lon_ = Angle<T>(T(), T(1)); ///< The start longitude.
   Angle<T> azi_ = Angle<T>(T(), T(1)); ///< The start azimuth.
 
-  Angle<T> azi0_ = Angle<T>(T(), T(1)); ///< Azimuth at the Equator.
-  Angle<T> sigma1_ = Angle<T>(
-      T(), T(1)); ///< Great Circle distance from Northward Equator crossing.
-  Radians<T> arc_length_ = Radians<T>(
-      T()); ///< The Great Circle length on the auxiliary sphere in radians.
-  T eps_ =
-      T(); ///< integration constant epsilon, derived from Clairaut's constant.
+  /// Azimuth at the Equator.
+  Angle<T> azi0_ = Angle<T>(T(), T(1));
+  /// Great Circle distance from Northward Equator crossing.
+  Angle<T> sigma1_ = Angle<T>(T(), T(1));
+  /// The Great Circle length on the auxiliary sphere in radians.
+  Radians<T> arc_length_ = Radians<T>(T());
+  /// integration constant epsilon, derived from Clairaut's constant.
+  T eps_ = T();
   T a1_ = T(1); ///< constant used to convert geodesic/great circle distances.
   T a3c_ = T(); ///< constant used to convert geodesic/great circle longitudes.
   /// start point geodesic/great circle distance difference.
@@ -65,8 +66,8 @@ public:
 public:
 #endif
 
-  /// Construct a GeodesicSegment from a start point parametric lat lon, azimuth
-  /// and great circle arc length on the auxiliary sphere.
+  /// Construct a GeodesicSegment from a start point, parametric lat lon,
+  /// azimuth and great circle arc length on the auxiliary sphere.
   /// @pre -90° <= beta <= 90°
   /// @pre 0 <= arc_length <= π
   /// @param beta the parametric start latitude.
@@ -101,8 +102,8 @@ public:
     b11_ = sin_cos_series(sigma1_, C1);
   }
 
-  /// Construct a GeodesicSegment from a start point, azimuth and arc length on
-  /// the auxiliary sphere.
+  /// Construct a GeodesicSegment from a start point, azimuth and great circle
+  /// arc length on the auxiliary sphere.
   /// @pre 0 <= arc_length <= π
   /// @param a the geodetic start point.
   /// @param azimuth the azimuth at the start point.
@@ -131,7 +132,7 @@ public:
       : GeodesicSegment(
             ellipsoid.calculate_parametric_latitude(Angle<T>(a.lat())),
             Angle<T>(a.lon()), azimuth, Radians(T()), ellipsoid) {
-    set_arc_length(metres_to_radians(length));
+    arc_length_ = metres_to_radians(length);
   }
 
   /// Construct a GeodesicSegment from a start point and azimuth, arc length
@@ -174,7 +175,7 @@ public:
            arc_length_.v() <= trig::PI<T>;
   }
 
-  /// Accessor for the start latitude on the auxiliary sphere.
+  /// Accessor for the start parametric latitude on the auxiliary sphere.
   /// @return beta_.
   [[nodiscard("Pure Function")]]
   constexpr auto beta() const noexcept -> Angle<T> {
@@ -195,12 +196,6 @@ public:
     return azi_;
   }
 
-  /// Set the `arc_length_`
-  /// @param arc_length the new arc_length
-  constexpr void set_arc_length(const Radians<T> arc_length) {
-    arc_length_ = arc_length;
-  }
-
   /// Accessor for the arc length on the auxiliary sphere in radians.
   /// @return The arc length on the auxiliary sphere in radians.
   [[nodiscard("Pure Function")]]
@@ -215,32 +210,18 @@ public:
     return ellipsoid_;
   }
 
-  /// Accessor for the start point on the unit sphere.
-  /// @return start point
-  [[nodiscard("Pure Function")]]
-  constexpr auto a() const noexcept -> V {
-    return vector::to_point<T>(beta_, lon_);
-  }
-
-  /// Accessor for the start pole on the unit sphere.
-  /// @return start pole
-  [[nodiscard("Pure Function")]]
-  constexpr auto pole() const noexcept -> V {
-    return vector::calculate_pole<T>(beta_, lon_, azi_);
-  }
-
-  /// Accessor for the start direction on the unit sphere.
-  /// @return start direction
-  [[nodiscard("Pure Function")]]
-  constexpr auto direction() const noexcept -> V {
-    return vector::calculate_direction<T>(beta_, lon_, azi_);
-  }
-
   /// Accessor for the integration constant: epsilon.
   /// @return eps_.
   [[nodiscard("Pure Function")]]
   constexpr auto epsilon() const noexcept -> T {
     return eps_;
+  }
+
+  /// Accessor for the start point on the unit sphere.
+  /// @return start point
+  [[nodiscard("Pure Function")]]
+  constexpr auto a() const noexcept -> V {
+    return vector::to_point<T>(beta_, lon_);
   }
 
   /// Convert a distance in metres on the ellipsoid to radians on the
@@ -324,25 +305,19 @@ public:
     return arc_latitude(metres_to_radians(length_m));
   }
 
-  /// Calculate the azimuth at the great circle length.
-  /// @param gc_length the great circle arc length on the auxiliary sphere,
-  /// in radians.
+  /// Calculate the azimuth along the arc at great circle distance sigma.
+  /// @param sigma the great circle distance on the auxiliary sphere.
   /// @return the azimuth of the geodesic/great circle at `gc_length`.
   [[nodiscard("Pure Function")]]
-  constexpr auto arc_azimuth(const Radians<T> gc_length = Radians(T())) const
-      -> Angle<T> {
-    constexpr T MAX_LAT{T(1) - great_circle::MIN_VALUE<T>};
+  constexpr auto arc_azimuth(const Angle<T> sigma) const -> Angle<T> {
+    constexpr T MAX_LAT{T(1) - std::numeric_limits<T>::epsilon()};
 
-    if (gc_length.abs().v() <= great_circle::MIN_VALUE<T>)
-      return azi_;
-
-    const Angle<T> length(gc_length);
     // Use Karney's method to calculate latitude and azimuth.
-    const Angle<T> sigma_sum{sigma1_ + length};
+    const Angle<T> sigma_sum{sigma1_ + sigma};
     const T sin_beta{azi0_.cos().v() * sigma_sum.sin().v()};
 
-    // Handle North pole, only valid azimuth is due South
-    if (MAX_LAT < sin_beta)
+    // Handle North pole, only valid azimuth is South
+    if (sin_beta > MAX_LAT)
       return Angle<T>(trig::UnitNegRange(T()), trig::UnitNegRange(T(-1)));
     else
       return Angle<T>::from_y_x(azi0_.sin().v(),
@@ -356,7 +331,8 @@ public:
   constexpr auto
   azimuth(const units::si::Metres<T> length_m = units::si::Metres(T())) const
       -> Angle<T> {
-    return arc_azimuth(metres_to_radians(length_m));
+    const Angle<T> sigma{metres_to_radians(length_m)};
+    return arc_azimuth(sigma);
   }
 
   /// Calculate the geodesic longitude difference at a great circle length
@@ -515,9 +491,10 @@ public:
     auto [atd, xtd]{vector::calculate_atd_and_xtd(a, pole, point)};
     auto iterations{1u};
     while (iterations < MAX_ITERATIONS) {
-      const auto beta_x{arc_beta(Angle<T>(atd))};
+      const Angle<T> atd_angle{atd};
+      const auto beta_x{arc_beta(atd_angle)};
       const auto lon_x{arc_longitude(atd)};
-      const auto azi_x{arc_azimuth(atd)};
+      const auto azi_x{arc_azimuth(atd_angle)};
 
       // calculate the geodesic azimuth and length to the point from the
       // GeodesicSegment position at atd
@@ -572,8 +549,9 @@ public:
         calculate_arc_atd_and_xtd<MAX_ITERATIONS>(beta, lon, precision)};
 
     // calculate the parametric latitude and azimuth at the abeam point
-    const Angle<T> beta_x{arc_beta(Angle<T>(atd))};
-    const Angle<T> alpha{arc_azimuth(atd).quarter_turn_ccw()};
+    const Angle<T> atd_angle{atd};
+    const Angle<T> beta_x{arc_beta(atd_angle)};
+    const Angle<T> alpha{arc_azimuth(atd_angle).quarter_turn_ccw()};
     return {radians_to_metres(atd),
             convert_radians_to_metres(beta_x, alpha, xtd, ellipsoid_),
             iterations};

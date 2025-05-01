@@ -181,10 +181,10 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   const GeodesicSegment<double> g1(g.beta(), g.lon(), g.azi(), half_arc_length,
                                    g.ellipsoid());
   // a geodesic from the mid point of g to its end
-  const GeodesicSegment<double> g2(g.arc_beta(Angle<double>(half_arc_length)),
-                                   g.arc_longitude(half_arc_length),
-                                   g.arc_azimuth(half_arc_length),
-                                   half_arc_length, g.ellipsoid());
+  const Angle<double> half_arc_length_angle(half_arc_length);
+  const GeodesicSegment<double> g2(
+      g.arc_beta(half_arc_length_angle), g.arc_longitude(half_arc_length),
+      g.arc_azimuth(half_arc_length_angle), half_arc_length, g.ellipsoid());
 
   // 1mm precision in Radians on the auxiliary sphere
   const Radians<double> precision{1e-3 / g.ellipsoid().a().v()};

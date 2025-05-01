@@ -183,7 +183,8 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   // a geodesic from the mid point of g to its end
   const Angle<double> half_arc_length_angle(half_arc_length);
   const GeodesicSegment<double> g2(
-      g.arc_beta(half_arc_length_angle), g.arc_longitude(half_arc_length),
+      g.arc_beta(half_arc_length_angle),
+      g.arc_longitude(half_arc_length, half_arc_length_angle),
       g.arc_azimuth(half_arc_length_angle), half_arc_length, g.ellipsoid());
 
   // 1mm precision in Radians on the auxiliary sphere
@@ -198,9 +199,10 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   BOOST_CHECK_EQUAL(0, iterations);
 
   // a geodesic from the mid point of g to another point
-  const GeodesicSegment<double> g3(g.arc_beta(Angle<double>(half_arc_length)),
-                                   g.arc_longitude(half_arc_length), g.azi(),
-                                   half_arc_length, g.ellipsoid());
+  const GeodesicSegment<double> g3(
+      g.arc_beta(half_arc_length_angle),
+      g.arc_longitude(half_arc_length, half_arc_length_angle), g.azi(),
+      half_arc_length, g.ellipsoid());
 
   // geodesics are NOT coincident
   const auto [distance3, distance4, iterations2]{

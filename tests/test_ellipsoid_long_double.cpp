@@ -61,8 +61,8 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   std::cout << "Long double iterations: " << iterations << std::endl;
 #endif
 
-  const auto pd1{g1.arc_lat_long(d1)};
-  const auto pd2{g2.arc_lat_long(d2)};
+  const auto pd1{g1.arc_lat_long(d1, Angle<long double>(d1))};
+  const auto pd2{g2.arc_lat_long(d2, Angle<long double>(d2))};
 // Disable tests since Visual Studio cannot calculate long doubles
 #ifndef _MSC_VER
   BOOST_CHECK_CLOSE(-1.44147956008236583L, pd1.lat().v(),

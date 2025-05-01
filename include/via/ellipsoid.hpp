@@ -78,7 +78,7 @@ auto calculate_intersection_point(const GeodesicSegment<T> &g1,
               distance2]{calculate_intersection_distances(g1, g2, precision)};
   if (vector::intersection::is_within(distance1.v(), g1.arc_length().v()) &&
       vector::intersection::is_within(distance2.v(), g2.arc_length().v()))
-    return g1.arc_lat_long(distance1);
+    return g1.arc_lat_long(distance1, Angle<T>(distance1));
   else
     return std::nullopt;
 }

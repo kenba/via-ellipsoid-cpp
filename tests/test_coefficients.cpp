@@ -178,39 +178,31 @@ BOOST_AUTO_TEST_CASE(test_evaluate_coeffs_C3y) {
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_sin_cos_series_C3) {
+BOOST_AUTO_TEST_CASE(test_sin_cos_series_C1) {
   const Angle<double> sigma(Radians(0.1 * trig::PI<double>));
 
-  boost::array<double, 15> boost_C3x_6;
-  boost::geometry::series_expansion::evaluate_coeffs_C3x<6>(boost_C3x_6, N);
-  boost::array<double, 6> boost_C3_6;
-  boost::geometry::series_expansion::evaluate_coeffs_C3(boost_C3_6, boost_C3x_6,
-                                                        EPS);
-  auto boost_C3_6_B31(boost::geometry::series_expansion::sin_cos_series(
-      sigma.sin().v(), sigma.cos().v(), boost_C3_6));
+  boost::array<double, 7> boost_C1_7;
+  boost::geometry::series_expansion::evaluate_coeffs_C1(boost_C1_7, EPS);
+  auto boost_C1(boost::geometry::series_expansion::sin_cos_series(
+      sigma.sin().v(), sigma.cos().v(), boost_C1_7));
 
-  auto via_C3s_6(evaluate_coeffs_C3x(N));
-  auto via_C3_6(evaluate_coeffs_C3y(via_C3s_6, EPS));
-  auto via_C3_6_B31(sin_cos_series(sigma, via_C3_6));
-  BOOST_CHECK_EQUAL(boost_C3_6_B31, via_C3_6_B31.v());
+  auto via_C1_7(evaluate_coeffs_C1(EPS));
+  auto via_C1(sin_cos_series(sigma, via_C1_7));
+  BOOST_CHECK_EQUAL(boost_C1, via_C1.v());
 
-  boost::array<long double, 28> boost_C3x_8;
-  boost::geometry::series_expansion::evaluate_coeffs_C3x<8>(boost_C3x_8, N_L);
-  boost::array<long double, 8> boost_C3_8;
-  boost::geometry::series_expansion::evaluate_coeffs_C3(boost_C3_8, boost_C3x_8,
-                                                        EPS_L);
-  auto boost_C3_8_B31(boost::geometry::series_expansion::sin_cos_series(
-      sigma.sin().v(), sigma.cos().v(), boost_C3_8));
+  boost::array<long double, 9> boost_C1_9;
+  boost::geometry::series_expansion::evaluate_coeffs_C1(boost_C1_9, EPS_L);
+  auto boost_C1_2(boost::geometry::series_expansion::sin_cos_series(
+      sigma.sin().v(), sigma.cos().v(), boost_C1_9));
 
-  auto via_C3x_8(evaluate_coeffs_C3x<long double, 8>(N_L));
-  auto via_C3_8(evaluate_coeffs_C3y<long double, 8>(via_C3x_8, EPS_L));
-  auto via_C3_8_B31(sin_cos_series(sigma, via_C3_8));
-  BOOST_CHECK_EQUAL(boost_C3_8_B31, via_C3_8_B31.v());
+  auto via_C1_9(evaluate_coeffs_C1<long double>(EPS_L));
+  auto via_C1_2(sin_cos_series(sigma, via_C1_9));
+  BOOST_CHECK_EQUAL(boost_C1_2, via_C1_2.v());
 }
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_sin_cos_series_C3_2) {
+BOOST_AUTO_TEST_CASE(test_sin_cos_series_C3) {
   const Angle<double> sigma(Radians(0.1 * trig::PI<double>));
 
   boost::array<double, 15> boost_C3x_6;

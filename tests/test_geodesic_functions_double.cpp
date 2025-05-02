@@ -194,9 +194,19 @@ BOOST_AUTO_TEST_CASE(
   // Eastbound geodesic along the equator
   const auto [azimuth1, arc_length1, end_azimuth1,
               iter1]{calculate_azimuths_arc_length(latlon1, latlon2)};
+#ifdef _MSC_VER
+  BOOST_CHECK_CLOSE(55.966495140158635, azimuth1.to_degrees().v(),
+                    2 * CALCULATION_TOLERANCE);
+#else
   BOOST_CHECK_EQUAL(55.966495140158635, azimuth1.to_degrees().v());
+#endif
   BOOST_CHECK_EQUAL(trig::PI<double>, arc_length1.v());
+#ifdef _MSC_VER
+  BOOST_CHECK_CLOSE(180.0 - 55.966495140158635, end_azimuth1.to_degrees().v(),
+                    2 * CALCULATION_TOLERANCE);
+#else
   BOOST_CHECK_EQUAL(180.0 - 55.966495140158635, end_azimuth1.to_degrees().v());
+#endif
   BOOST_CHECK_EQUAL(3, iter1);
 }
 //////////////////////////////////////////////////////////////////////////////

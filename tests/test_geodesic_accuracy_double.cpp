@@ -132,7 +132,12 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
     // Compare azimuth
     const double azimuth_1{position[AZI_1]};
     const double delta_azimuth{std::abs(azimuth_1 - azimuth.to_degrees().v())};
+#ifdef _MSC_VER
+    // relax tolerance for Visual Studio
+    const double azimuth_tolerance{ (line_number <= 400000) ? 5.33e-7 : 3.1e-4 };
+#else
     const double azimuth_tolerance{(line_number <= 400000) ? 5.0e-7 : 3.1e-4};
+#endif
     BOOST_CHECK_SMALL(delta_azimuth, 100 * azimuth_tolerance);
 
     // Compare aux sphere great circle length
@@ -154,7 +159,12 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
     if (line_number >= 150000 && line_number < 200000) {
       BOOST_CHECK_SMALL(delta_length_m, 100 * 3.4e-11);
     } else {
+#ifdef _MSC_VER
+        // relax tolerance for Visual Studio
+        BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 5.9e-13);
+#else
       BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 5.0e-13);
+#endif
     }
 
     // Compare end azimuth

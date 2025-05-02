@@ -50,8 +50,9 @@ constexpr auto calculate_astroid(const T x, const T y) -> T {
 
   // y = 0 with |x| <= 1
   // for y small, positive root is k = abs(y)/sqrt(1-x^2)
-  if ((q <= T()) && (r <= T()))
+  if ((q == T()) && (r <= T())) {
     return T();
+  }
 
   const T S{p * q / T(4)};
   const T r2{r * r};
@@ -61,14 +62,15 @@ constexpr auto calculate_astroid(const T x, const T y) -> T {
   // The discriminant of the quadratic equation for T3.
   // This is zero on the evolute curve p^(1/3)+q^(1/3) = 1
   const T discriminant{S * (S + 2 * r3)};
-  if (T() <= discriminant) {
+  if (discriminant >= T()) {
     T t3{S + r3};
     // Pick the sign on the sqrt to maximize abs(T3), to minimise loss
     // of precision due to cancellation.
     t3 += std::copysign(std::sqrt(discriminant), t3);
     const T t{std::cbrt(t3)};
-    u += t + (t == T() ? T() : r2 / t);
+    u += t + ((t == T()) ? T() : r2 / t);
   } else {
+    // discriminant < T()
     // T is complex, but the way u is defined the result is real.
     const T angle{std::atan2(std::sqrt(-discriminant), -(S + r3))};
     // There are three possible cube roots.  We choose the root which
@@ -169,7 +171,7 @@ constexpr auto calculate_end_azimuth(const Angle<T> beta1, const Angle<T> beta2,
                       : (beta1.sin().v() - beta2.sin().v()) *
                             (beta1.sin().v() + beta2.sin().v())};
     const T temp3{temp1 * temp1 + temp2};
-    const T temp4{(T() < temp3) ? std::sqrt(temp3) / beta2.cos().v() : T()};
+    const T temp4{(temp3 > T()) ? std::sqrt(temp3) / beta2.cos().v() : T()};
     cos_alpha2 = trig::UnitNegRange<T>::clamp(temp4);
   }
 
@@ -221,7 +223,6 @@ constexpr auto estimate_initial_azimuth(const Angle<T> beta1,
                                         const Angle<T> abs_lambda12,
                                         const Ellipsoid<T> &ellipsoid)
     -> Angle<T> {
-
   Expects(abs_lambda12.sin().v() >= T());
 
   // Calculate azimuths at the arc ends
@@ -272,8 +273,9 @@ constexpr auto calculate_reduced_length(const T eps, const Radians<T> sigma12,
 
   // Assume here that Ca.size() >= Cb.size()
   // int size(Cb.size() - 1);
-  for (auto i(1u); i < Cb.size(); ++i)
+  for (auto i(1u); i < Cb.size(); ++i) {
     Cb[i] = a1p1 * Ca[i] - a2p1 * Cb[i];
+  }
 
   const T J12{m0x * sigma12.v() + (sin_cos_series(sigma2, Cb).v() -
                                    sin_cos_series(sigma1, Cb).v())};
@@ -323,10 +325,10 @@ auto find_azimuth_arc_length_newtons_method(const Angle<T> beta1,
   Expects(alpha1.sin().v() > T());
   Expects((T() < sigma12.v()) && (sigma12.v() <= trig::PI<T>));
 
-  const T dn1{std::sqrt(T(1) + T(ellipsoid.ep_2()) * beta1.sin().v() *
-                                   beta1.sin().v())};
-  const T dn2{std::sqrt(T(1) + T(ellipsoid.ep_2()) * beta2.sin().v() *
-                                   beta2.sin().v())};
+  const T dn1{std::sqrt(T(1) + T(ellipsoid.ep_2()) *
+                                   (beta1.sin().v() * beta1.sin().v()))};
+  const T dn2{std::sqrt(T(1) + T(ellipsoid.ep_2()) *
+                                   (beta2.sin().v() * beta2.sin().v()))};
 
 #ifdef OUTPUT_GEOD_ITERATOR_STEPS
   auto prev_v{sigma12.v()};
@@ -380,8 +382,9 @@ auto find_azimuth_arc_length_newtons_method(const Angle<T> beta1,
     const T v{eta.v() - domg12.v()};
 
     // Test within tolerance
-    if (std::abs(v) <= tolerance.v())
+    if (std::abs(v) <= tolerance.v()) {
       break;
+    }
 
     // Calculate the denominator for Newton's method
     const T dv{(alpha2.cos().abs().v() == 0.0)
@@ -404,7 +407,7 @@ auto find_azimuth_arc_length_newtons_method(const Angle<T> beta1,
 #endif
 
     // Adjust the azimuth by dalpha1 for the next iteration
-    alpha1 = alpha1 + Angle<T>(Radians<T>{dalpha1});
+    alpha1 += Angle<T>(Radians<T>{dalpha1});
   }
 
   Ensures(alpha1.sin().v() > T());

@@ -64,6 +64,7 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("a3", &EllipsoidDouble::a3)
       .def("c3x", &EllipsoidDouble::c3x)
       .def("calculate_epsilon", &EllipsoidDouble::calculate_epsilon)
+      .def("calculate_a3f", &EllipsoidDouble::calculate_a3f)
       .def("calculate_parametric_latitude",
            &EllipsoidDouble::calculate_parametric_latitude)
       .def("calculate_geodetic_latitude",
@@ -72,8 +73,7 @@ PYBIND11_MODULE(via_ellipsoid, m) {
   // Python bindings for geodesic functions
   m.def("find_azimuths_and_arc_length",
         &via::ellipsoid::find_azimuths_and_arc_length<double>,
-        "Calculate the initial azimuth and great circle length between a pair "
-        "of points on the auxiliary sphere.");
+        "Find the aziumth and arc length on the auxiliary sphere.");
   m.def("aux_sphere_azimuths_length",
         &via::ellipsoid::aux_sphere_azimuths_length<double>,
         "Calculate the initial azimuth and great circle length between a pair "
@@ -104,13 +104,10 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("beta", &GeodesicSegmentDouble::beta)
       .def("lon", &GeodesicSegmentDouble::lon)
       .def("azi", &GeodesicSegmentDouble::azi)
-      .def("set_arc_length", &GeodesicSegmentDouble::set_arc_length)
       .def("arc_length", &GeodesicSegmentDouble::arc_length)
       .def("ellipsoid", &GeodesicSegmentDouble::ellipsoid)
-      .def("a", &GeodesicSegmentDouble::a)
-      .def("pole", &GeodesicSegmentDouble::pole)
-      .def("direction", &GeodesicSegmentDouble::direction)
       .def("epsilon", &GeodesicSegmentDouble::epsilon)
+      .def("a", &GeodesicSegmentDouble::a)
       .def("metres_to_radians", &GeodesicSegmentDouble::metres_to_radians)
       .def("radians_to_metres", &GeodesicSegmentDouble::radians_to_metres)
       .def("length", &GeodesicSegmentDouble::length)
@@ -125,8 +122,8 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("arc_lat_long", &GeodesicSegmentDouble::arc_lat_long)
       .def("lat_long", &GeodesicSegmentDouble::lat_long)
       .def("arc_point", &GeodesicSegmentDouble::arc_point)
-      .def("b", &GeodesicSegmentDouble::b)
       .def("mid_point", &GeodesicSegmentDouble::mid_point)
+      .def("arc_pole", &GeodesicSegmentDouble::arc_pole)
       .def("arc_point_and_pole", &GeodesicSegmentDouble::arc_point_and_pole)
       .def("calculate_arc_atd_and_xtd",
            &GeodesicSegmentDouble::calculate_arc_atd_and_xtd<10>)

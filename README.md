@@ -23,21 +23,21 @@ This library uses the WGS-84 primary parameters defined in Table 3-1 of the
 ## Geodesic navigation
 
 The shortest path between two points on the surface of an ellipsoid is a
-[geodesic segment](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid) -
-the equivalent of straight line segments in planar geometry or
-[great circle](https://en.wikipedia.org/wiki/Great_circle) arc on the surface of a
-sphere, see *Figure 2*.
+[geodesic segment](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid).
+It is the equivalent of a straight line segment in planar geometry or a
+[great circle arc](https://en.wikipedia.org/wiki/Great_circle) on the
+surface of a sphere, see *Figure 2*.
 
 <img src="https://via-technology.aero/img/navigation/ellipsoid/sphere_mercator_long_geodesic.png" width="600">
 
-*Figure 2 A geodesic (orange) segment and great circle (blue) arc*
+*Figure 2 A geodesic segment (orange) and a great circle  arc (blue)*
 
 This library uses the correspondence between geodesic segments on an ellipsoid
-and great-circle arcs on an auxiliary sphere together with 3D vectors to calculate:
+and great-circle arcs on an auxiliary sphere, together with 3D vectors to calculate:
 
-- the initial azimuth and length of a geodesic segment between two positions;
-- the along track distance and across track distance of a position relative to a geodesic segment;
-- and the intersection of a pair of geodesic segments.
+- the length and azimuths of a geodesic segment between two positions;
+- the along track and across track distances of a point relative to a geodesic segment;
+- and the intersection of two geodesic segments.
 
 See: [geodesic algorithms](https://via-technology.aero/navigation/geodesic-algorithms/).
 
@@ -46,9 +46,8 @@ See: [geodesic algorithms](https://via-technology.aero/navigation/geodesic-algor
 The library is based on Charles Karney's [GeographicLib](https://geographiclib.sourceforge.io/) library.
 
 Like `GeographicLib`, it models geodesic segments as great circle arcs on
-the surface of a unit sphere. However, it also uses vectors to
-calculate along track distances, across track distances and
-intersections between geodesic segments.
+the surface of a unit sphere. However, it also uses vectors to perform
+calculations between geodesic segments.
 
 The `Ellipsoid` class represents an ellipsoid of revolution.
 
@@ -61,9 +60,19 @@ by the `GeodesicSegment` constructors to create `GeodesicSegment`s on the WGS-84
 
 ## Example
 
-The following example calculates the intersection between two Great Circle `Arc`s.
+Create two `GeodesicSegment`s, each between two positions and then calculate the
+distances from the geodesic segment start points to their intersection point.
+
 The values are taken from Charles Karney's original solution to
 [Intersection between two geodesic lines](https://sourceforge.net/p/geographiclib/discussion/1026621/thread/21aaff9f/#fe0a).
+
+The expected latitude and longitude are from Karney's reply:
+
+> Final result 54.7170296089477 -14.56385574430775
+
+Note: Karney's solution requires all 4 positions to be in the same hemisphere
+centered at the intersection point.
+This solution does **not** have that requirement.
 
 ### C++
 ```C++

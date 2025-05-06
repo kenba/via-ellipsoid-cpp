@@ -136,19 +136,6 @@ public:
     return n_;
   }
 
-  /// Accessor for the A3 series coefficients of the ellipsoid.
-  [[nodiscard("Pure Function")]]
-  constexpr const std::array<T, SeriesOrder> &a3() const noexcept {
-    return a3_;
-  }
-
-  /// Accessor for the C3x series coefficients of the ellipsoid.
-  [[nodiscard("Pure Function")]]
-  constexpr const std::array<T, SeriesOrder *(SeriesOrder - 1) / 2> &
-  c3x() const noexcept {
-    return c3x_;
-  }
-
   /// Calculate epsilon, the variable used in series expansions.
   /// Note: epsilon is positive and small.
   /// @param clairaut - Clairaut's constant.
@@ -182,7 +169,8 @@ public:
   /// @param eps epsilon
   /// @return the coefficients `C3[l]` in the Fourier expansion of `C3`
   [[nodiscard("Pure Function")]]
-  constexpr auto calculate_c3y(const T eps) const noexcept -> T {
+  constexpr auto calculate_c3y(const T eps) const noexcept
+      -> std::array<T, SeriesOrder> {
     return ellipsoid::evaluate_coeffs_C3y<T>(c3x_, eps);
   }
 

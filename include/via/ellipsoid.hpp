@@ -31,29 +31,29 @@
 ///
 /// This library uses the WGS84 primary parameters defined in Tab. 3-1 of the
 /// [ICAO WGS 84 Implementation
-/// Manual](https://www.icao.int/safety/pbn/Documentation/EUROCONTROL/Eurocontrol%20WGS%2084%20Implementation%20Manual.pdf).
+/// Manual](https://www.icao.int/NACC/Documents/Meetings/2014/ECARAIM/REF08-Doc9674.pdf).
 ///
 /// The shortest path between two points on the surface of an ellipsoid is a
-/// [geodesic](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid) -
-/// the equivalent of straight line segments in planar geometry or
-/// [great circles](https://en.wikipedia.org/wiki/Great_circle) on the surface
-/// of a sphere, see *Figure 1*.
+/// [geodesic segment](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid).
+///
+/// The equivalent of a straight line segment in planar geometry or a [great
+/// circle arc](https://en.wikipedia.org/wiki/Great_circle) on the surface of a
+/// sphere, see *Figure 1*.
 ///
 /// <img
-/// src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Geodesic_problem_on_an_ellipsoid.svg/1024px-Geodesic_problem_on_an_ellipsoid.svg.png"
-/// width="400">
+/// src="https://via-technology.aero/img/navigation/ellipsoid/sphere_mercator_long_geodesic.png"
+/// width="600">
 ///
-/// *Figure 1 A geodesic segment between points A and B*
+/// *Figure 1 A geodesic segment (orange) and great circle arc (blue)*
 ///
 /// This library uses the correspondence between geodesic segments on an
-/// ellipsoid and great-circle arcs on the auxiliary sphere together with 3D
+/// ellipsoid and great-circle arcs on the auxiliary sphere, together with 3D
 /// vectors to calculate:
 ///
-/// - the initial azimuth and length of a geodesic segment between two
-/// positions;
-/// - the along track distance and across track distance of a position relative
+/// - the length and azimuths of a geodesic segment between two positions;
+/// - the along track and across track distances of a point relative
 /// to a geodesic segment;
-/// - and the intersection of a pair of geodesic segments.
+/// - and the intersection of two geodesic segments.
 #include "ellipsoid/geodesic_intersection_functions.hpp"
 
 namespace via {

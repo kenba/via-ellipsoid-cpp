@@ -92,8 +92,7 @@ public:
         // Calculate eps for calculating coefficients
         eps_(ellipsoid.calculate_epsilon(azi0_.sin())),
         a1_((evaluate_A1<T>(eps_) + T(1))),
-        a3c_(ellipsoid.f() * azi0_.sin().v() *
-             evaluate_poynomial(eps_, ellipsoid.a3())),
+        a3c_(ellipsoid.calculate_a3c(azi0_.sin(), eps_)),
         ellipsoid_(ellipsoid) {
     Expects((T() <= beta.cos().v()) && (T() <= arc_length.v()) &&
             (arc_length.v() <= trig::PI<T>));
@@ -350,7 +349,7 @@ public:
                                          sigma_sum.cos().v())};
     const Angle<T> omega12{omega2 - omega1};
 
-    const auto c3{evaluate_coeffs_C3y<T>(ellipsoid_.c3x(), eps_)};
+    const auto c3{ellipsoid_.calculate_c3y(eps_)};
     const auto b31(sin_cos_series(sigma1_, c3));
     const auto b32(sin_cos_series(sigma_sum, c3));
 

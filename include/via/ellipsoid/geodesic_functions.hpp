@@ -198,7 +198,7 @@ constexpr auto delta_omega12(const trig::UnitNegRange<T> clairaut, const T eps,
                              const Radians<T> sigma12, const Angle<T> sigma1,
                              const Angle<T> sigma2,
                              const Ellipsoid<T> &ellipsoid) -> Radians<T> {
-  const auto c3{evaluate_coeffs_C3y<T>(ellipsoid.c3x(), eps)};
+  const auto c3{ellipsoid.calculate_c3y(eps)};
   const Radians<T> b31{sin_cos_series(sigma1, c3)};
   const Radians<T> b32{sin_cos_series(sigma2, c3)};
 

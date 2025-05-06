@@ -48,12 +48,6 @@ BOOST_AUTO_TEST_CASE(test_Ellipsoid_wgs84_double) {
   BOOST_CHECK_EQUAL(calculate_sq_2nd_eccentricity(wgs84::F<double>),
                     ellipsoid.ep_2());
   BOOST_CHECK_EQUAL(calculate_3rd_flattening(wgs84::F<double>), ellipsoid.n());
-
-  const auto a3{evaluate_coeffs_A3<double, 6u>(ellipsoid.n())};
-  BOOST_CHECK(a3 == ellipsoid.a3());
-
-  const auto c3x{evaluate_coeffs_C3x<double, 6u>(ellipsoid.n())};
-  BOOST_CHECK(c3x == ellipsoid.c3x());
 }
 //////////////////////////////////////////////////////////////////////////////
 
@@ -77,12 +71,6 @@ BOOST_AUTO_TEST_CASE(test_Ellipsoid_wgs84_long_double) {
                     ellipsoid.ep_2());
   BOOST_CHECK_EQUAL(calculate_3rd_flattening(wgs84::F<long double>),
                     ellipsoid.n());
-
-  const auto a3{evaluate_coeffs_A3<long double, 8u>(ellipsoid.n())};
-  BOOST_CHECK(a3 == ellipsoid.a3());
-
-  const auto c3x{evaluate_coeffs_C3x<long double, 8u>(ellipsoid.n())};
-  BOOST_CHECK(c3x == ellipsoid.c3x());
 }
 //////////////////////////////////////////////////////////////////////////////
 

@@ -61,10 +61,10 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("e_2", &EllipsoidDouble::e_2)
       .def("ep_2", &EllipsoidDouble::ep_2)
       .def("n", &EllipsoidDouble::n)
-      .def("a3", &EllipsoidDouble::a3)
-      .def("c3x", &EllipsoidDouble::c3x)
       .def("calculate_epsilon", &EllipsoidDouble::calculate_epsilon)
       .def("calculate_a3f", &EllipsoidDouble::calculate_a3f)
+      .def("calculate_a3c", &EllipsoidDouble::calculate_a3c)
+      .def("calculate_c3y", &EllipsoidDouble::calculate_c3y)
       .def("calculate_parametric_latitude",
            &EllipsoidDouble::calculate_parametric_latitude)
       .def("calculate_geodetic_latitude",

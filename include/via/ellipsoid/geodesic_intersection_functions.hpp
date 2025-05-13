@@ -74,10 +74,11 @@ auto iterate_geodesic_intersection_distances(
     ++iterations;
 
     // calculate the new intersection point
-    const auto c{
-        use_antipodal_intersection
-            ? vector::intersection::calculate_intersection(pole2, pole1)
-            : vector::intersection::calculate_intersection(pole1, pole2)};
+    const auto c{use_antipodal_intersection
+                     ? vector::intersection::calculate_intersection(
+                           pole2, pole1, vector::MIN_SQ_NORM<T>)
+                     : vector::intersection::calculate_intersection(
+                           pole1, pole2, vector::MIN_SQ_NORM<T>)};
     if (c.has_value()) {
       const auto [delta1, delta2]{
           vector::intersection::calculate_intersection_distances(
@@ -110,9 +111,6 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
   // The GeodesicSegments MUST be on the same `Ellipsoid`
   Expects(g1.ellipsoid() == g2.ellipsoid());
 
-  // The minimum sin angle between coincident geodesics
-  constexpr T MIN_SIN_ANGLE{16384 * std::numeric_limits<T>::epsilon()};
-
   // Convert precision in `Radians` to the square of Euclidean precision.
   const T e_precision{great_circle::gc2e_distance(precision)};
   const T sq_precision{e_precision * e_precision};
@@ -137,12 +135,12 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
   const Angle<T> delta_azimuth1_3{g1.azi() - g3_azi};
 
   const bool geodesics_may_be_coincident{delta_azimuth1_3.sin().abs().v() <
-                                         MIN_SIN_ANGLE};
+                                         vector::MIN_SIN_ANGLE<T>};
   if (geodesics_may_be_coincident) {
     const Angle<T> delta_azimuth2_3{g2.azi() - g3_end_azi};
 
     const bool geodesics_are_coincident{delta_azimuth2_3.sin().abs().v() <
-                                        MIN_SIN_ANGLE};
+                                        vector::MIN_SIN_ANGLE<T>};
     if (geodesics_are_coincident) {
       // The geodesics are coincident
       const auto [distance1, distance2]{
@@ -161,8 +159,8 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
   const Radians<T> half_arc_length2{g2.arc_length().v() / 2};
   const auto [a1mid, pole1mid]{g1.arc_point_and_pole(half_arc_length1)};
   const auto [a2mid, pole2mid]{g2.arc_point_and_pole(half_arc_length2)};
-  const auto c{
-      vector::intersection::calculate_intersection(pole1mid, pole2mid)};
+  const auto c{vector::intersection::calculate_intersection(
+      pole1mid, pole2mid, vector::MIN_SQ_NORM<T>)};
 
   // Determine whether the great circles on the auxiliary sphere are
   // coincident

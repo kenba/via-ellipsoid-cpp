@@ -28,7 +28,9 @@
 #include <boost/test/unit_test.hpp>
 #include <filesystem>
 #include <fstream>
+#if defined(OUTPUT_VIA_ELLIPSOID_VALUES) || defined(OUTPUT_GEOGRAPHICLIB_VALUES)
 #include <iomanip>
+#endif
 #ifdef TEST_GEOGRAPHICLIB
 #include <GeographicLib/Geodesic.hpp>
 #endif
@@ -134,7 +136,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
     const double delta_azimuth{std::abs(azimuth_1 - azimuth.to_degrees().v())};
 #ifdef _MSC_VER
     // relax tolerance for Visual Studio
-    const double azimuth_tolerance{ (line_number <= 400000) ? 5.33e-7 : 3.1e-4 };
+    const double azimuth_tolerance{(line_number <= 400000) ? 5.33e-7 : 3.1e-4};
 #else
     const double azimuth_tolerance{(line_number <= 400000) ? 5.0e-7 : 3.1e-4};
 #endif
@@ -160,8 +162,8 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
       BOOST_CHECK_SMALL(delta_length_m, 100 * 3.4e-11);
     } else {
 #ifdef _MSC_VER
-        // relax tolerance for Visual Studio
-        BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 5.9e-13);
+      // relax tolerance for Visual Studio
+      BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 5.9e-13);
 #else
       BOOST_CHECK_CLOSE(distance_m, result_m.v(), 100 * 5.0e-13);
 #endif

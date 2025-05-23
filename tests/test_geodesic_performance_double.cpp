@@ -31,6 +31,9 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#ifdef TEST_VINCENTY
+#include "via/ellipsoid/vincenty_functions.hpp"
+#endif
 #ifdef TEST_GEOGRAPHICLIB
 #include <GeographicLib/Intersect.hpp>
 #endif
@@ -186,6 +189,56 @@ BOOST_AUTO_TEST_CASE(test_geodesic_intersection_performance) {
             << std::endl;
 }
 //////////////////////////////////////////////////////////////////////////////
+
+#ifdef TEST_VINCENTY
+//////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_vincenty_inverse_performance) {
+  const auto WGS84_ELLIPSOID{ellipsoid::Ellipsoid<double>::wgs84()};
+
+  // Test reads file from directory, fails if directory environment variable is
+  // not present.
+  const auto env_var(std::getenv("GEODTEST_DIR"));
+  BOOST_REQUIRE(env_var != nullptr);
+
+  const auto filename("GeodTest.dat");
+  std::filesystem::path file_path(env_var);
+  file_path /= filename;
+
+  std::ifstream data_file(file_path.c_str());
+  BOOST_REQUIRE(data_file.is_open());
+
+  // The position data
+  std::vector<PositionData> data{read_position_data(data_file)};
+
+  // The geodesic data
+  std::vector<double> geodesic_data{};
+  geodesic_data.reserve(data.size());
+
+  // Create random Geodesics
+  const auto t0{high_resolution_clock::now()};
+  for (const auto &position : data) {
+    const Degrees<double> lat1d{position[LAT_1]};
+    const Degrees<double> lon1d{position[LON_1]};
+    const Degrees<double> lat2d{position[LAT_2]};
+    const Degrees<double> lon2d{position[LON_2]};
+
+    const auto distance{ellipsoid::vincenty::inverse_distance(
+        LatLong(lat1d, lon1d), LatLong(lat2d, lon2d))};
+    geodesic_data.emplace_back(distance.v());
+  }
+  const auto t1{high_resolution_clock::now()};
+
+  // calculate time to create random Geodesics
+  const duration<double, std::milli> create_geodesics_ms{t1 - t0};
+  const auto average_create_geodesics_us{create_geodesics_ms.count() * 1e3 /
+                                         geodesic_data.size()};
+  std::cout << "vincenty geodesic_data size: " << geodesic_data.size()
+            << " time: " << create_geodesics_ms.count() << " ms\n"
+            << "vincenty average time per GeodesicLine: "
+            << average_create_geodesics_us << " us" << std::endl;
+}
+//////////////////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef TEST_GEOGRAPHICLIB
 //////////////////////////////////////////////////////////////////////////////

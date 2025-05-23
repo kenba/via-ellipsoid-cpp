@@ -28,8 +28,12 @@
 #include <boost/test/unit_test.hpp>
 #include <filesystem>
 #include <fstream>
+#include <via/angle/trig.hpp>
 #if defined(OUTPUT_VIA_ELLIPSOID_VALUES) || defined(OUTPUT_GEOGRAPHICLIB_VALUES)
 #include <iomanip>
+#endif
+#ifdef TEST_VINCENTY
+#include "via/ellipsoid/vincenty_functions.hpp"
 #endif
 #ifdef TEST_GEOGRAPHICLIB
 #include <GeographicLib/Geodesic.hpp>
@@ -201,6 +205,52 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples) {
 #endif
 }
 //////////////////////////////////////////////////////////////////////////////
+
+#ifdef TEST_VINCENTY
+//////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_geodesic_examples_with_boost_vincenty) {
+  // Test reads file from directory, fails if directory environment variable is
+  // not present.
+  const auto env_var(std::getenv("GEODTEST_DIR"));
+  BOOST_REQUIRE(env_var != nullptr);
+
+  const auto filename("GeodTest.dat");
+  std::filesystem::path file_path(env_var);
+  file_path /= filename;
+
+  std::ifstream data_file(file_path.c_str());
+  BOOST_REQUIRE(data_file.is_open());
+
+  // The position data
+  std::vector<PositionData> data{read_position_data(data_file)};
+
+  auto line_number(0u);
+
+  for (const auto &position : data) {
+    const Degrees<double> lat1d{position[LAT_1]};
+    const Degrees<double> lon1d{position[LON_1]};
+    const Degrees<double> lat2d{position[LAT_2]};
+    const Degrees<double> lon2d{position[LON_2]};
+
+    const auto s12{ellipsoid::vincenty::inverse_distance(
+        LatLong<double>(lat1d, lon1d), LatLong<double>(lat2d, lon2d))};
+
+    // Compare geodesic length
+    const double distance_m{position[D_METRES]};
+    const double delta_length_m{distance_m - s12.v()};
+
+    // if a short geodesic, compare delta length
+    if (line_number >= 150000 && line_number < 200000) {
+      BOOST_CHECK_SMALL(delta_length_m, 100 * 1.0e-7);
+    } else {
+      BOOST_CHECK_CLOSE(distance_m, s12.v(), 100 * 4.0e-3);
+    }
+
+    ++line_number;
+  }
+}
+//////////////////////////////////////////////////////////////////////////////
+#endif
 
 #ifdef TEST_GEOGRAPHICLIB
 //////////////////////////////////////////////////////////////////////////////

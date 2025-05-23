@@ -24,6 +24,9 @@
 /// examples.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid/geodesic_functions.hpp"
+#ifdef TEST_VINCENTY
+#include "via/ellipsoid/vincenty_functions.hpp"
+#endif
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/test/unit_test.hpp>
@@ -99,6 +102,13 @@ BOOST_AUTO_TEST_CASE(test_rtca_do_283b_geodesic_examples) {
 
       const double distance_tolerance{1e-5};
       BOOST_CHECK_SMALL(delta_length_m, 100 * distance_tolerance);
+
+#ifdef TEST_VINCENTY
+      const auto s12{ellipsoid::vincenty::inverse_distance(
+          LatLong<double>(lat1d, lon1d), LatLong<double>(lat2d, lon2d))};
+      const double delta_distance_m{std::abs(d_metres - s12.v())};
+      BOOST_CHECK_SMALL(delta_distance_m, 100 * distance_tolerance);
+#endif
     }
   }
 }

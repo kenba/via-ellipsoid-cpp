@@ -29,6 +29,7 @@ option(CODE_COVERAGE "Add gcc code coverage options." OFF)
 option(CPP_ACCURACY_TEST "Add accuracy test with GeodTest.dat." OFF)
 option(CPP_PERFORMANCE_TESTS "Add performance tests." OFF)
 option(USE_GEOGRAPHICLIB "Add tests with GeographicLib." OFF)
+option(TEST_VINCENTY "Add vincenty inverse tests." OFF)
 
 add_library(${PROJECT_NAME} INTERFACE)
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ellipsoid.hpp)
@@ -119,6 +120,10 @@ if (CPP_UNIT_TESTS)
         target_link_libraries(${PROJECT_NAME}_test PRIVATE ${GeographicLib_LIBRARIES})
         target_compile_definitions(${PROJECT_NAME}_test PRIVATE TEST_GEOGRAPHICLIB)
     endif(USE_GEOGRAPHICLIB)
+
+    if (TEST_VINCENTY)
+        target_compile_definitions(${PROJECT_NAME}_test PRIVATE TEST_VINCENTY)
+    endif(TEST_VINCENTY)
 
     target_compile_definitions(${PROJECT_NAME}_test PRIVATE BOOST_TEST_DYN_LINK)
     target_include_directories(${PROJECT_NAME}_test PRIVATE ${Boost_INCLUDE_DIRS})

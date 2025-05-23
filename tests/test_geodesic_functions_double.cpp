@@ -77,14 +77,23 @@ BOOST_AUTO_TEST_CASE(test_calculate_astroid_double) {
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_calculate_end_azimuth_double) {
-  const auto angle_50{Angle(Degrees(50.0))};
-  const auto angle_20{Angle(Degrees(20.0))};
+  const auto angle_90{Angle<double>::from_y_x(1.0, 0.0)};
+  const Angle<double> angle_50(Degrees<double>(50.0));
+  const auto angle_45{Angle<double>::from_y_x(1.0, 1.0)};
+  const Angle<double> angle_20(Degrees<double>(20.0));
 
-  const auto result{calculate_end_azimuth(angle_20, angle_50, angle_20)};
+  auto result = calculate_end_azimuth(angle_20, angle_50, angle_20);
   BOOST_CHECK_CLOSE(30.0, result.to_degrees().v(), CALCULATION_TOLERANCE);
 
-  const auto result2{calculate_end_azimuth(-angle_50, angle_50, angle_20)};
-  BOOST_CHECK_CLOSE(20.0, result2.to_degrees().v(), CALCULATION_TOLERANCE);
+  result = calculate_end_azimuth(angle_50, angle_20, angle_20);
+  BOOST_CHECK_CLOSE(13.530064432438888, result.to_degrees().v(),
+                    CALCULATION_TOLERANCE);
+
+  result = calculate_end_azimuth(-angle_50, angle_50, angle_20);
+  BOOST_CHECK_EQUAL(20.0, result.to_degrees().v());
+
+  result = calculate_end_azimuth(angle_45, angle_45, angle_90);
+  BOOST_CHECK_EQUAL(90.0, result.to_degrees().v());
 }
 //////////////////////////////////////////////////////////////////////////////
 

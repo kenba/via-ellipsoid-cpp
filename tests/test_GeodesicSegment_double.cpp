@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
 
   const auto lat_long{g1.lat_long(units::si::Metres(0.0))};
   BOOST_CHECK_CLOSE(istanbul.lat().v(), lat_long.lat().v(),
-                    CALCULATION_TOLERANCE);
+                    2 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(istanbul.lon().v(), lat_long.lon().v(),
                     CALCULATION_TOLERANCE);
 

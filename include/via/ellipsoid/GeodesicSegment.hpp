@@ -271,14 +271,7 @@ public:
   /// @return the parametric latitude at sigma.
   [[nodiscard("Pure Function")]]
   constexpr auto arc_beta(const Angle<T> sigma) const -> Angle<T> {
-    const trig::UnitNegRange sin_beta{sigma.cos().v() * beta_.sin().v() +
-                                      sigma.sin().v() * beta_.cos().v() *
-                                          azi_.cos().v()};
-    const Angle<T> beta(sin_beta, trig::swap_sin_cos(sin_beta));
-
-    Ensures(beta.is_valid());
-
-    return beta;
+    return great_circle::calculate_latitude(beta_, azi_, sigma);
   }
 
   /// Calculate the geodetic latitude at the great circle arc distance.
@@ -330,7 +323,8 @@ public:
 
   /// Calculate the geodesic longitude difference at arc distance
   /// along the auxiliary sphere.
-  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @param arc_distance the great circle arc distance on the auxiliary
+  /// sphere.
   /// @param sigma the arc_distance as an Angle.
   /// @return the longitude difference from the start point.
   [[nodiscard("Pure Function")]]
@@ -359,7 +353,8 @@ public:
 
   /// Calculate the geodesic longitude at the great circle length along
   /// the auxiliary sphere.
-  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @param arc_distance the great circle arc distance on the auxiliary
+  /// sphere.
   /// @param sigma the arc_distance as an Angle.
   /// @return the geodesic longitude at arc_distance.
   [[nodiscard("Pure Function")]]
@@ -380,7 +375,8 @@ public:
 
   /// Calculate the geodesic `LatLong` at the great circle length along
   /// the auxiliary sphere.
-  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @param arc_distance the great circle arc distance on the auxiliary
+  /// sphere.
   /// @param sigma the arc_distance as an Angle.
   /// @return the `LatLong` of the geodesic position at arc_distance.
   [[nodiscard("Pure Function")]]
@@ -403,7 +399,8 @@ public:
 
   /// Calculate the point on the auxiliary sphere at the
   /// great circle arc length.
-  /// @param arc_distance the great circle arc distance on the auxiliary sphere.
+  /// @param arc_distance the great circle arc distance on the auxiliary
+  /// sphere.
   /// @return the point on the auxiliary sphere at arc_distance.
   [[nodiscard("Pure Function")]]
   constexpr auto arc_point(const Radians<T> arc_distance) const -> V {
@@ -429,7 +426,8 @@ public:
   /// @param arc_distance the great circle distance on the auxiliary sphere
   /// @return the pole projected onto the auxiliary sphere at at arc_distance.
   constexpr auto arc_pole(const Radians<T> arc_distance) const -> V {
-    // if point is on a meridional geodesic, use auxiliary sphere point and pole
+    // if point is on a meridional geodesic, use auxiliary sphere point and
+    // pole
     if (azi0_.sin().abs().v() < great_circle::MIN_VALUE<T>) {
       return vector::calculate_pole(beta_, lon_, azi_);
     }
@@ -456,7 +454,8 @@ public:
     const Angle<T> lon{arc_longitude(arc_distance, sigma)};
     const auto point{vector::to_point(beta, lon)};
 
-    // if point is on a meridional geodesic, use auxiliary sphere point and pole
+    // if point is on a meridional geodesic, use auxiliary sphere point and
+    // pole
     if (azi0_.sin().abs().v() < great_circle::MIN_VALUE<T>) {
       const auto pole{vector::calculate_pole(beta_, lon_, azi_)};
       return {point, pole};
@@ -471,13 +470,15 @@ public:
     return {point, pole};
   }
 
-  /// Calculate along and across track distances to a position from a geodesic.
+  /// Calculate along and across track distances to a position from a
+  /// geodesic.
   /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
   /// @param beta the parametric latitude of the position
   /// @param lon the longitude of the position
   /// @param precision the required precision, in Radians
   ///
-  /// @return the along and across track distances to the position in `Radians`.
+  /// @return the along and across track distances to the position in
+  /// `Radians`.
   template <unsigned MAX_ITERATIONS = 10u>
   [[nodiscard("Pure Function")]]
   constexpr auto calculate_arc_atd_and_xtd(const Angle<T> beta, Angle<T> lon,
@@ -530,12 +531,14 @@ public:
     return {atd, xtd, iterations};
   }
 
-  /// Calculate along and across track distances to a position from a geodesic.
+  /// Calculate along and across track distances to a position from a
+  /// geodesic.
   /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
   /// @param position the position as a `LatLong`
   /// @param precision_m the required precision, in Metres
   ///
-  /// @return the along and across track distances to the position in `Metres`.
+  /// @return the along and across track distances to the position in
+  /// `Metres`.
   template <unsigned MAX_ITERATIONS = 10u>
   [[nodiscard("Pure Function")]]
   constexpr auto calculate_atd_and_xtd(const LatLong<T> position,

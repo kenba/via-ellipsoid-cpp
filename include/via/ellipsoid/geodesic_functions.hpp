@@ -166,10 +166,8 @@ constexpr auto calculate_end_azimuth(const Angle<T> beta1, const Angle<T> beta2,
   if ((beta2.cos() != beta1.cos()) || (beta2.sin().abs() != -beta1.sin())) {
     const T temp1{alpha1.cos().v() * beta1.cos().v()};
     const T temp2{(beta1.cos() < beta1.sin().abs())
-                      ? (beta2.cos().v() - beta1.cos().v()) *
-                            (beta1.cos().v() + beta2.cos().v())
-                      : (beta1.sin().v() - beta2.sin().v()) *
-                            (beta1.sin().v() + beta2.sin().v())};
+                      ? trig::sq_a_minus_sq_b(beta2.cos(), beta1.cos()).v()
+                      : trig::sq_a_minus_sq_b(beta1.sin(), beta2.sin()).v()};
     const T temp3{temp1 * temp1 + temp2};
     const T temp4{(temp3 > T()) ? std::sqrt(temp3) / beta2.cos().v() : T()};
     cos_alpha2 = trig::UnitNegRange<T>::clamp(temp4);

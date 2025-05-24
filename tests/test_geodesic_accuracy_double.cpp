@@ -232,8 +232,16 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples_with_boost_vincenty) {
     const Degrees<double> lat2d{position[LAT_2]};
     const Degrees<double> lon2d{position[LON_2]};
 
-    const auto s12{ellipsoid::vincenty::inverse_distance(
-        LatLong<double>(lat1d, lon1d), LatLong<double>(lat2d, lon2d))};
+    const auto [azimuth_rad, s12, _rev_azimuth]{
+        ellipsoid::vincenty::inverse_azimuths_and_distance(
+            LatLong<double>(lat1d, lon1d), LatLong<double>(lat2d, lon2d))};
+
+    // Compare azimuth
+    const double azimuth_1{position[AZI_1]};
+    const double delta_azimuth{
+        std::abs(azimuth_1 - trig::rad2deg(azimuth_rad.v()))};
+    const double azimuth_tolerance{5.1};
+    BOOST_CHECK_SMALL(delta_azimuth, 100 * azimuth_tolerance);
 
     // Compare geodesic length
     const double distance_m{position[D_METRES]};

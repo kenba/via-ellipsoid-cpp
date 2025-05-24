@@ -25,46 +25,39 @@
 /// @brief Contains the via::ellipsoid vincenty inverse template functions.
 //////////////////////////////////////////////////////////////////////////////
 #include "Ellipsoid.hpp"
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/formulas/vincenty_inverse.hpp>
+#include <boost/geometry/srs/spheroid.hpp>
 
 namespace via {
 namespace ellipsoid {
 namespace vincenty {
 
-/// Calculate the `geodesic` distance between a pair of positions.
+/// Calculate the `geodesic` azimuths and distance between a pair of positions.
 ///
-/// Note: uses boost::geometry vincenty strategy.
+/// Note: uses boost::geometry vincenty_inverse formula.
 /// @pre a and b are valid LatLong's'
 ///
 /// @param a, b the start and finish positions in geodetic coordinates.
 /// @param ellipsoid the `Ellipsoid`, default WGS 84.
-/// @return the `geodesic` distance in `Metres`.
+/// @return the azimuth at the start of the geodesic segment,
+/// the `geodesic` distance in `Metres` and the azimuth at the end of
+/// the geodesic segment.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto inverse_distance(const LatLong<T> &a, const LatLong<T> &b,
-                      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
-    -> units::si::Metres<T> {
-  using Wgs84Coords = boost::geometry::cs::geographic<boost::geometry::degree>;
-  using GeographicPoint = boost::geometry::model::point<T, 2, Wgs84Coords>;
+auto inverse_azimuths_and_distance(
+    const LatLong<T> &a, const LatLong<T> &b,
+    const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
+    -> std::tuple<Radians<T>, units::si::Metres<T>, Radians<T>> {
+  using namespace boost::geometry;
 
-  // Note: the default boost geometry spheroid is WGS84
-  // #include <boost/geometry/core/srs.hpp>
-  using SpheroidType = boost::geometry::srs::spheroid<T>;
+  const auto result{formula::vincenty_inverse<T, true, true, true>().apply(
+      trig::deg2rad(a.lon().v()), trig::deg2rad(a.lat().v()),
+      trig::deg2rad(b.lon().v()), trig::deg2rad(b.lat().v()),
+      srs::spheroid<T>(ellipsoid.a().v(), ellipsoid.b().v()))};
 
-  // #include <boost/geometry/strategies/geographic/distance_vincenty.hpp>
-  using VincentyStrategy =
-      boost::geometry::strategy::distance::vincenty<SpheroidType>;
-
-  SpheroidType spheriod(ellipsoid.a().v(), ellipsoid.b().v());
-  VincentyStrategy vincenty(spheriod);
-
-  // Note: order is longitude, latitude
-  const GeographicPoint boost_a(a.lon().v(), a.lat().v());
-  const GeographicPoint boost_b(b.lon().v(), b.lat().v());
-  return units::si::Metres<T>(
-      boost::geometry::distance(boost_a, boost_b, vincenty));
+  return {Radians<T>(result.azimuth), units::si::Metres<T>(result.distance),
+          Radians<T>(result.reverse_azimuth)};
 }
 
 } // namespace vincenty

@@ -104,8 +104,16 @@ BOOST_AUTO_TEST_CASE(test_rtca_do_283b_geodesic_examples) {
       BOOST_CHECK_SMALL(delta_length_m, 100 * distance_tolerance);
 
 #ifdef TEST_VINCENTY
-      const auto s12{ellipsoid::vincenty::inverse_distance(
-          LatLong<double>(lat1d, lon1d), LatLong<double>(lat2d, lon2d))};
+      const auto [azimuth_rad, s12, _rev_azimuth]{
+          ellipsoid::vincenty::inverse_azimuths_and_distance(
+              LatLong<double>(lat1d, lon1d), LatLong<double>(lat2d, lon2d))};
+
+      // Compare azimuth
+      const double azimuth_diff{
+          std::abs(azimuth_1 - trig::rad2deg(azimuth_rad.v()))};
+      BOOST_CHECK_SMALL(azimuth_diff, 100 * 1.37 * azimuth_tolerance);
+
+      // Compare geodesic length
       const double delta_distance_m{std::abs(d_metres - s12.v())};
       BOOST_CHECK_SMALL(delta_distance_m, 100 * distance_tolerance);
 #endif

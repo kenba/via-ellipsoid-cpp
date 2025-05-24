@@ -26,6 +26,7 @@
 // clang-format off
 #include <pybind11/numpy.h>
 #include "via/ellipsoid.hpp"
+#include "via/ellipsoid/vincenty_functions.hpp"
 // clang-format on
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -86,6 +87,12 @@ PYBIND11_MODULE(via_ellipsoid, m) {
         &via::ellipsoid::convert_radians_to_metres<double>,
         "Convert a great circle distance on the auxiliary sphere in radians to "
         "metres on the ellipsoid.");
+
+  // Python bindings for geodesic vincenty functions
+  m.def("inverse_azimuths_and_distance",
+        &via::ellipsoid::vincenty::inverse_azimuths_and_distance<double>,
+        "Calculate the `geodesic` azimuths and distance between a pair of "
+        "positions using Vincenty's algorithm.");
 
   // Python numpy binding for the GeodesicSegment class
   using GeodesicSegmentDouble = via::ellipsoid::GeodesicSegment<double>;

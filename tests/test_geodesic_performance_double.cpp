@@ -222,9 +222,10 @@ BOOST_AUTO_TEST_CASE(test_vincenty_inverse_performance) {
     const Degrees<double> lat2d{position[LAT_2]};
     const Degrees<double> lon2d{position[LON_2]};
 
-    const auto distance{ellipsoid::vincenty::inverse_distance(
-        LatLong(lat1d, lon1d), LatLong(lat2d, lon2d))};
-    geodesic_data.emplace_back(distance.v());
+    const auto [_azimuth_rad, s12, _rev_azimuth]{
+        ellipsoid::vincenty::inverse_azimuths_and_distance(
+            LatLong(lat1d, lon1d), LatLong(lat2d, lon2d))};
+    geodesic_data.emplace_back(s12.v());
   }
   const auto t1{high_resolution_clock::now()};
 

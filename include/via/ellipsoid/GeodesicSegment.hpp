@@ -408,8 +408,8 @@ public:
       return a();
 
     const Angle<T> sigma{arc_distance};
-    const Angle<T> beta{arc_beta(Angle<T>(sigma))};
-    const Angle<T> lon{arc_longitude(arc_distance, Angle<T>(sigma))};
+    const Angle<T> beta{arc_beta(sigma)};
+    const Angle<T> lon{arc_longitude(arc_distance, sigma)};
     return vector::to_point(beta, lon);
   }
 
@@ -482,7 +482,7 @@ public:
   template <unsigned MAX_ITERATIONS = 10u>
   [[nodiscard("Pure Function")]]
   constexpr auto calculate_arc_atd_and_xtd(const Angle<T> beta, Angle<T> lon,
-                                           Radians<T> precision) const
+                                           const Radians<T> precision) const
       -> std::tuple<Radians<T>, Radians<T>, unsigned> {
     // calculate the position as a point on the auxiliary sphere
     const V point{vector::to_point(beta, lon)};
@@ -531,6 +531,67 @@ public:
     return {atd, xtd, iterations};
   }
 
+  /// Calculate the shortest geodesic distance of point from the
+  /// `GeodesicSegment`.
+  /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
+  /// @param position the position as a `LatLong`
+  /// @param precision_m the required precision, in `Radians`.
+  ///
+  /// @return shortest distance of the point from the `GeodesicSegment` in
+  /// `Metres`.
+  template <unsigned MAX_ITERATIONS = 10u>
+  [[nodiscard("Pure Function")]]
+  constexpr auto
+  calculate_sphere_shortest_distance(const LatLong<T> position,
+                                     const Radians<T> precision) const
+      -> units::si::Metres<T> {
+    // calculate the parametric latitude and longitude of the position
+    const Angle<T> beta{
+        ellipsoid_.calculate_parametric_latitude(Angle<T>(position.lat()))};
+    const Angle<T> lon(position.lon());
+    const auto [atd, xtd, _]{
+        calculate_arc_atd_and_xtd<MAX_ITERATIONS>(beta, lon, precision)};
+
+    // if the position is beside the geodesic segment
+    if (vector::intersection::is_alongside(atd, arc_length_, precision)) {
+      if (xtd.abs().v() < precision.v()) {
+        return units::si::Metres<T>(0);
+      } else {
+        // convert cross track distance to Metres
+        const Angle<T> atd_angle{atd};
+        const Angle<T> beta_x{arc_beta(atd_angle)};
+        const Angle<T> alpha{arc_azimuth(atd_angle).quarter_turn_ccw()};
+        const auto distance{
+            convert_radians_to_metres(beta_x, alpha, xtd, ellipsoid_)};
+        // return the abs cross track distance in Metres
+        return units::si::Metres<T>(std::abs(distance.v()));
+      }
+    } else {
+      // the position is closest to one of the geodesic segment ends
+      const auto point{vector::to_point(beta, lon)};
+      const T sq_a{vector::sq_distance(a(), point)};
+      const T sq_b{vector::sq_distance(arc_point(arc_length_), point)};
+
+      if (sq_b < sq_a) {
+        // calculate the geodesic distance from the end of the segment
+        const Angle<T> sigma{arc_length_};
+        const Angle<T> beta_x{arc_beta(sigma)};
+        const Angle<T> delta_long{lon - arc_longitude(arc_length_, sigma)};
+
+        const auto [alpha, distance, _1, _2] = aux_sphere_azimuths_length(
+            beta_x, beta, delta_long, precision, ellipsoid_);
+        return convert_radians_to_metres(beta_x, alpha, distance, ellipsoid_);
+      } else {
+        // calculate the geodesic distance from the start of the segment
+        const Angle<T> delta_long{lon - lon_};
+        const auto [alpha, distance, _1, _2] = aux_sphere_azimuths_length(
+            beta_, beta, delta_long, precision, ellipsoid_);
+        return convert_radians_to_metres(beta_, alpha, distance, ellipsoid_);
+      }
+    }
+    return units::si::Metres<T>(0);
+  }
+
   /// Calculate along and across track distances to a position from a
   /// geodesic.
   /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
@@ -562,6 +623,25 @@ public:
     return {radians_to_metres(atd, atd_angle),
             convert_radians_to_metres(beta_x, alpha, xtd, ellipsoid_),
             iterations};
+  }
+
+  /// Calculate the shortest geodesic distance of point from the
+  /// `GeodesicSegment`.
+  /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
+  /// @param position the position as a `LatLong`
+  /// @param precision_m the required precision, in `Metres`.
+  ///
+  /// @return shortest distance of the point from the `GeodesicSegment` in
+  /// `Metres`.
+  template <unsigned MAX_ITERATIONS = 10u>
+  [[nodiscard("Pure Function")]]
+  constexpr auto shortest_distance(const LatLong<T> position,
+                                   units::si::Metres<T> precision_m) const
+      -> units::si::Metres<T> {
+    // convert precision to Radians
+    const Radians<T> precision{precision_m.v() / ellipsoid_.a().v()};
+    return calculate_sphere_shortest_distance<MAX_ITERATIONS>(position,
+                                                              precision);
   }
 };
 

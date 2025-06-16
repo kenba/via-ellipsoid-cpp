@@ -126,6 +126,9 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   BOOST_CHECK_EQUAL(0.0, atd.v());
   BOOST_CHECK_EQUAL(0.0, xtd.v());
 
+  auto distamce{g1.shortest_distance(istanbul, units::si::Metres(1e-3))};
+  BOOST_CHECK_EQUAL(0.0, distamce.v());
+
   // test end position
   const auto arc_length{g1.arc_length()};
   BOOST_CHECK_CLOSE(1.309412846249522, arc_length.v(), CALCULATION_TOLERANCE);
@@ -168,6 +171,9 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
       g1.calculate_atd_and_xtd(mid_position, units::si::Metres(1e-3))};
   BOOST_CHECK_CLOSE(half_length.v(), atd3.v(), 100 * precision.v());
   BOOST_CHECK_SMALL(xtd3.v(), 100 * precision.v());
+
+  distamce = g1.shortest_distance(mid_position, units::si::Metres(1e-3));
+  BOOST_CHECK_EQUAL(0.0, distamce.v());
 }
 //////////////////////////////////////////////////////////////////////////////
 
@@ -255,6 +261,22 @@ BOOST_AUTO_TEST_CASE(test_calculate_atd_and_xtd) {
       g3.calculate_atd_and_xtd(reyjavik, units::si::Metres(1e-3))};
   BOOST_CHECK_CLOSE(g1.length().v() - 3928788.572, atd2.v(), 100 * 1e-3);
   BOOST_CHECK_CLOSE(1010585.9988368, xtd2.v(), 100 * 1e-3);
+
+  // const LatLong reyjavik(Degrees(64.0), Degrees(-22.0));
+  auto distamce{g1.shortest_distance(reyjavik, units::si::Metres(1e-3))};
+  BOOST_CHECK_CLOSE(1010585.998836817, distamce.v(), 1e-3);
+
+  const LatLong accra(Degrees(6.0), Degrees(0.0));
+  distamce = g1.shortest_distance(accra, units::si::Metres(1e-3));
+  BOOST_CHECK_CLOSE(4891211.398445355, distamce.v(), 1e-3);
+
+  const LatLong chicago(Degrees(42.0), Degrees(-88.0));
+  distamce = g1.shortest_distance(chicago, units::si::Metres(1e-3));
+  BOOST_CHECK_CLOSE(989277.1859906457, distamce.v(), 1e-3);
+
+  const LatLong singapore(Degrees(1.0), Degrees(104.0));
+  distamce = g1.shortest_distance(singapore, units::si::Metres(1e-3));
+  BOOST_CHECK_CLOSE(8699538.22763653, distamce.v(), 1e-3);
 }
 //////////////////////////////////////////////////////////////////////////////
 

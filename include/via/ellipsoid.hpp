@@ -74,13 +74,19 @@ auto calculate_intersection_point(const GeodesicSegment<T> &g1,
                                   const GeodesicSegment<T> &g2,
                                   units::si::Metres<T> precision)
     -> std::optional<LatLong<T>> {
-  const auto [distance1,
-              distance2]{calculate_intersection_distances(g1, g2, precision)};
-  if (vector::intersection::is_within(distance1.v(), g1.arc_length().v()) &&
-      vector::intersection::is_within(distance2.v(), g2.arc_length().v()))
-    return g1.arc_lat_long(distance1, Angle<T>(distance1));
-  else
-    return std::nullopt;
+  const Radians<T> precision_r{precision.v() / g1.ellipsoid().a().v()};
+  const auto [distance1, distance2,
+              _]{calculate_sphere_intersection_distances(g1, g2, precision_r)};
+  if (vector::intersection::is_alongside(distance1, g1.arc_length(),
+                                         precision_r) &&
+      vector::intersection::is_alongside(distance2, g2.arc_length(),
+                                         precision_r)) {
+    // Ensure point is within g1
+    const auto distance{distance1.clamp(g1.arc_length())};
+    return g1.arc_lat_long(distance, Angle<T>(distance));
+  }
+
+  return std::nullopt;
 }
 
 } // namespace ellipsoid

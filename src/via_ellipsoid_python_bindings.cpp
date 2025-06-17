@@ -134,8 +134,11 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("arc_point_and_pole", &GeodesicSegmentDouble::arc_point_and_pole)
       .def("calculate_arc_atd_and_xtd",
            &GeodesicSegmentDouble::calculate_arc_atd_and_xtd<10>)
+      .def("calculate_sphere_shortest_distance",
+           &GeodesicSegmentDouble::calculate_sphere_shortest_distance<10>)
       .def("calculate_atd_and_xtd",
-           &GeodesicSegmentDouble::calculate_atd_and_xtd<10>);
+           &GeodesicSegmentDouble::calculate_atd_and_xtd<10>)
+      .def("shortest_distance", &GeodesicSegmentDouble::shortest_distance<10>);
 
   // Python bindings for GeodesicSegment intersection functions
   m.def("iterate_geodesic_intersection_distances",

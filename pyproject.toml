@@ -4,4 +4,4 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "via_ellipsoid"
-version = "0.6.0"
+version = "0.6.1"

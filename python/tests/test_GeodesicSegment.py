@@ -54,6 +54,8 @@ def test_intersection_point_distance():
         assert_almost_equal(54.7170296089477, intersection_point_2.lat().v())
         assert_almost_equal(-14.56385574430775, intersection_point_2.lon().v())
 
+    distance = g1.shortest_distance(reyjavik, Metres(1.0e-3))
+    assert_almost_equal(1010585.9988368, distance.v())
 
 def test_intersection_point_distance_non_wgs84():
     # Example from Charles Karney email on 31/03/2025

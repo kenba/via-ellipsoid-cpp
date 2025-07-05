@@ -534,21 +534,18 @@ public:
   /// Calculate the shortest geodesic distance of point from the
   /// `GeodesicSegment`.
   /// @tparam MAX_ITERATIONS the maximum number of iterations, default 10.
-  /// @param position the position as a `LatLong`
-  /// @param precision_m the required precision, in `Radians`.
+  /// @param beta the parametric latitude of the point.
+  /// @param lon the longitude of the point.
+  /// @param precision the required precision, in `Radians`.
   ///
   /// @return shortest distance of the point from the `GeodesicSegment` in
   /// `Metres`.
   template <unsigned MAX_ITERATIONS = 10u>
   [[nodiscard("Pure Function")]]
   constexpr auto
-  calculate_sphere_shortest_distance(const LatLong<T> position,
+  calculate_sphere_shortest_distance(const Angle<T> beta, Angle<T> lon,
                                      const Radians<T> precision) const
       -> units::si::Metres<T> {
-    // calculate the parametric latitude and longitude of the position
-    const Angle<T> beta{
-        ellipsoid_.calculate_parametric_latitude(Angle<T>(position.lat()))};
-    const Angle<T> lon(position.lon());
     const auto [atd, xtd, _]{
         calculate_arc_atd_and_xtd<MAX_ITERATIONS>(beta, lon, precision)};
 
@@ -638,9 +635,13 @@ public:
   constexpr auto shortest_distance(const LatLong<T> position,
                                    units::si::Metres<T> precision_m) const
       -> units::si::Metres<T> {
+    // calculate the parametric latitude and longitude of the position
+    const Angle<T> beta{
+        ellipsoid_.calculate_parametric_latitude(Angle<T>(position.lat()))};
+    const Angle<T> lon(position.lon());
     // convert precision to Radians
     const Radians<T> precision{precision_m.v() / ellipsoid_.a().v()};
-    return calculate_sphere_shortest_distance<MAX_ITERATIONS>(position,
+    return calculate_sphere_shortest_distance<MAX_ITERATIONS>(beta, lon,
                                                               precision);
   }
 };

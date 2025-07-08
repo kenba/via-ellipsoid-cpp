@@ -66,10 +66,8 @@ if (INSTALL_PYTHON)
   set(PYBIND11_FINDPYTHON ON)
   find_package(pybind11 CONFIG REQUIRED)
 
-  if (WIN32)
-    find_package(Boost REQUIRED COMPONENTS)
-    include_directories(${Boost_INCLUDE_DIRS})
-  endif()
+  find_package(Boost REQUIRED COMPONENTS)
+  include_directories(${Boost_INCLUDE_DIRS})
 
   pybind11_add_module(via_ellipsoid src/via_ellipsoid_python_bindings.cpp)
   target_compile_features(via_ellipsoid PRIVATE cxx_std_23)

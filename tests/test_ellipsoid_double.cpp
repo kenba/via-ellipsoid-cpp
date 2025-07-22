@@ -191,11 +191,12 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   const Radians<double> precision{1e-3 / g.ellipsoid().a().v()};
 
   // geodesics are coincident
-  const auto [distance1, distance2, iterations]{
+  const auto [distance1, distance2, angle1, iterations]{
       calculate_sphere_intersection_distances(g1, g2, precision)};
   BOOST_CHECK_CLOSE(g1.arc_length().v(), distance1.v(),
                     2 * CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, distance2.v());
+  BOOST_CHECK_EQUAL(0.0, angle1.to_degrees().v());
   BOOST_CHECK_EQUAL(0, iterations);
 
   // a geodesic from the mid point of g to another point
@@ -205,11 +206,12 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
       half_arc_length, g.ellipsoid());
 
   // geodesics are NOT coincident
-  const auto [distance3, distance4, iterations2]{
+  const auto [distance3, distance4, angle2, iterations2]{
       calculate_sphere_intersection_distances(g1, g3, precision)};
   BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(),
                     2 * CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, distance4.v());
+  BOOST_CHECK_EQUAL(0.0, angle2.to_degrees().v());
   BOOST_CHECK_EQUAL(0, iterations2);
 }
 //////////////////////////////////////////////////////////////////////////////

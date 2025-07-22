@@ -44,14 +44,15 @@ constexpr auto clamp_length(const T ref_length, const T arc_length,
                                                            : ref_length;
 }
 
-/// Iterate the great circle arc lengths to an intersection point of two
+/// Iterate the great circle arc distances to an intersection point of two
 /// geodesic segments.
 /// @param g1, g2 the GeodesicSegments.
 /// @param sq_precision the square of the Euclidean precision.
 /// @param use_antipodal_intersection use the antipodal intersection point.
 /// @param initial_distances the initial intersection distances in `Radians`.
-/// @return the Great Circle lengths to the closest geodesic segment
-/// intersection point, in radians.
+/// @return the Great Circle arc distances to the closest geodesic segment
+/// intersection point, the angle at the intersection point and the
+/// number of iterations required.
 template <typename T, unsigned MAX_ITERATIONS = 10u>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
@@ -59,7 +60,7 @@ auto iterate_geodesic_intersection_distances(
     const GeodesicSegment<T> &g1, const GeodesicSegment<T> &g2,
     const T sq_precision, const bool use_antipodal_intersection,
     const std::tuple<Radians<T>, Radians<T>> initial_distances)
-    -> std::tuple<Radians<T>, Radians<T>, unsigned> {
+    -> std::tuple<Radians<T>, Radians<T>, Angle<T>, unsigned> {
   auto [distance1, distance2]{initial_distances};
 
   auto iterations{1u};
@@ -89,7 +90,11 @@ auto iterate_geodesic_intersection_distances(
       break;
   }
 
-  return {distance1, distance2, iterations};
+  // calculate the relative angle at the intersection point
+  const auto angle{g2.arc_azimuth(Angle(distance2)) -
+                   g1.arc_azimuth(Angle(distance1))};
+
+  return {distance1, distance2, angle, iterations};
 }
 
 /// Calculate the distances along a pair of GeodesicSegments (in Radians)
@@ -98,16 +103,16 @@ auto iterate_geodesic_intersection_distances(
 /// @param g1, g2 the GeodesicSegments.
 /// @param precision the precision in `Radians`.
 ///
-/// @return the distances along the GeodesicSegments to the intersection point
-/// or to their closest (reference) points if the GeodesicSegments do not
-/// intersect and the number of iterations required.
+/// @return the Great Circle arc distances to the closest geodesic segment
+/// intersection point, the angle at the intersection point and the
+/// number of iterations required.
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
 auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
                                              const GeodesicSegment<T> &g2,
                                              Radians<T> precision)
-    -> std::tuple<Radians<T>, Radians<T>, unsigned> {
+    -> std::tuple<Radians<T>, Radians<T>, Angle<T>, unsigned> {
   // The GeodesicSegments MUST be on the same `Ellipsoid`
   Expects(g1.ellipsoid() == g2.ellipsoid());
 
@@ -115,10 +120,14 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
   const T e_precision{great_circle::gc2e_distance(precision)};
   const T sq_precision{e_precision * e_precision};
 
+  // Determine whether the geodesics are reciprocal
+  const Angle<T> delta_azimuth1_2{g2.azi() - g1.azi()};
+  const bool reciprocal{std::signbit(delta_azimuth1_2.cos().v())};
+
   // if the start points are within precision of each other
   const T sq_d{vector::sq_distance(g1.a(), g2.a())};
   if (sq_d < sq_precision) {
-    return {Radians(T()), Radians(T()), 0u};
+    return {Radians(T()), Radians(T()), delta_azimuth1_2, 0u};
   }
 
   // Construct a geodesic between geodesic start points
@@ -126,18 +135,15 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
       g1.beta(), g2.beta(), g2.lon() - g1.lon(),
       Radians<T>(great_circle::MIN_VALUE<T>), g1.ellipsoid())};
 
-  // Determine whether the geodesics are reciprocal
-  const Angle<T> delta_azimuth1_2{g1.azi() - g2.azi()};
-  const bool reciprocal{std::signbit(delta_azimuth1_2.cos().v())};
   const Radians<T> atd{reciprocal ? -g3_arc_length : g3_arc_length};
 
   // Determine whether the geodesics are coincident
-  const Angle<T> delta_azimuth1_3{g1.azi() - g3_azi};
+  const Angle<T> delta_azimuth1_3{g3_azi - g1.azi()};
 
   const bool geodesics_may_be_coincident{delta_azimuth1_3.sin().abs().v() <
                                          vector::MIN_SIN_ANGLE<T>};
   if (geodesics_may_be_coincident) {
-    const Angle<T> delta_azimuth2_3{g2.azi() - g3_end_azi};
+    const Angle<T> delta_azimuth2_3{g3_end_azi - g2.azi()};
 
     const bool geodesics_are_coincident{delta_azimuth2_3.sin().abs().v() <
                                         vector::MIN_SIN_ANGLE<T>};
@@ -146,10 +152,16 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
       const auto [distance1, distance2]{
           vector::intersection::calculate_coincident_arc_distances(
               atd, reciprocal, g1.arc_length(), g2.arc_length())};
-      return {distance1, distance2, 0u};
+      const auto angle{reciprocal ? Angle<T>().opposite() : Angle<T>()};
+      return {distance1, distance2, angle, 0u};
     } else {
       // The start of the second geodesic lies on the first geodesic
-      return {atd, Radians<T>(0), 0u};
+      //
+      const auto angle{delta_azimuth1_2.sin().abs().v() <
+                               vector::MIN_SIN_ANGLE<T>
+                           ? reciprocal ? Angle<T>().opposite() : Angle<T>()
+                           : delta_azimuth1_2};
+      return {atd, Radians<T>(0), angle, 0u};
     }
   }
 
@@ -176,6 +188,7 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
         a1mid, pole1mid, a2mid, pole2mid, x)};
     d1 += half_arc_length1;
     d2 += half_arc_length2;
+
     return iterate_geodesic_intersection_distances(
         g1, g2, sq_precision, use_antipodal_intersection, {d1, d2});
   } else {
@@ -184,7 +197,8 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
     const auto [distance1, distance2]{
         vector::intersection::calculate_coincident_arc_distances(
             atd, reciprocal, g1.arc_length(), g2.arc_length())};
-    return {distance1, distance2, 0u};
+    const auto angle{reciprocal ? Angle<T>().opposite() : Angle<T>()};
+    return {distance1, distance2, angle, 0u};
   }
 }
 
@@ -204,7 +218,7 @@ auto calculate_intersection_distances(const GeodesicSegment<T> &g1,
                                       units::si::Metres<T> precision)
     -> std::tuple<Radians<T>, Radians<T>> {
   const Radians<T> precision_r{precision.v() / g1.ellipsoid().a().v()};
-  const auto [distance1, distance2, _iterations]{
+  const auto [distance1, distance2, _angle, _iterations]{
       calculate_sphere_intersection_distances(g1, g2, precision_r)};
   return {distance1, distance2};
 }

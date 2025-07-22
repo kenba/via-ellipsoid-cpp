@@ -75,7 +75,7 @@ auto calculate_intersection_point(const GeodesicSegment<T> &g1,
                                   units::si::Metres<T> precision)
     -> std::optional<LatLong<T>> {
   const Radians<T> precision_r{precision.v() / g1.ellipsoid().a().v()};
-  const auto [distance1, distance2,
+  const auto [distance1, distance2, _angle,
               _]{calculate_sphere_intersection_distances(g1, g2, precision_r)};
   if (vector::intersection::is_alongside(distance1, g1.arc_length(),
                                          precision_r) &&

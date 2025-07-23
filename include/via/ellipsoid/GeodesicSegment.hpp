@@ -25,6 +25,7 @@
 /// @brief Contains the via::ellipsoid GeodesicSegment class.
 //////////////////////////////////////////////////////////////////////////////
 #include "geodesic_functions.hpp"
+#include <via/angle.hpp>
 #include <via/angle/trig.hpp>
 #include <via/sphere/great_circle.hpp>
 
@@ -468,6 +469,17 @@ public:
         azi0_.sin().v(), azi0_.cos().v() * sigma_sum.cos().v())};
     const auto pole{vector::calculate_pole(beta, lon, azimuth)};
     return {point, pole};
+  }
+
+  /// The reverse `GeodesicSegment` from end to start.
+  ///
+  /// @return the reverse `GeodesicSegment` from end to start.
+  [[nodiscard("Pure Function")]]
+  constexpr auto reverse() const -> GeodesicSegment<T> {
+    const Angle<T> sigma(arc_length_);
+    return GeodesicSegment<T>(
+        arc_beta(sigma), arc_longitude(arc_length_, sigma),
+        arc_azimuth(sigma).opposite(), arc_length_, ellipsoid_);
   }
 
   /// Calculate along and across track distances to a position from a

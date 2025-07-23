@@ -24,6 +24,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid/GeodesicSegment.hpp"
 #include <boost/test/unit_test.hpp>
+#include <via/angle.hpp>
 #include <via/angle/trig.hpp>
 
 using namespace via::ellipsoid;
@@ -174,6 +175,21 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
 
   distamce = g1.shortest_distance(mid_position, units::si::Metres(1e-3));
   BOOST_CHECK_EQUAL(0.0, distamce.v());
+
+  const auto g2{g1.reverse()};
+  BOOST_CHECK_EQUAL(g1.arc_length(), g2.arc_length());
+  BOOST_CHECK_EQUAL(g1.length(), g2.length());
+  BOOST_CHECK_EQUAL(washington.lat().v(),
+                    g2.arc_latitude(Angle<double>()).to_degrees().v());
+  BOOST_CHECK_EQUAL(
+      washington.lon().v(),
+      g2.arc_longitude(Radians(0.0), Angle<double>()).to_degrees().v());
+  const Angle<double> sigma(g2.arc_length());
+  BOOST_CHECK_CLOSE(istanbul.lat().v(), g2.arc_latitude(sigma).to_degrees().v(),
+                    100 * precision.v());
+  BOOST_CHECK_CLOSE(istanbul.lon().v(),
+                    g2.arc_longitude(g2.arc_length(), sigma).to_degrees().v(),
+                    100 * precision.v());
 }
 //////////////////////////////////////////////////////////////////////////////
 

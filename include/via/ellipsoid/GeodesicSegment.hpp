@@ -419,8 +419,7 @@ public:
   /// @return mid point
   [[nodiscard("Pure Function")]]
   constexpr auto mid_point() const -> V {
-    return arc_point(
-        metres_to_radians(units::si::Metres<T>(length().v() / T(2))));
+    return arc_point(metres_to_radians(length().half()));
   }
 
   /// Calculate the geodesic pole at the great circle arc distance.
@@ -576,12 +575,15 @@ public:
         return units::si::Metres<T>(std::abs(distance.v()));
       }
     } else {
-      // the position is closest to one of the geodesic segment ends
-      const auto point{vector::to_point(beta, lon)};
-      const T sq_a{vector::sq_distance(a(), point)};
-      const T sq_b{vector::sq_distance(arc_point(arc_length_), point)};
-
-      if (sq_b < sq_a) {
+      // adjust atd to measure the distance from the centre of the Arc
+      const auto atd_centre{atd - arc_length_.half()};
+      if (std::signbit(atd_centre.v())) {
+        // calculate the geodesic distance from the start of the segment
+        const Angle<T> delta_long{lon - lon_};
+        const auto [alpha, distance, _1, _2] = aux_sphere_azimuths_length(
+            beta_, beta, delta_long, precision, ellipsoid_);
+        return convert_radians_to_metres(beta_, alpha, distance, ellipsoid_);
+      } else {
         // calculate the geodesic distance from the end of the segment
         const Angle<T> sigma{arc_length_};
         const Angle<T> beta_x{arc_beta(sigma)};
@@ -590,15 +592,8 @@ public:
         const auto [alpha, distance, _1, _2] = aux_sphere_azimuths_length(
             beta_x, beta, delta_long, precision, ellipsoid_);
         return convert_radians_to_metres(beta_x, alpha, distance, ellipsoid_);
-      } else {
-        // calculate the geodesic distance from the start of the segment
-        const Angle<T> delta_long{lon - lon_};
-        const auto [alpha, distance, _1, _2] = aux_sphere_azimuths_length(
-            beta_, beta, delta_long, precision, ellipsoid_);
-        return convert_radians_to_metres(beta_, alpha, distance, ellipsoid_);
       }
     }
-    return units::si::Metres<T>(0);
   }
 
   /// Calculate along and across track distances to a position from a

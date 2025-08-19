@@ -167,8 +167,8 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
 
   // Calculate the intersection of the poles at the mid points of the unit
   // sphere great circle arcs
-  const Radians<T> half_arc_length1{g1.arc_length().v() / 2};
-  const Radians<T> half_arc_length2{g2.arc_length().v() / 2};
+  const Radians<T> half_arc_length1{g1.arc_length().half()};
+  const Radians<T> half_arc_length2{g2.arc_length().half()};
   const auto [a1mid, pole1mid]{g1.arc_point_and_pole(half_arc_length1)};
   const auto [a2mid, pole2mid]{g2.arc_point_and_pole(half_arc_length2)};
   const auto c{vector::intersection::calculate_intersection(

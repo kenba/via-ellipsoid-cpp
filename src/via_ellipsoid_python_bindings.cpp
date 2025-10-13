@@ -126,6 +126,7 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("delta_longitude", &GeodesicSegmentDouble::delta_longitude)
       .def("arc_longitude", &GeodesicSegmentDouble::arc_longitude)
       .def("longitude", &GeodesicSegmentDouble::longitude)
+      .def("arc_angles", &GeodesicSegmentDouble::arc_angles)
       .def("arc_lat_long", &GeodesicSegmentDouble::arc_lat_long)
       .def("lat_long", &GeodesicSegmentDouble::lat_long)
       .def("arc_point", &GeodesicSegmentDouble::arc_point)

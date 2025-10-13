@@ -374,6 +374,21 @@ public:
     return arc_longitude(sigma, Angle<T>(sigma));
   }
 
+  /// Calculate the parametric latitude, longitude and azimuth at the arc
+  /// distance.
+  /// @param arc_distance the arc distance on the auxiliary sphere in Radians.
+  /// @return the parametric latitude, longitude and azimuth at arc distance.
+  [[nodiscard("Pure Function")]]
+  constexpr auto arc_angles(const Radians<T> arc_distance) const
+      -> std::tuple<Angle<T>, Angle<T>, Angle<T>> {
+    const Angle<T> sigma{arc_distance};
+    const Angle<T> beta{arc_beta(sigma)};
+    const Angle<T> lon{arc_longitude(arc_distance, sigma)};
+    const Angle<T> azimuth{arc_azimuth(sigma)};
+
+    return {beta, lon, azimuth};
+  }
+
   /// Calculate the geodesic `LatLong` at the great circle length along
   /// the auxiliary sphere.
   /// @param arc_distance the great circle arc distance on the auxiliary
@@ -408,9 +423,7 @@ public:
     if (arc_distance.abs().v() < great_circle::MIN_VALUE<T>)
       return a();
 
-    const Angle<T> sigma{arc_distance};
-    const Angle<T> beta{arc_beta(sigma)};
-    const Angle<T> lon{arc_longitude(arc_distance, sigma)};
+    const auto [beta, lon, azimuth]{arc_angles(arc_distance)};
     return vector::to_point(beta, lon);
   }
 
@@ -432,12 +445,7 @@ public:
       return vector::calculate_pole(beta_, lon_, azi_);
     }
 
-    const Angle<T> sigma{Angle<T>(arc_distance)};
-    const Angle<T> beta{arc_beta(sigma)};
-    const Angle<T> lon{arc_longitude(arc_distance, sigma)};
-    const Angle<T> sigma_sum{sigma1_ + sigma};
-    const auto azimuth{Angle<T>::from_y_x(
-        azi0_.sin().v(), azi0_.cos().v() * sigma_sum.cos().v())};
+    const auto [beta, lon, azimuth]{arc_angles(arc_distance)};
     return vector::calculate_pole(beta, lon, azimuth);
   }
 
@@ -449,25 +457,11 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto arc_point_and_pole(const Radians<T> arc_distance) const
       -> std::tuple<V, V> {
-    const Angle<T> sigma{Angle<T>(arc_distance)};
-    const Angle<T> beta{arc_beta(sigma)};
-    const Angle<T> lon{arc_longitude(arc_distance, sigma)};
-    const auto point{vector::to_point(beta, lon)};
-
-    // if point is on a meridional geodesic, use auxiliary sphere point and
-    // pole
-    if (azi0_.sin().abs().v() < great_circle::MIN_VALUE<T>) {
-      const auto pole{vector::calculate_pole(beta_, lon_, azi_)};
-      return {point, pole};
-    }
-
-    // Note: point cannot be at North pole, since it is not on a meridional
-    // geodesic. Use Karney's method to calculate azimuth.
-    const Angle<T> sigma_sum{sigma1_ + sigma};
-    const auto azimuth{Angle<T>::from_y_x(
-        azi0_.sin().v(), azi0_.cos().v() * sigma_sum.cos().v())};
-    const auto pole{vector::calculate_pole(beta, lon, azimuth)};
-    return {point, pole};
+    const auto [beta, lon, azimuth]{arc_angles(arc_distance)};
+    const auto pole{(azi0_.sin().abs().v() < great_circle::MIN_VALUE<T>)
+                        ? vector::calculate_pole(beta_, lon_, azi_)
+                        : vector::calculate_pole(beta, lon, azimuth)};
+    return {vector::to_point(beta, lon), pole};
   }
 
   /// The reverse `GeodesicSegment` from end to start.
@@ -507,10 +501,7 @@ public:
     auto [atd, xtd]{vector::calculate_atd_and_xtd(a(), pole, point)};
     auto iterations{1u};
     while (iterations < MAX_ITERATIONS) {
-      const Angle<T> atd_angle{atd};
-      const auto beta_x{arc_beta(atd_angle)};
-      const auto lon_x{arc_longitude(atd, atd_angle)};
-      const auto azi_x{arc_azimuth(atd_angle)};
+      const auto [beta_x, lon_x, azi_x]{arc_angles(atd)};
 
       // calculate the geodesic azimuth and length to the point from the
       // GeodesicSegment position at atd
@@ -566,9 +557,8 @@ public:
         return units::si::Metres<T>(0);
       } else {
         // convert cross track distance to Metres
-        const Angle<T> atd_angle{atd};
-        const Angle<T> beta_x{arc_beta(atd_angle)};
-        const Angle<T> alpha{arc_azimuth(atd_angle).quarter_turn_ccw()};
+        const auto [beta_x, lon, azi]{arc_angles(atd)};
+        const Angle<T> alpha{azi.quarter_turn_ccw()};
         const auto distance{
             convert_radians_to_metres(beta_x, alpha, xtd, ellipsoid_)};
         // return the abs cross track distance in Metres
@@ -585,9 +575,8 @@ public:
         return convert_radians_to_metres(beta_, alpha, distance, ellipsoid_);
       } else {
         // calculate the geodesic distance from the end of the segment
-        const Angle<T> sigma{arc_length_};
-        const Angle<T> beta_x{arc_beta(sigma)};
-        const Angle<T> delta_long{lon - arc_longitude(arc_length_, sigma)};
+        const auto [beta_x, lon_x, _azi]{arc_angles(arc_length_)};
+        const Angle<T> delta_long{lon - lon_x};
 
         const auto [alpha, distance, _1, _2] = aux_sphere_azimuths_length(
             beta_x, beta, delta_long, precision, ellipsoid_);

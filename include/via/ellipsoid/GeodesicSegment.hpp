@@ -54,9 +54,10 @@ public:
   Angle<T> sigma1_ = Angle<T>(T(), T(1));
   /// Great circle arc length on the auxiliary sphere in radians.
   Radians<T> arc_length_ = Radians<T>(T());
+  /// The half width of a Geodesic Rectangle in metres.
+  units::si::Metres<T> half_width_ = units::si::Metres<T>(T());
   /// Integration constant: epsilon, derived from Clairaut's constant.
   T eps_ = T();
-  T a1_ = T(1); ///< constant used to convert geodesic/great circle distances.
   T a3c_ = T(); ///< constant used to convert geodesic/great circle longitudes.
   /// Start parameter for geodesic/great circle distance differences.
   Radians<T> b11_ = Radians<T>(T());
@@ -77,10 +78,12 @@ public:
   /// @param arc_length the great circle arc length in Radians.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
+  /// @param half_width the GeodesicSegment half width in Metres, default zero.
   constexpr GeodesicSegment(
       const Angle<T> beta, const Angle<T> lon, const Angle<T> azimuth,
       const Radians<T> arc_length,
-      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
+      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84(),
+      const units::si::Metres<T> half_width = units::si::Metres<T>(T()))
       : beta_{beta}, lon_{lon}, azi_{azimuth},
         // Calculate the azimuth at the first Equator crossing
         azi0_(trig::UnitNegRange(azi_.sin().v() * beta_.cos().v()),
@@ -89,10 +92,9 @@ public:
         // Calculate the distance to the first Equator crossing
         sigma1_{Angle<T>::from_y_x(beta_.sin().v(),
                                    beta.cos().v() * azi_.cos().v())},
-        arc_length_{arc_length},
+        arc_length_{arc_length}, half_width_{half_width},
         // Calculate eps for calculating coefficients
         eps_(ellipsoid.calculate_epsilon(azi0_.sin())),
-        a1_((evaluate_A1<T>(eps_) + T(1))),
         a3c_(ellipsoid.calculate_a3c(azi0_.sin(), eps_)),
         ellipsoid_(ellipsoid) {
     Expects((T() <= beta.cos().v()) && (T() <= arc_length.v()) &&
@@ -196,11 +198,31 @@ public:
     return azi_;
   }
 
+  /// Set the `arc_length` of a `GeodesicSegment`
+  /// @param arc_length the great circle arc length of the `GeodesicSegment`.
+  constexpr auto set_arc_length(units::si::Metres<T> half_width) noexcept
+      -> void {
+    half_width_ = half_width;
+  }
+
   /// Accessor for the arc length on the auxiliary sphere in radians.
   /// @return The arc length on the auxiliary sphere in radians.
   [[nodiscard("Pure Function")]]
   constexpr auto arc_length() const noexcept -> Radians<T> {
     return arc_length_;
+  }
+
+  /// Set the `half_width` of a `GeodesicSegment`
+  /// @param half_width of the `GeodesicSegment`.
+  constexpr auto set_half_width(units::si::Metres<T> half_width) noexcept
+      -> void {
+    half_width_ = half_width;
+  }
+
+  /// Accessor for the half width in metres.
+  [[nodiscard("Pure Function")]]
+  constexpr auto half_width() const noexcept -> units::si::Metres<T> {
+    return half_width_;
   }
 
   /// Accessor for the reference to the underlying `Ellipsoid`.
@@ -234,7 +256,8 @@ public:
     if (std::abs(distance.v()) < great_circle::MIN_VALUE<T>)
       return Radians(T());
 
-    const auto tau12{Radians<T>(distance.v() / (ellipsoid_.b().v() * a1_))};
+    const auto a1((evaluate_A1<T>(eps_) + T(1)));
+    const auto tau12{Radians<T>(distance.v() / (ellipsoid_.b().v() * a1))};
     const auto tau_sum{Angle<T>(b11_ + tau12)};
     const auto c1p{evaluate_coeffs_C1p<T>(eps_)};
     const auto b12{sin_cos_series(sigma1_ + Angle<T>(tau_sum), c1p)};
@@ -255,8 +278,9 @@ public:
     const Angle<T> sigma_sum{sigma1_ + sigma};
     const auto c1{evaluate_coeffs_C1<T>(eps_)};
     const auto b12{sin_cos_series(sigma_sum, c1)};
+    const auto a1((evaluate_A1<T>(eps_) + T(1)));
 
-    return units::si::Metres<T>(ellipsoid().b().v() * a1_ *
+    return units::si::Metres<T>(ellipsoid().b().v() * a1 *
                                 (arc_distance + b12 - b11_).v());
   }
 
@@ -470,9 +494,11 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto reverse() const -> GeodesicSegment<T> {
     const Angle<T> sigma(arc_length_);
-    return GeodesicSegment<T>(
+    GeodesicSegment<T> segment(
         arc_beta(sigma), arc_longitude(arc_length_, sigma),
         arc_azimuth(sigma).opposite(), arc_length_, ellipsoid_);
+    segment.set_half_width(half_width_);
+    return segment;
   }
 
   /// Calculate along and across track distances to a position from a

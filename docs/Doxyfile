@@ -6,7 +6,7 @@
 
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = via-ellipsoid-cpp
-PROJECT_NUMBER         = 0.7.2
+PROJECT_NUMBER         = 0.7.3
 PROJECT_BRIEF          = "A C++ library for performing geometric calculations on the WGS84 ellipsoid."
 PROJECT_LOGO           = images/via_logo.svg
 PROJECT_ICON           =

@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_arc_length_aziumth_normal_01) {
       Angle(Degrees(-40.0)))};
   const GeodesicSegment<double> g(beta1, Angle(Degrees(70.0)), azimuth1,
                                   arc_length1);
-  const auto latlon3{g.arc_lat_long(arc_length1, Angle(arc_length1))};
+  const auto latlon3{g.arc_lat_long(arc_length1)};
   BOOST_CHECK_CLOSE(latlon2.lat().v(), latlon3.lat().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_SMALL(latlon3.lon().v(), CALCULATION_TOLERANCE);
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_arc_length_aziumth_normal_02) {
       Angle(Degrees(30.0)))};
   const GeodesicSegment<double> g(beta1, Angle(Degrees(70.0)), azimuth1,
                                   arc_length1);
-  const auto latlon3{g.arc_lat_long(arc_length1, Angle(arc_length1))};
+  const auto latlon3{g.arc_lat_long(arc_length1)};
   BOOST_CHECK_CLOSE(latlon2.lat().v(), latlon3.lat().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_SMALL(latlon3.lon().v(), CALCULATION_TOLERANCE);
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_arc_length_aziumth_normal_03) {
       Angle(Degrees(30.0)))};
   const GeodesicSegment<double> g(beta1, Angle(Degrees(0.0)), azimuth1,
                                   arc_length1);
-  const auto latlon3{g.arc_lat_long(arc_length1, Angle(arc_length1))};
+  const auto latlon3{g.arc_lat_long(arc_length1)};
   BOOST_CHECK_CLOSE(latlon2.lat().v(), latlon3.lat().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(latlon2.lon().v(), latlon3.lon().v(),
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(test_geodesic_arc_length_aziumth_normal_04) {
       Angle(Degrees(-40.0)))};
   const GeodesicSegment<double> g(beta1, Angle(Degrees(0.0)), azimuth1,
                                   arc_length1);
-  const auto latlon3{g.arc_lat_long(arc_length1, Angle(arc_length1))};
+  const auto latlon3{g.arc_lat_long(arc_length1)};
   BOOST_CHECK_CLOSE(latlon2.lat().v(), latlon3.lat().v(),
                     CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(latlon2.lon().v(), latlon3.lon().v(),

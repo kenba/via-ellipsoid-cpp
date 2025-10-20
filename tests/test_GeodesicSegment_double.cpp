@@ -180,15 +180,15 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_between_positions) {
   BOOST_CHECK_EQUAL(g1.arc_length(), g2.arc_length());
   BOOST_CHECK_EQUAL(g1.length(), g2.length());
   BOOST_CHECK_EQUAL(washington.lat().v(),
-                    g2.arc_latitude(Angle<double>()).to_degrees().v());
-  BOOST_CHECK_EQUAL(
-      washington.lon().v(),
-      g2.arc_longitude(Radians(0.0), Angle<double>()).to_degrees().v());
+                    g2.arc_latitude(Radians(0.0)).to_degrees().v());
+  BOOST_CHECK_EQUAL(washington.lon().v(),
+                    g2.arc_longitude(Radians(0.0)).to_degrees().v());
   const Angle<double> sigma(g2.arc_length());
-  BOOST_CHECK_CLOSE(istanbul.lat().v(), g2.arc_latitude(sigma).to_degrees().v(),
+  BOOST_CHECK_CLOSE(istanbul.lat().v(),
+                    g2.arc_latitude(g2.arc_length()).to_degrees().v(),
                     100 * precision.v());
   BOOST_CHECK_CLOSE(istanbul.lon().v(),
-                    g2.arc_longitude(g2.arc_length(), sigma).to_degrees().v(),
+                    g2.arc_longitude(g2.arc_length()).to_degrees().v(),
                     100 * precision.v());
 }
 //////////////////////////////////////////////////////////////////////////////

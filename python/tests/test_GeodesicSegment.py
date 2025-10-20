@@ -63,11 +63,11 @@ def test_intersection_point_distance_non_wgs84():
     ell = Ellipsoid(Metres(6.4e6), 1.0/50.0)
     g1 = GeodesicSegment(LatLong(Degrees(-30), Degrees(0.0)),
                   LatLong(Degrees(29.5), Degrees(179.5)),
-                  Radians(MIN_VALUE), ell)
+                  Metres(0.0), Radians(MIN_VALUE), ell)
     print(g1.length())
     g2 = GeodesicSegment(LatLong(Degrees(1), Degrees(90)),
                   LatLong(Degrees(-2), Degrees(-95)),
-                  Radians(MIN_VALUE), ell)
+                  Metres(0.0), Radians(MIN_VALUE), ell)
     print(g2.length())
     p = calculate_intersection_point(g1, g2, Metres(1e-6))
     print(p)

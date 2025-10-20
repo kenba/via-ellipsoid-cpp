@@ -83,7 +83,7 @@ auto calculate_intersection_point(const GeodesicSegment<T> &g1,
                                          precision_r)) {
     // Ensure point is within g1
     const auto distance{distance1.clamp(g1.arc_length())};
-    return g1.arc_lat_long(distance, Angle<T>(distance));
+    return g1.arc_lat_long(distance);
   }
 
   return std::nullopt;

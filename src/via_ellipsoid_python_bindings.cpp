@@ -99,14 +99,28 @@ PYBIND11_MODULE(via_ellipsoid, m) {
   py::class_<GeodesicSegmentDouble>(m, "GeodesicSegment")
       .def(py::init<via::LatLong<double>, via::Angle<double>>())
       .def(py::init<via::LatLong<double>, via::Angle<double>,
+                    via::Radians<double>>())
+      .def(py::init<via::LatLong<double>, via::Angle<double>,
+                    via::Radians<double>, via::units::si::Metres<double>>())
+      .def(py::init<via::LatLong<double>, via::Angle<double>,
+                    via::Radians<double>, via::units::si::Metres<double>,
+                    const EllipsoidDouble &>())
+      .def(py::init<via::LatLong<double>, via::Angle<double>,
                     via::units::si::Metres<double>>())
       .def(py::init<via::LatLong<double>, via::Angle<double>,
+                    via::units::si::Metres<double>,
+                    via::units::si::Metres<double>>())
+      .def(py::init<via::LatLong<double>, via::Angle<double>,
+                    via::units::si::Metres<double>,
                     via::units::si::Metres<double>, const EllipsoidDouble &>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>,
-                    via::Radians<double>>())
+                    via::units::si::Metres<double>>())
       .def(py::init<via::LatLong<double>, via::LatLong<double>,
-                    via::Radians<double>, const EllipsoidDouble &>())
+                    via::units::si::Metres<double>, via::Radians<double>>())
+      .def(py::init<via::LatLong<double>, via::LatLong<double>,
+                    via::units::si::Metres<double>, via::Radians<double>,
+                    const EllipsoidDouble &>())
       .def("is_valid", &GeodesicSegmentDouble::is_valid)
       .def("beta", &GeodesicSegmentDouble::beta)
       .def("lon", &GeodesicSegmentDouble::lon)

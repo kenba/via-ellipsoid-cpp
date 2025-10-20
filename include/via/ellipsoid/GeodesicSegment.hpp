@@ -208,9 +208,9 @@ public:
 
   /// Set the `arc_length` of a `GeodesicSegment`
   /// @param arc_length the great circle arc length of the `GeodesicSegment`.
-  constexpr auto set_arc_length(units::si::Metres<T> half_width) noexcept
+  constexpr auto set_arc_length(units::si::Metres<T> arc_length) noexcept
       -> void {
-    half_width_ = half_width;
+    arc_length_ = arc_length;
   }
 
   /// Accessor for the arc length on the auxiliary sphere in radians.

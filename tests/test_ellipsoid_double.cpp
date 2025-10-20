@@ -179,13 +179,14 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
 
   // a geodesic from the start of g to its mid point
   const GeodesicSegment<double> g1(g.beta(), g.lon(), g.azi(), half_arc_length,
-                                   g.ellipsoid());
+                                   units::si::Metres(0.0), g.ellipsoid());
   // a geodesic from the mid point of g to its end
   const Angle<double> half_arc_length_angle(half_arc_length);
   const GeodesicSegment<double> g2(
       g.arc_beta(half_arc_length_angle),
       g.arc_longitude(half_arc_length, half_arc_length_angle),
-      g.arc_azimuth(half_arc_length_angle), half_arc_length, g.ellipsoid());
+      g.arc_azimuth(half_arc_length_angle), half_arc_length,
+      units::si::Metres(0.0), g.ellipsoid());
 
   // 1mm precision in Radians on the auxiliary sphere
   const Radians<double> precision{1e-3 / g.ellipsoid().a().v()};
@@ -203,7 +204,7 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   const GeodesicSegment<double> g3(
       g.arc_beta(half_arc_length_angle),
       g.arc_longitude(half_arc_length, half_arc_length_angle), g.azi(),
-      half_arc_length, g.ellipsoid());
+      half_arc_length, units::si::Metres(0.0), g.ellipsoid());
 
   // geodesics are NOT coincident
   const auto [distance3, distance4, angle2, iterations2]{
@@ -222,14 +223,16 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   const Ellipsoid ellipsoid(units::si::Metres(6.4e6), 1.0 / 50.0);
   const LatLong p1(Degrees(-30.0), Degrees(0.0));
   const LatLong p2(Degrees(29.5), Degrees(179.5));
-  const GeodesicSegment<double> g1(
-      p1, p2, Radians(great_circle::MIN_VALUE<double>), ellipsoid);
+  const GeodesicSegment<double> g1(p1, p2, units::si::Metres(0.0),
+                                   Radians(great_circle::MIN_VALUE<double>),
+                                   ellipsoid);
   BOOST_CHECK_CLOSE(19847901.117944598, g1.length().v(), CALCULATION_TOLERANCE);
 
   const LatLong p3(Degrees(1.0), Degrees(90.0));
   const LatLong p4(Degrees(-2.0), Degrees(-95.0));
-  const GeodesicSegment<double> g2(
-      p3, p4, Radians(great_circle::MIN_VALUE<double>), ellipsoid);
+  const GeodesicSegment<double> g2(p3, p4, units::si::Metres(0.0),
+                                   Radians(great_circle::MIN_VALUE<double>),
+                                   ellipsoid);
   BOOST_CHECK_CLOSE(19518466.043349568, g2.length().v(), CALCULATION_TOLERANCE);
 
   const auto result{

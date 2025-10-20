@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE(test_Geodesic_direct_constructors) {
   BOOST_CHECK_EQUAL(128u, sizeof(GeodesicSegment<double>));
 
   // Latitude, longitude, azimuth, "direct" constructor.
-  const GeodesicSegment<double> geodesic0(Angle(Degrees(45.0)),
-                                          Angle(Degrees(0.0)),
-                                          Angle(Degrees(90.0)), Radians(0.0));
+  const GeodesicSegment<double> geodesic0(
+      Angle(Degrees(45.0)), Angle(Degrees(0.0)), Angle(Degrees(90.0)),
+      Radians(0.0), units::si::Metres(0.0));
   BOOST_CHECK_EQUAL(
       trig::PI_2<double>,
       geodesic0.arc_azimuth(Angle(Radians(0.0))).to_radians().v());

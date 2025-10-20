@@ -76,14 +76,14 @@ public:
   /// @param lon the start longitude.
   /// @param azimuth the azimuth at the start point.
   /// @param arc_length the great circle arc length in Radians.
+  /// @param half_width the GeodesicSegment half width in Metres, default zero.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
-  /// @param half_width the GeodesicSegment half width in Metres, default zero.
   constexpr GeodesicSegment(
       const Angle<T> beta, const Angle<T> lon, const Angle<T> azimuth,
       const Radians<T> arc_length,
-      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84(),
-      const units::si::Metres<T> half_width = units::si::Metres<T>(T()))
+      const units::si::Metres<T> half_width = units::si::Metres<T>(T()),
+      const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : beta_{beta}, lon_{lon}, azi_{azimuth},
         // Calculate the azimuth at the first Equator crossing
         azi0_(trig::UnitNegRange(azi_.sin().v() * beta_.cos().v()),
@@ -110,30 +110,34 @@ public:
   /// @param a the geodetic start point.
   /// @param azimuth the azimuth at the start point.
   /// @param arc_length the great circle arc length in Radians.
+  /// @param half_width the GeodesicSegment half width in Metres, default zero.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
   constexpr GeodesicSegment(
       const LatLong<T> &a, const Angle<T> &azimuth,
       const Radians<T> arc_length = Radians(T()),
+      const units::si::Metres<T> half_width = units::si::Metres<T>(T()),
       const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : GeodesicSegment(
             ellipsoid.calculate_parametric_latitude(Angle<T>(a.lat())),
-            Angle<T>(a.lon()), azimuth, arc_length, ellipsoid) {}
+            Angle<T>(a.lon()), azimuth, arc_length, half_width, ellipsoid) {}
 
   /// Construct a GeodesicSegment from a start point, azimuth and length in
   /// Metres.
   /// @param a the geodetic start point.
   /// @param azimuth the azimuth at the start point.
   /// @param length the length in Metres.
+  /// @param half_width the GeodesicSegment half width in Metres, default zero.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
   constexpr GeodesicSegment(
       const LatLong<T> &a, const Angle<T> &azimuth,
       const units::si::Metres<T> length,
+      const units::si::Metres<T> half_width = units::si::Metres<T>(T()),
       const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : GeodesicSegment(
             ellipsoid.calculate_parametric_latitude(Angle<T>(a.lat())),
-            Angle<T>(a.lon()), azimuth, Radians(T()), ellipsoid) {
+            Angle<T>(a.lon()), azimuth, Radians(T()), half_width, ellipsoid) {
     arc_length_ = metres_to_radians(length);
   }
 
@@ -141,14 +145,16 @@ public:
   /// tuple.
   /// @param a the geodetic point.
   /// @param azimuth_length the azimuth, arc length tuple.
+  /// @param half_width the GeodesicSegment half width in Metres, default zero.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
   constexpr GeodesicSegment(
       const LatLong<T> &a,
       const std::tuple<Angle<T>, Radians<T>, Angle<T>, unsigned> azimuth_length,
+      const units::si::Metres<T> half_width = units::si::Metres<T>(T()),
       const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : GeodesicSegment(a, std::get<0>(azimuth_length),
-                        std::get<1>(azimuth_length), ellipsoid) {}
+                        std::get<1>(azimuth_length), half_width, ellipsoid) {}
 
   /// Construct a GeodesicSegment between a pair of points.
   ///
@@ -156,17 +162,19 @@ public:
   /// @pre tolerance >= epsilon
   ///
   /// @param a, b the start and finish points in geodetic coordinates.
+  /// @param half_width the GeodesicSegment half width in Metres, default zero.
   /// @param tolerance the tolerance to perform the calculation to in Radians,
   /// default great_circle::MIN_VALUE.
   /// @param ellipsoid a const reference to the underlying Ellipsoid, default
   /// wgs84.
   constexpr GeodesicSegment(
       const LatLong<T> &a, const LatLong<T> &b,
+      const units::si::Metres<T> half_width = units::si::Metres<T>(T()),
       const Radians<T> tolerance = Radians<T>(great_circle::MIN_VALUE<T>),
       const Ellipsoid<T> &ellipsoid = Ellipsoid<T>::wgs84())
       : GeodesicSegment(
             a, calculate_azimuths_arc_length(a, b, tolerance, ellipsoid),
-            ellipsoid) {}
+            half_width, ellipsoid) {}
 
   /// Test whether a `GeodesicSegment` is valid:
   /// @invariant 0° <= latitude <= 90°
@@ -174,7 +182,7 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto is_valid() const noexcept -> bool {
     return beta_.cos().v() >= T() && T() <= arc_length_.v() &&
-           arc_length_.v() <= trig::PI<T>;
+           arc_length_.v() <= trig::PI<T> && half_width_.v() >= T();
   }
 
   /// Accessor for the start parametric latitude on the auxiliary sphere.
@@ -494,11 +502,9 @@ public:
   [[nodiscard("Pure Function")]]
   constexpr auto reverse() const -> GeodesicSegment<T> {
     const Angle<T> sigma(arc_length_);
-    GeodesicSegment<T> segment(
+    return GeodesicSegment<T>(
         arc_beta(sigma), arc_longitude(arc_length_, sigma),
-        arc_azimuth(sigma).opposite(), arc_length_, ellipsoid_);
-    segment.set_half_width(half_width_);
-    return segment;
+        arc_azimuth(sigma).opposite(), arc_length_, half_width_, ellipsoid_);
   }
 
   /// Calculate along and across track distances to a position from a

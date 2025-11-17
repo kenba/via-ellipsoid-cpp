@@ -210,7 +210,9 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(),
                     2 * CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0.0, distance4.v());
-  BOOST_CHECK_EQUAL(0.0, angle2.to_degrees().v());
+  BOOST_CHECK_CLOSE(
+      (g3.azi() - g1.arc_azimuth(half_arc_length_angle)).to_degrees().v(),
+      angle2.to_degrees().v(), 2 * CALCULATION_TOLERANCE);
   BOOST_CHECK_EQUAL(0, iterations2);
 }
 //////////////////////////////////////////////////////////////////////////////

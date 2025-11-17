@@ -156,11 +156,7 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
       return {distance1, distance2, angle, 0u};
     } else {
       // The start of the second geodesic lies on the first geodesic
-      //
-      const auto angle{delta_azimuth1_2.sin().abs().v() <
-                               vector::MIN_SIN_ANGLE<T>
-                           ? reciprocal ? Angle<T>().opposite() : Angle<T>()
-                           : delta_azimuth1_2};
+      const auto angle{g3_azi - g1.arc_azimuth(Angle<T>(atd))};
       return {atd, Radians<T>(0), angle, 0u};
     }
   }

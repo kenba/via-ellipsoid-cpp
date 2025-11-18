@@ -207,13 +207,12 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
   // geodesics are NOT coincident
   const auto [distance3, distance4, angle2, iterations2]{
       calculate_sphere_intersection_distances(g1, g3, precision)};
-  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(),
-                    2 * CALCULATION_TOLERANCE);
-  BOOST_CHECK_EQUAL(0.0, distance4.v());
+  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(), precision.v());
+  BOOST_CHECK_SMALL(distance4.v(), 16 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(
       (g3.azi() - g1.arc_azimuth(half_arc_length_angle)).to_degrees().v(),
-      angle2.to_degrees().v(), 2 * CALCULATION_TOLERANCE);
-  BOOST_CHECK_EQUAL(0, iterations2);
+      angle2.to_degrees().v(), precision.v());
+  BOOST_CHECK_EQUAL(5, iterations2);
 }
 //////////////////////////////////////////////////////////////////////////////
 

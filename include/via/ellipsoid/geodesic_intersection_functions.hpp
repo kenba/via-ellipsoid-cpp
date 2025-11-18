@@ -139,26 +139,15 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
 
   // Determine whether the geodesics are coincident
   const Angle<T> delta_azimuth1_3{g3_azi - g1.azi()};
-
-  const bool geodesics_may_be_coincident{delta_azimuth1_3.sin().abs().v() <
-                                         vector::MIN_SIN_ANGLE<T>};
-  if (geodesics_may_be_coincident) {
-    const Angle<T> delta_azimuth2_3{g3_end_azi - g2.azi()};
-
-    const bool geodesics_are_coincident{delta_azimuth2_3.sin().abs().v() <
-                                        vector::MIN_SIN_ANGLE<T>};
-    if (geodesics_are_coincident) {
-      // The geodesics are coincident
-      const auto [distance1, distance2]{
-          vector::intersection::calculate_coincident_arc_distances(
-              atd, reciprocal, g1.arc_length(), g2.arc_length())};
-      const auto angle{reciprocal ? Angle<T>().opposite() : Angle<T>()};
-      return {distance1, distance2, angle, 0u};
-    } else {
-      // The start of the second geodesic lies on the first geodesic
-      const auto angle{g3_azi - g1.arc_azimuth(Angle<T>(atd))};
-      return {atd, Radians<T>(0), angle, 0u};
-    }
+  const Angle<T> delta_azimuth2_3{g3_end_azi - g2.azi()};
+  if ((delta_azimuth1_3.sin().abs().v() < vector::MIN_SIN_ANGLE<T>) &&
+      (delta_azimuth2_3.sin().abs().v() < vector::MIN_SIN_ANGLE<T>)) {
+    // The geodesics are coincident
+    const auto [distance1, distance2]{
+        vector::intersection::calculate_coincident_arc_distances(
+            atd, reciprocal, g1.arc_length(), g2.arc_length())};
+    const auto angle{reciprocal ? Angle<T>().opposite() : Angle<T>()};
+    return {distance1, distance2, angle, 0u};
   }
 
   // Calculate the intersection of the poles at the mid points of the unit

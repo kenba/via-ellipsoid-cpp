@@ -26,7 +26,9 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "GeodesicSegment.hpp"
 #include <cmath>
+#include <via/angle.hpp>
 #include <via/sphere/great_circle.hpp>
+#include <via/sphere/vector.hpp>
 
 namespace via {
 namespace ellipsoid {
@@ -135,14 +137,15 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
       g1.beta(), g2.beta(), g2.lon() - g1.lon(),
       Radians<T>(great_circle::MIN_VALUE<T>), g1.ellipsoid())};
 
-  const Radians<T> atd{reciprocal ? -g3_arc_length : g3_arc_length};
-
   // Determine whether the geodesics are coincident
   const Angle<T> delta_azimuth1_3{g3_azi - g1.azi()};
   const Angle<T> delta_azimuth2_3{g3_end_azi - g2.azi()};
   if ((delta_azimuth1_3.sin().abs().v() < vector::MIN_SIN_ANGLE<T>) &&
       (delta_azimuth2_3.sin().abs().v() < vector::MIN_SIN_ANGLE<T>)) {
     // The geodesics are coincident
+    const auto [a1, pole1] = g1.arc_point_and_pole(Radians<T>(0));
+    const Radians<T> atd{std::copysign(g3_arc_length.v(),
+                                       vector::sin_atd(a1, pole1, g2.a()).v())};
     const auto [distance1, distance2]{
         vector::intersection::calculate_coincident_arc_distances(
             atd, reciprocal, g1.arc_length(), g2.arc_length())};
@@ -179,6 +182,9 @@ auto calculate_sphere_intersection_distances(const GeodesicSegment<T> &g1,
   } else {
     // This code should never be executed.
     // The check for coincident geodesics should cover coincident great circles.
+    const auto [a1, pole1] = g1.arc_point_and_pole(Radians<T>(0));
+    const Radians<T> atd{std::copysign(g3_arc_length.v(),
+                                       vector::sin_atd(a1, pole1, g2.a()).v())};
     const auto [distance1, distance2]{
         vector::intersection::calculate_coincident_arc_distances(
             atd, reciprocal, g1.arc_length(), g2.arc_length())};

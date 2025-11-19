@@ -217,6 +217,44 @@ BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_same_geodesic_no_intersection) {
+  using namespace via::trig;
+  const LatLong a(Degrees(0.0), Degrees(-4.0));
+  const LatLong b(Degrees(0.0), Degrees(0.0));
+  const GeodesicSegment<double> g1(a, b);
+  const GeodesicSegment<double> g3(b, a);
+
+  const LatLong c(Degrees(0.0), Degrees(0.25));
+  const LatLong d(Degrees(0.0), Degrees(4.0));
+  const GeodesicSegment<double> g2(c, d);
+  const GeodesicSegment<double> g4(d, c);
+
+  // 1m precision in Radians on the unit sphere
+  const Radians<double> precision{1.0 / g1.ellipsoid().a().v()};
+
+  const auto [distance1, distance2, angle1, iterations]{
+      calculate_sphere_intersection_distances(g1, g2, precision)};
+  BOOST_CHECK_CLOSE(deg2rad(4.2643), distance1.v(), 400 * precision.v());
+  BOOST_CHECK_EQUAL(0.0, distance2.v());
+
+  const auto [distance1_1, distance2_1, angle1_1, iterations_1]{
+      calculate_sphere_intersection_distances(g3, g2, precision)};
+  BOOST_CHECK_CLOSE(deg2rad(-0.250841), distance1_1.v(), 400 * precision.v());
+  BOOST_CHECK_EQUAL(0.0, distance2_1.v());
+
+  const auto [distance1_2, distance2_2, angle1_2, iterations_2]{
+      calculate_sphere_intersection_distances(g1, g4, precision)};
+  BOOST_CHECK_CLOSE(deg2rad(4.2643), distance1_2.v(), 400 * precision.v());
+  BOOST_CHECK_EQUAL(g4.arc_length().v(), distance2_2.v());
+
+  const auto [distance1_3, distance2_3, angle1_3, iterations_3]{
+      calculate_sphere_intersection_distances(g3, g4, precision)};
+  BOOST_CHECK_EQUAL(0.0, distance1_3.v());
+  BOOST_CHECK_CLOSE(deg2rad(4.013456), distance2_3.v(), 400 * precision.v());
+}
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   // Example from Charles Karney email on 31/03/2025
   const Ellipsoid ellipsoid(units::si::Metres(6.4e6), 1.0 / 50.0);

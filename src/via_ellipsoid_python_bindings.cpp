@@ -157,13 +157,11 @@ PYBIND11_MODULE(via_ellipsoid, m) {
            &GeodesicSegmentDouble::calculate_sphere_shortest_distance<10>)
       .def("calculate_atd_and_xtd",
            &GeodesicSegmentDouble::calculate_atd_and_xtd<10>)
-      .def("shortest_distance", &GeodesicSegmentDouble::shortest_distance<10>);
+      .def("shortest_distance", &GeodesicSegmentDouble::shortest_distance<10>)
+
+      .def(py::self == py::self);
 
   // Python bindings for GeodesicSegment intersection functions
-  m.def("iterate_geodesic_intersection_distances",
-        &via::ellipsoid::iterate_geodesic_intersection_distances<double>,
-        "Iterate the great circle arc lengths to an intersection point of two "
-        "geodesic segments.");
   m.def("calculate_sphere_intersection_distances",
         &via::ellipsoid::calculate_sphere_intersection_distances<double>,
         "Calculate the distances along a pair of GeodesicSegments (in Radians) "
@@ -177,4 +175,11 @@ PYBIND11_MODULE(via_ellipsoid, m) {
         "Calculate the position (Latitude and Longitude) where a pair of "
         "`GeodesicSegment`s intersect, or None if the `GeodesicSegment`s do "
         "not intersect.");
+  m.def("geodesics_are_coincident",
+        &via::ellipsoid::geodesics_are_coincident<double>,
+        "Determine whether two `GeodesicSegment`s are coincident.");
+  m.def("calculate_arc_reference_distances_and_angle",
+        &via::ellipsoid::calculate_arc_reference_distances_and_angle<double>,
+        "Find the closest intersection distances of two `GeodesicSegment`s and "
+        "the relative angle at the reference point.");
 }

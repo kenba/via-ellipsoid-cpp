@@ -208,8 +208,7 @@ public:
 
   /// Set the `arc_length` of a `GeodesicSegment`
   /// @param arc_length the great circle arc length of the `GeodesicSegment`.
-  constexpr auto set_arc_length(units::si::Metres<T> arc_length) noexcept
-      -> void {
+  constexpr auto set_arc_length(Radians<T> arc_length) noexcept -> void {
     arc_length_ = arc_length;
   }
 

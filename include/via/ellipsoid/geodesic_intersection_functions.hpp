@@ -264,7 +264,7 @@ auto find_geodesic_intersection_distances(const GeodesicSegment<T> &g_0,
                                           Radians<T> distance_1,
                                           const Radians<T> precision)
     -> std::tuple<Radians<T>, Radians<T>, unsigned> {
-  const auto sq_precision{std::powl(great_circle::gc2e_distance(precision), 2)};
+  const auto sq_precision{std::pow(great_circle::gc2e_distance(precision), 2)};
 
   auto iterations{1u};
   while (iterations < MAX_ITERATIONS) {

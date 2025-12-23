@@ -687,5 +687,17 @@ public:
   }
 };
 
+/// GeodesicSegment equality operator
+template <typename T>
+  requires std::floating_point<T>
+[[nodiscard("Pure Function")]]
+constexpr auto operator==(const GeodesicSegment<T> &lhs,
+                          const GeodesicSegment<T> &rhs) noexcept -> bool {
+  return lhs.beta() == rhs.beta() && lhs.lon() == rhs.lon() &&
+         lhs.azi() == rhs.azi() && lhs.arc_length() == rhs.arc_length() &&
+         lhs.half_width() == rhs.half_width() &&
+         lhs.ellipsoid() == rhs.ellipsoid();
+}
+
 } // namespace ellipsoid
 } // namespace via

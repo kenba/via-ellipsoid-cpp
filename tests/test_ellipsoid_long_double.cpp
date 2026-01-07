@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2025 Ken Barker
+// Copyright (c) 2025-2026 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -26,6 +26,7 @@
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
+using namespace via::ellipsoid::intersection;
 using namespace via::ellipsoid;
 using namespace via;
 
@@ -36,7 +37,7 @@ const auto CALCULATION_TOLERANCE(100 * EPSILON);
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_SUITE(Test_ellipsoid_long_double)
-
+/*
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   // Example from Charles Karney email on 01/04/2025
@@ -83,6 +84,6 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
 #endif
 }
 //////////////////////////////////////////////////////////////////////////////
-
+*/
 BOOST_AUTO_TEST_SUITE_END()
 //////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2025 Ken Barker
+// Copyright (c) 2019-2026 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -596,7 +596,8 @@ public:
         calculate_arc_atd_and_xtd<MAX_ITERATIONS>(beta, lon, precision)};
 
     // if the position is beside the geodesic segment
-    if (vector::intersection::is_alongside(atd, arc_length_, precision)) {
+    if ((-precision.v() <= atd.v()) &&
+        (atd.v() <= arc_length_.v() + precision.v())) {
       if (xtd.abs().v() < precision.v()) {
         return units::si::Metres<T>(0);
       } else {

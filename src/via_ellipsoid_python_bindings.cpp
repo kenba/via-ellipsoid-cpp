@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2025 Ken Barker
+// Copyright (c) 2019-2026 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -162,10 +162,15 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def(py::self == py::self);
 
   // Python bindings for GeodesicSegment intersection functions
-  m.def("calculate_sphere_intersection_distances",
-        &via::ellipsoid::calculate_sphere_intersection_distances<double>,
-        "Calculate the distances along a pair of GeodesicSegments (in Radians) "
-        "to their closest intersection or reference points.");
+  m.def("geodesics_are_coincident",
+        &via::ellipsoid::intersection::geodesics_are_coincident<double>,
+        "Determine whether two `GeodesicSegment`s are coincident.");
+  m.def("calculate_arc_reference_distances_and_angle",
+        &via::ellipsoid::intersection::
+            calculate_arc_reference_distances_and_angle<double>,
+        "Find the closest intersection distances of two `GeodesicSegment`s and "
+        "the relative angle at the reference point.");
+
   m.def("calculate_intersection_distances",
         &via::ellipsoid::calculate_intersection_distances<double>,
         "Calculate the distances along a pair of GeodesicSegments (in Radians) "
@@ -175,11 +180,4 @@ PYBIND11_MODULE(via_ellipsoid, m) {
         "Calculate the position (Latitude and Longitude) where a pair of "
         "`GeodesicSegment`s intersect, or None if the `GeodesicSegment`s do "
         "not intersect.");
-  m.def("geodesics_are_coincident",
-        &via::ellipsoid::geodesics_are_coincident<double>,
-        "Determine whether two `GeodesicSegment`s are coincident.");
-  m.def("calculate_arc_reference_distances_and_angle",
-        &via::ellipsoid::calculate_arc_reference_distances_and_angle<double>,
-        "Find the closest intersection distances of two `GeodesicSegment`s and "
-        "the relative angle at the reference point.");
 }

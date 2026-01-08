@@ -23,6 +23,7 @@
 /// @brief Contains unit tests for the via::ellipsoid GeodesicSegment class.
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid.hpp"
+#include <boost/test/tools/old/interface.hpp>
 #include <boost/test/unit_test.hpp>
 
 using namespace via::ellipsoid::intersection;
@@ -167,94 +168,32 @@ BOOST_AUTO_TEST_CASE(test_closest_intersection_point_non_intersecting) {
   BOOST_CHECK(!result1.has_value());
 }
 //////////////////////////////////////////////////////////////////////////////
-/*
+
 //////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_intersection_same_geodesic_split) {
-  const LatLong a(Degrees(1.0), Degrees(0.0));
-  const LatLong b(Degrees(-0.998286322222), Degrees(179.296674991667));
-  const GeodesicSegment<double> g(a, b);
+BOOST_AUTO_TEST_CASE(test_closest_intersection_coincident_geodesic_paths) {
+  const LatLong south_pole_1(Degrees(-88.0), Degrees(-180.0));
+  const LatLong south_pole_2(Degrees(-87.0), Degrees(0.0));
+  const GeodesicSegment<double> g_0(south_pole_1, south_pole_2);
 
-  // Split g into two geodesics
-  const units::si::Metres<double> half_length{g.length().v() / 2.0};
-  const auto half_arc_length{g.metres_to_radians(half_length)};
+  const auto intersection_lengths{
+      calculate_intersection_distances(g_0, g_0, units::si::Metres(1e-3))};
+  BOOST_CHECK_EQUAL(g_0.arc_length().half(), std::get<0>(intersection_lengths));
+  BOOST_CHECK_EQUAL(g_0.arc_length().half(), std::get<1>(intersection_lengths));
 
-  // a geodesic from the start of g to its mid point
-  const GeodesicSegment<double> g1(g.beta(), g.lon(), g.azi(), half_arc_length,
-                                   units::si::Metres(0.0), g.ellipsoid());
-  // a geodesic from the mid point of g to its end
-  const Angle<double> half_arc_length_angle(half_arc_length);
-  const GeodesicSegment<double> g2(
-      g.arc_beta(half_arc_length_angle), g.arc_longitude(half_arc_length),
-      g.arc_azimuth(half_arc_length_angle), half_arc_length,
-      units::si::Metres(0.0), g.ellipsoid());
+  const auto intersection_point_0{
+      calculate_intersection_point(g_0, g_0, units::si::Metres(1e-3))};
+  BOOST_CHECK_CLOSE(-89.5, intersection_point_0->lat().v(), 1e-5);
+  BOOST_CHECK_EQUAL(0.0, intersection_point_0->lon().v());
 
-  // 1mm precision in Radians on the auxiliary sphere
-  const Radians<double> precision{1e-3 / g.ellipsoid().a().v()};
-
-  // geodesics are coincident
-  const auto [distance1, distance2, angle1, iterations]{
-      calculate_sphere_intersection_distances(g1, g2, precision)};
-  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance1.v(),
-                    2 * CALCULATION_TOLERANCE);
-  BOOST_CHECK_EQUAL(0.0, distance2.v());
-  BOOST_CHECK_EQUAL(0.0, angle1.to_degrees().v());
-  BOOST_CHECK_EQUAL(0, iterations);
-
-  // a geodesic from the mid point of g to another point
-  const GeodesicSegment<double> g3(
-      g.arc_beta(half_arc_length_angle), g.arc_longitude(half_arc_length),
-      g.azi(), half_arc_length, units::si::Metres(0.0), g.ellipsoid());
-
-  // geodesics are NOT coincident
-  const auto [distance3, distance4, angle2, iterations2]{
-      calculate_sphere_intersection_distances(g1, g3, precision)};
-  BOOST_CHECK_CLOSE(g1.arc_length().v(), distance3.v(), precision.v());
-  BOOST_CHECK_SMALL(distance4.v(), 16 * CALCULATION_TOLERANCE);
-  BOOST_CHECK_CLOSE(
-      (g3.azi() - g1.arc_azimuth(half_arc_length_angle)).to_degrees().v(),
-      angle2.to_degrees().v(), precision.v());
-  BOOST_CHECK_EQUAL(5, iterations2);
+  const LatLong south_pole_3(Degrees(-85.0), Degrees(0.0));
+  const LatLong south_pole_4(Degrees(-86.0), Degrees(0.0));
+  const GeodesicSegment<double> g_1(south_pole_3, south_pole_4);
+  const auto intersection_point_1{
+      calculate_intersection_point(g_0, g_1, units::si::Metres(1e-3))};
+  BOOST_CHECK(!intersection_point_1.has_value());
 }
 //////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////
-BOOST_AUTO_TEST_CASE(test_same_geodesic_no_intersection) {
-  using namespace via::trig;
-  const LatLong a(Degrees(0.0), Degrees(-4.0));
-  const LatLong b(Degrees(0.0), Degrees(0.0));
-  const GeodesicSegment<double> g1(a, b);
-  const GeodesicSegment<double> g3(b, a);
-
-  const LatLong c(Degrees(0.0), Degrees(0.25));
-  const LatLong d(Degrees(0.0), Degrees(4.0));
-  const GeodesicSegment<double> g2(c, d);
-  const GeodesicSegment<double> g4(d, c);
-
-  // 1m precision in Radians on the unit sphere
-  const Radians<double> precision{1.0 / g1.ellipsoid().a().v()};
-
-  const auto [distance1, distance2, angle1, iterations]{
-      calculate_sphere_intersection_distances(g1, g2, precision)};
-  BOOST_CHECK_CLOSE(deg2rad(4.2643), distance1.v(), 400 * precision.v());
-  BOOST_CHECK_EQUAL(0.0, distance2.v());
-
-  const auto [distance1_1, distance2_1, angle1_1, iterations_1]{
-      calculate_sphere_intersection_distances(g3, g2, precision)};
-  BOOST_CHECK_CLOSE(deg2rad(-0.250841), distance1_1.v(), 400 * precision.v());
-  BOOST_CHECK_EQUAL(0.0, distance2_1.v());
-
-  const auto [distance1_2, distance2_2, angle1_2, iterations_2]{
-      calculate_sphere_intersection_distances(g1, g4, precision)};
-  BOOST_CHECK_CLOSE(deg2rad(4.2643), distance1_2.v(), 400 * precision.v());
-  BOOST_CHECK_EQUAL(g4.arc_length().v(), distance2_2.v());
-
-  const auto [distance1_3, distance2_3, angle1_3, iterations_3]{
-      calculate_sphere_intersection_distances(g3, g4, precision)};
-  BOOST_CHECK_EQUAL(0.0, distance1_3.v());
-  BOOST_CHECK_CLOSE(deg2rad(4.013456), distance2_3.v(), 400 * precision.v());
-}
-//////////////////////////////////////////////////////////////////////////////
-*/
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   // Example from Charles Karney email on 31/03/2025

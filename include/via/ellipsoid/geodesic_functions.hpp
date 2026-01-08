@@ -1,7 +1,7 @@
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2025 Ken Barker
+// Copyright (c) 2019-2026 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -430,8 +430,6 @@ auto find_azimuth_arc_length_newtons_method(const Angle<T> beta1,
 /// @param lambda12 the geodesic longitude difference in radians.
 /// @param arc_length the auxiliary sphere great circle length in radians
 /// @param tolerance the tolerance to perform the calculation to in Radians.
-/// @param estimate_azimuth a flag to call `estimate_initial_azimuth` before
-/// performing Newton's method.
 /// @param ellipsoid the `Ellipsoid`.
 /// @return the azimuth at the start of the geodesic segment, the great circle
 /// arc length on the auxiliary sphere, the azimuth at the end of
@@ -443,7 +441,6 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
                                   const Angle<T> lambda12,
                                   const Radians<T> arc_length,
                                   const Radians<T> tolerance,
-                                  const bool estimate_azimuth,
                                   const Ellipsoid<T> &ellipsoid)
     -> std::tuple<Angle<T>, Radians<T>, Angle<T>, unsigned> {
   const T ANTIPODAL_ARC_THRESHOLD{trig::PI<T> * ellipsoid.one_minus_f()};
@@ -479,9 +476,7 @@ auto find_azimuths_and_arc_length(const Angle<T> beta_a, const Angle<T> beta_b,
       (arc_length.v() >= ANTIPODAL_ARC_THRESHOLD)
           ? estimate_antipodal_initial_azimuth(beta1, beta2, abs_lambda12,
                                                ellipsoid)
-      : estimate_azimuth
-          ? estimate_initial_azimuth(beta1, beta2, abs_lambda12, ellipsoid)
-          : great_circle::calculate_gc_azimuth(beta1, beta2, abs_lambda12)};
+          : estimate_initial_azimuth(beta1, beta2, abs_lambda12, ellipsoid)};
 
   // Use Newton's method to calculate the initial azimuth and aux length
   auto [alpha1, sigma12, iterations] =
@@ -562,7 +557,7 @@ auto aux_sphere_azimuths_length(const Angle<T> beta1, const Angle<T> beta2,
     } else {
       // Iterate to find the azimuth and length on the auxiliary sphere
       return find_azimuths_and_arc_length(beta1, beta2, delta_long, gc_length,
-                                          tolerance, true, ellipsoid);
+                                          tolerance, ellipsoid);
     }
   }
 }

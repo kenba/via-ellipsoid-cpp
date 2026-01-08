@@ -283,6 +283,34 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_intersection_point_karney_2025_04_01) {
+  // Example from Charles Karney email on 01/04/2025
+  const LatLong p1(Degrees(4.0), Degrees(20.0));
+  const Angle a1(Degrees(-56.0));
+  const GeodesicSegment<double> g1(p1, a1, Radians(trig::PI<double> - 0.1));
+
+  const LatLong p2(Degrees(-30.0), Degrees(-40.0));
+  const Angle a2(Degrees(80.0));
+  const GeodesicSegment<double> g2(p2, a2, Radians(trig::PI<double> - 0.1));
+
+  const auto result{calculate_arc_reference_distances_and_angle(
+      g1, g2, Radians(great_circle::MIN_VALUE<double>))};
+  const auto d1{std::get<0>(result)};
+  const auto d2{std::get<1>(result)};
+#ifdef OUTPUT_ITERATIONS
+  const auto iterations{std::get<unsigned>(result)};
+  std::cout << "Double precision (Radians): "
+            << great_circle::MIN_VALUE<double> << std::endl;
+  std::cout << "Double iterations: " << iterations << std::endl;
+#endif
+  const auto pd1{g1.arc_lat_long(d1 + g1.arc_length().half())};
+  const auto pd2{g2.arc_lat_long(d2 + g2.arc_length().half())};
+  BOOST_CHECK_CLOSE(-1.4414795600823707, pd1.lat().v(), CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(27.972579177172001, pd1.lon().v(), CALCULATION_TOLERANCE);
+}
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(
     test_calculate_arc_reference_distances_and_angle_coincident_great_circles) {
   const LatLong latlong_w1(Degrees(0.0), Degrees(-1.0));

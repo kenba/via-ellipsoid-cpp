@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2025 Ken Barker
+// Copyright (c) 2019-2026 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(test_meridonal_Geodesic) {
   const LatLong b(Degrees(45.0), Degrees(180.0));
   const GeodesicSegment<double> g1(a, b);
   BOOST_CHECK(g1.is_valid());
-  const auto [_point, pole0]{g1.arc_point_and_pole(Radians(0.0))};
+  const auto pole0{g1.arc_pole(Radians(0.0))};
 
   // Calculate the azimuth at the North pole
   const Radians mid_length(0.5 * g1.arc_length().v());

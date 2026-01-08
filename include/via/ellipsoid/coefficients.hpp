@@ -320,12 +320,6 @@ constexpr auto polyval_n(const T x, const S *coeffs, size_t n) -> T {
 
   T result(0);
   switch (n) {
-  case 8u:
-    result = static_cast<T>(*(coeffs + 7)) + x * result;
-    [[fallthrough]];
-  case 7u:
-    result = static_cast<T>(*(coeffs + 6)) + x * result;
-    [[fallthrough]];
   case 6u:
     result = static_cast<T>(*(coeffs + 5)) + x * result;
     [[fallthrough]];
@@ -425,17 +419,13 @@ constexpr auto sin_cos_series(const Angle<T> angle, Coeffs const &coeffs)
   T k0{T(coeffs[index--]) + ar * k1};
 
   // Unroll loop x 2, so accumulators return to their original role.
-  while (8u < index) {
+  while (6u < index) {
     k1 = static_cast<T>(coeffs[index--]) + (ar * k0 - k1);
     k0 = static_cast<T>(coeffs[index--]) + (ar * k1 - k0);
   }
 
   // Unroll loop
   switch (index) {
-  case 8u:
-    k1 = static_cast<T>(coeffs[8]) + (ar * k0 - k1);
-    k0 = static_cast<T>(coeffs[7]) + (ar * k1 - k0);
-    [[fallthrough]];
   case 6u:
     k1 = static_cast<T>(coeffs[6]) + (ar * k0 - k1);
     k0 = static_cast<T>(coeffs[5]) + (ar * k1 - k0);

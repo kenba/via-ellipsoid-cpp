@@ -300,8 +300,9 @@ constexpr auto polyval(const T x, const IteratorType first,
 
   IteratorType it(last);
   auto result(static_cast<T>(*(--it)));
-  while (it != first)
-    result = x * result + static_cast<T>(*(--it));
+  while (it != first) {
+    result = std::fma(result, x, static_cast<T>(*(--it)));
+  }
 
   return result;
 }
@@ -321,19 +322,19 @@ constexpr auto polyval_n(const T x, const S *coeffs, size_t n) -> T {
   T result(0);
   switch (n) {
   case 6u:
-    result = static_cast<T>(*(coeffs + 5)) + x * result;
+    result = std::fma(result, x, static_cast<T>(*(coeffs + 5)));
     [[fallthrough]];
   case 5u:
-    result = static_cast<T>(*(coeffs + 4)) + x * result;
+    result = std::fma(result, x, static_cast<T>(*(coeffs + 4)));
     [[fallthrough]];
   case 4u:
-    result = static_cast<T>(*(coeffs + 3)) + x * result;
+    result = std::fma(result, x, static_cast<T>(*(coeffs + 3)));
     [[fallthrough]];
   case 3u:
-    result = static_cast<T>(*(coeffs + 2)) + x * result;
+    result = std::fma(result, x, static_cast<T>(*(coeffs + 2)));
     [[fallthrough]];
   case 2u:
-    result = static_cast<T>(*(coeffs + 1)) + x * result;
+    result = std::fma(result, x, static_cast<T>(*(coeffs + 1)));
     [[fallthrough]];
   case 1u:
     result = static_cast<T>(*coeffs) + x * result;
@@ -416,23 +417,23 @@ constexpr auto sin_cos_series(const Angle<T> angle, Coeffs const &coeffs)
   // k1 is the previous element, k0 is the current element
   // If index is odd, k1 = 0, else last coeff
   T k1{(index & 1) ? T() : T(coeffs[index--])};
-  T k0{T(coeffs[index--]) + ar * k1};
+  T k0{T(std::fma(ar, k1, coeffs[index--]))};
 
   // Unroll loop x 2, so accumulators return to their original role.
   while (4u < index) {
-    k1 = static_cast<T>(coeffs[index--]) + (ar * k0 - k1);
-    k0 = static_cast<T>(coeffs[index--]) + (ar * k1 - k0);
+    k1 = std::fma(ar, k0, static_cast<T>(coeffs[index--]) - k1);
+    k0 = std::fma(ar, k1, static_cast<T>(coeffs[index--]) - k0);
   }
 
   // Unroll loop
   switch (index) {
   case 4u:
-    k1 = static_cast<T>(coeffs[4]) + (ar * k0 - k1);
-    k0 = static_cast<T>(coeffs[3]) + (ar * k1 - k0);
+    k1 = std::fma(ar, k0, static_cast<T>(coeffs[4]) - k1);
+    k0 = std::fma(ar, k1, static_cast<T>(coeffs[3]) - k0);
     [[fallthrough]];
   case 2u:
-    k1 = static_cast<T>(coeffs[2]) + (ar * k0 - k1);
-    k0 = static_cast<T>(coeffs[1]) + (ar * k1 - k0);
+    k1 = std::fma(ar, k0, static_cast<T>(coeffs[2]) - k1);
+    k0 = std::fma(ar, k1, static_cast<T>(coeffs[1]) - k0);
   }
 
   return Radians(angle2x.sin().v() * k0);

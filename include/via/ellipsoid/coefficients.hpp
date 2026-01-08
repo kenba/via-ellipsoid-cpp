@@ -419,17 +419,13 @@ constexpr auto sin_cos_series(const Angle<T> angle, Coeffs const &coeffs)
   T k0{T(coeffs[index--]) + ar * k1};
 
   // Unroll loop x 2, so accumulators return to their original role.
-  while (6u < index) {
+  while (4u < index) {
     k1 = static_cast<T>(coeffs[index--]) + (ar * k0 - k1);
     k0 = static_cast<T>(coeffs[index--]) + (ar * k1 - k0);
   }
 
   // Unroll loop
   switch (index) {
-  case 6u:
-    k1 = static_cast<T>(coeffs[6]) + (ar * k0 - k1);
-    k0 = static_cast<T>(coeffs[5]) + (ar * k1 - k0);
-    [[fallthrough]];
   case 4u:
     k1 = static_cast<T>(coeffs[4]) + (ar * k0 - k1);
     k0 = static_cast<T>(coeffs[3]) + (ar * k1 - k0);

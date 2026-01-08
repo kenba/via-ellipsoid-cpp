@@ -38,6 +38,8 @@ const auto CALCULATION_TOLERANCE(100 * EPSILON);
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_SUITE(Test_ellipsoid_long_double)
 
+// Disable tests since Visual Studio cannot calculate long doubles
+#ifndef _MSC_VER
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   // Example from Charles Karney email on 31/03/2025
@@ -66,6 +68,7 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
                     CALCULATION_TOLERANCE);
 }
 //////////////////////////////////////////////////////////////////////////////
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_intersection_point_karney_2025_04_01) {

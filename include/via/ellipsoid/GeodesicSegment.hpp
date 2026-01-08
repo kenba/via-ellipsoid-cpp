@@ -602,7 +602,7 @@ public:
         return units::si::Metres<T>(0);
       } else {
         // convert cross track distance to Metres
-        const auto [beta_x, lon, azi]{arc_angles(atd)};
+        const auto [beta_x, lon_x, azi]{arc_angles(atd)};
         const Angle<T> alpha{azi.quarter_turn_ccw()};
         const auto distance{
             convert_radians_to_metres(beta_x, alpha, xtd, ellipsoid_)};

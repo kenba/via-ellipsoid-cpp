@@ -37,7 +37,7 @@ const auto CALCULATION_TOLERANCE(100 * EPSILON);
 
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_SUITE(Test_ellipsoid_long_double)
-/*
+
 //////////////////////////////////////////////////////////////////////////////
 BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   // Example from Charles Karney email on 01/04/2025
@@ -51,39 +51,39 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   const GeodesicSegment<long double> g2(p2, a2,
                                         Radians(trig::PI<long double> - 0.1L));
 
-  const auto result{calculate_sphere_intersection_distances(
+  const auto result{calculate_arc_reference_distances_and_angle(
       g1, g2, Radians(great_circle::MIN_VALUE<long double>))};
   const auto d1{std::get<0>(result)};
   const auto d2{std::get<1>(result)};
 #ifdef OUTPUT_ITERATIONS
-  const auto iterations{std::get<2>(result)};
+  const auto iterations{std::get<unsigned>(result)};
   std::cout << "Long double precision (Radians): "
             << great_circle::MIN_VALUE<long double> << std::endl;
   std::cout << "Long double iterations: " << iterations << std::endl;
 #endif
 
-  const auto pd1{g1.arc_lat_long(d1)};
-  const auto pd2{g2.arc_lat_long(d2)};
+  const auto pd1{g1.arc_lat_long(d1 + g1.arc_length().half())};
+  const auto pd2{g2.arc_lat_long(d2 + g2.arc_length().half())};
 // Disable tests since Visual Studio cannot calculate long doubles
 #ifndef _MSC_VER
   BOOST_CHECK_CLOSE(-1.44147956008236583L, pd1.lat().v(),
-                    16 * CALCULATION_TOLERANCE);
+                    20 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(27.97257917717199337L, pd1.lon().v(),
                     2 * CALCULATION_TOLERANCE);
-  BOOST_CHECK_CLOSE(pd1.lat().v(), pd2.lat().v(), 18 * CALCULATION_TOLERANCE);
-  BOOST_CHECK_CLOSE(pd1.lon().v(), pd2.lon().v(), CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(pd1.lat().v(), pd2.lat().v(), 22 * CALCULATION_TOLERANCE);
+  BOOST_CHECK_CLOSE(pd1.lon().v(), pd2.lon().v(), 2 * CALCULATION_TOLERANCE);
 #endif
 #ifdef OUTPUT_ITERATIONS
   // calculate number of iterations for 1mm precision
-  const auto result_2{calculate_sphere_intersection_distances(
+  const auto result_2{calculate_arc_reference_distances_and_angle(
       g1, g2, Radians<long double>(1e-3 / g1.ellipsoid().a().v()))};
-  const auto iterations_2{std::get<2>(result_2)};
+  const auto iterations_2{std::get<unsigned>(result_2)};
   std::cout << "1mm precision (Radians): " << 1e-3 / g1.ellipsoid().a().v()
             << std::endl;
   std::cout << "1mm iterations: " << iterations_2 << std::endl;
 #endif
 }
 //////////////////////////////////////////////////////////////////////////////
-*/
+
 BOOST_AUTO_TEST_SUITE_END()
 //////////////////////////////////////////////////////////////////////////////

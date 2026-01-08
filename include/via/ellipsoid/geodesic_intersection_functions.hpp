@@ -136,7 +136,7 @@ auto calculate_arc_reference_distances_and_angle(const GeodesicSegment<T> &g_0,
   Expects(g_0.ellipsoid() == g_1.ellipsoid());
 
   if (g_0 == g_1) {
-    return {Radians(0.0), Radians(0.0), Angle<T>(), 0};
+    return {Radians(T()), Radians(T()), Angle<T>(), T()};
   }
 
   const Radians<T> half_length_0{g_0.arc_length().half()};
@@ -181,7 +181,7 @@ auto calculate_arc_reference_distances_and_angle(const GeodesicSegment<T> &g_0,
     const Angle<T> angle{
         std::signbit(pole_0.dot(pole_1)) ? Angle<T>().opposite() : Angle<T>()};
 
-    return {distance_0, distance_1, angle, 0};
+    return {distance_0, distance_1, angle, T()};
   }
 }
 

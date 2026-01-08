@@ -61,7 +61,7 @@ namespace ellipsoid {
 
 /// Calculate the distances along a pair of GeodesicSegments (in Radians) to
 /// their closest intersection or reference points.
-/// @param g1, g2 the GeodesicSegments.
+/// @param g_0, g_1 the GeodesicSegments.
 /// @param precision the precision in `Metres`.
 ///
 /// @return the distances along the GeodesicSegments to the intersection point
@@ -70,22 +70,22 @@ namespace ellipsoid {
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto calculate_intersection_distances(const GeodesicSegment<T> &g1,
-                                      const GeodesicSegment<T> &g2,
+auto calculate_intersection_distances(const GeodesicSegment<T> &g_0,
+                                      const GeodesicSegment<T> &g_1,
                                       units::si::Metres<T> precision)
     -> std::tuple<Radians<T>, Radians<T>> {
-  const Radians<T> precision_r{precision.v() / g1.ellipsoid().a().v()};
+  const Radians<T> precision_r{precision.v() / g_0.ellipsoid().a().v()};
   const auto [distance1, distance2, _angle, _]{
-      intersection::calculate_arc_reference_distances_and_angle(g1, g2,
+      intersection::calculate_arc_reference_distances_and_angle(g_0, g_1,
                                                                 precision_r)};
-  return {distance1 + g1.arc_length().half(),
-          distance2 + g2.arc_length().half()};
+  return {distance1 + g_0.arc_length().half(),
+          distance2 + g_1.arc_length().half()};
 }
 
 /// Calculate the position (Latitude and Longitude) where a pair of
 /// `GeodesicSegment`s intersect, or None if the `GeodesicSegment`s do not
 /// intersect.
-/// @param g1, g2 the GeodesicSegments.
+/// @param g_0, g_1 the GeodesicSegments.
 /// @param precision the precision in `Metres`.
 ///
 /// @return the LatLong of the intersection point if the `GeodesicSegment`s
@@ -93,30 +93,30 @@ auto calculate_intersection_distances(const GeodesicSegment<T> &g1,
 template <typename T>
   requires std::floating_point<T>
 [[nodiscard("Pure Function")]]
-auto calculate_intersection_point(const GeodesicSegment<T> &g1,
-                                  const GeodesicSegment<T> &g2,
+auto calculate_intersection_point(const GeodesicSegment<T> &g_0,
+                                  const GeodesicSegment<T> &g_1,
                                   units::si::Metres<T> precision)
     -> std::optional<LatLong<T>> {
-  const Radians<T> precision_r{precision.v() / g1.ellipsoid().a().v()};
+  const Radians<T> precision_r{precision.v() / g_0.ellipsoid().a().v()};
   const auto [distance_0, distance_1, angle, _]{
-      intersection::calculate_arc_reference_distances_and_angle(g1, g2,
+      intersection::calculate_arc_reference_distances_and_angle(g_0, g_1,
                                                                 precision_r)};
 
   const bool segments_are_coincident{angle.sin().v() == T()};
   const bool segments_intersect_or_overlap{
       segments_are_coincident
           ? distance_0.abs().v() + distance_1.abs().v() <=
-                g1.arc_length().half().v() + g2.arc_length().half().v() +
+                g_0.arc_length().half().v() + g_1.arc_length().half().v() +
                     precision_r.v()
           : (distance_0.abs().v() <=
-             g1.arc_length().half().v() + precision_r.v()) &&
+             g_0.arc_length().half().v() + precision_r.v()) &&
                 (distance_1.abs().v() <=
-                 g2.length().half().v() + precision_r.v())};
+                 g_1.length().half().v() + precision_r.v())};
 
   if (segments_intersect_or_overlap) {
-    const auto distance{distance_0 + g1.arc_length().half()};
-    // Ensure point is within g1
-    return g1.arc_lat_long(distance.clamp(g1.arc_length()));
+    const auto distance{distance_0 + g_0.arc_length().half()};
+    // Ensure point is within g_0
+    return g_0.arc_lat_long(distance.clamp(g_0.arc_length()));
   }
 
   return std::nullopt;

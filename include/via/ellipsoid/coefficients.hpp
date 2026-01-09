@@ -375,20 +375,35 @@ template <typename T,
 constexpr auto
 evaluate_coeffs_C3y(std::array<T, order *(order - 1) / 2> const &coeffs2, T eps)
     -> std::array<T, order> {
-  std::array<T, order> coeffs1{0};
-
-  T mult(1);
-  int offset(0);
-  int index(1);
-  // m is order of polynomial in eps.
-  for (int m(order - 1); 0 < m; --m, ++index) {
-    mult *= eps;
-    const auto coeffs2_start(coeffs2.data() + offset);
-    coeffs1[index] = mult * polyval_n(eps, coeffs2_start, m);
-    offset += m;
+  if constexpr (order == 6u) {
+    // double coefficients
+    const auto c1{eps * polyval_n(eps, coeffs2.data(), 5u)};
+    const auto eps_2{eps * eps};
+    const auto c2{eps_2 * polyval_n(eps, coeffs2.data() + 5u, 4u)};
+    const auto eps_3{eps * eps_2};
+    const auto c3{eps_3 * polyval_n(eps, coeffs2.data() + 9u, 3u)};
+    const auto eps_4{eps * eps_3};
+    const auto c4{eps_4 * polyval_n(eps, coeffs2.data() + 12u, 2u)};
+    const auto eps_5{eps * eps_4};
+    const auto c5{eps_5 * polyval_n(eps, coeffs2.data() + 14u, 1u)};
+    return std::array<T, order>{0.0, c1, c2, c3, c4, c5};
+  } else {
+    // long double coefficients
+    const auto c1{eps * polyval_n(eps, coeffs2.data(), 7u)};
+    const auto eps_2{eps * eps};
+    const auto c2{eps_2 * polyval_n(eps, coeffs2.data() + 7u, 6u)};
+    const auto eps_3{eps * eps_2};
+    const auto c3{eps_3 * polyval_n(eps, coeffs2.data() + 13u, 5u)};
+    const auto eps_4{eps * eps_3};
+    const auto c4{eps_4 * polyval_n(eps, coeffs2.data() + 18u, 4u)};
+    const auto eps_5{eps * eps_4};
+    const auto c5{eps_5 * polyval_n(eps, coeffs2.data() + 22u, 3u)};
+    const auto eps_6{eps * eps_5};
+    const auto c6{eps_6 * polyval_n(eps, coeffs2.data() + 25u, 2u)};
+    const auto eps_7{eps * eps_6};
+    const auto c7{eps_7 * polyval_n(eps, coeffs2.data() + 27u, 1u)};
+    return std::array<T, order>{0.0L, c1, c2, c3, c4, c5, c6, c7};
   }
-
-  return coeffs1;
 }
 
 /// Evaluate the following:

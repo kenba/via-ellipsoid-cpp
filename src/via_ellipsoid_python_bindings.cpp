@@ -133,7 +133,6 @@ PYBIND11_MODULE(via_ellipsoid, m) {
       .def("epsilon", &GeodesicSegmentDouble::epsilon)
       .def("a", &GeodesicSegmentDouble::a)
       .def("metres_to_radians", &GeodesicSegmentDouble::metres_to_radians)
-      .def("radians_to_metres", &GeodesicSegmentDouble::radians_to_metres)
       .def("length", &GeodesicSegmentDouble::length)
       .def("arc_beta", &GeodesicSegmentDouble::arc_beta)
       .def("arc_latitude", &GeodesicSegmentDouble::arc_latitude)

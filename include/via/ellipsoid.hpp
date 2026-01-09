@@ -31,7 +31,7 @@
 ///
 /// This library uses the WGS84 primary parameters defined in Tab. 3-1 of the
 /// [ICAO WGS 84 Implementation
-/// Manual](https://www.icao.int/NACC/Documents/Meetings/2014/ECARAIM/REF08-Doc9674.pdf).
+/// Manual](https://via-technology.aero/img/navigation/REF08-Doc9674.pdf).
 ///
 /// The shortest path between two points on the surface of an ellipsoid is a
 /// [geodesic segment](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid).

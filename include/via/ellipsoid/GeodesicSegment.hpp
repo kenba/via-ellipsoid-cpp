@@ -59,8 +59,8 @@ public:
   /// Integration constant: epsilon, derived from Clairaut's constant.
   T eps_ = T();
   T a3c_ = T(); ///< constant used to convert geodesic/great circle longitudes.
-  /// Start parameter for geodesic/great circle distance differences.
-  Radians<T> b11_ = Radians<T>(T());
+  /// Start parameter for geodesic/great circle longitudes.
+  Radians<T> b31_ = Radians<T>(T());
   /// A const reference to the underlying Ellipsoid, default WGS84.
   const Ellipsoid<T> &ellipsoid_{Ellipsoid<T>::wgs84()};
 
@@ -100,8 +100,8 @@ public:
     Expects((T() <= beta.cos().v()) && (T() <= arc_length.v()) &&
             (arc_length.v() <= trig::PI<T>));
 
-    const auto C1{evaluate_coeffs_C1<T>(eps_)};
-    b11_ = sin_cos_series(sigma1_, C1);
+    const auto C3{ellipsoid.calculate_c3y(eps_)};
+    b31_ = sin_cos_series(sigma1_, C3);
   }
 
   /// Construct a GeodesicSegment from a start point, azimuth and great circle
@@ -265,37 +265,20 @@ public:
 
     const auto a1((evaluate_A1<T>(eps_) + T(1)));
     const auto tau12{Radians<T>(distance.v() / (ellipsoid_.b().v() * a1))};
-    const auto tau_sum{Angle<T>(b11_ + tau12)};
+    const auto c1{ellipsoid::evaluate_coeffs_C1(eps_)};
+    const auto b11{ellipsoid::sin_cos_series(sigma1_, c1)};
+    const auto tau_sum{Angle<T>(b11 + tau12)};
     const auto c1p{evaluate_coeffs_C1p<T>(eps_)};
     const auto b12{sin_cos_series(sigma1_ + Angle<T>(tau_sum), c1p)};
 
-    return tau12 + b12 + b11_;
-  }
-
-  /// Convert a distance in radians on the auxiliary sphere to metres
-  /// on the ellipsoid.
-  /// @param arc_distance the distance along the great circle arc in Radians.
-  /// @param sigma the arc_distance as an Angle.
-  /// @return the distance along the GeodesicSegment in metres.
-  [[nodiscard("Pure Function")]]
-  constexpr auto radians_to_metres(const Radians<T> arc_distance,
-                                   const Angle<T> sigma) const
-      -> units::si::Metres<T> {
-    // Calculate Great circle distance from Northward Equator crossing.
-    const Angle<T> sigma_sum{sigma1_ + sigma};
-    const auto c1{evaluate_coeffs_C1<T>(eps_)};
-    const auto b12{sin_cos_series(sigma_sum, c1)};
-    const auto a1((evaluate_A1<T>(eps_) + T(1)));
-
-    return units::si::Metres<T>(ellipsoid().b().v() * a1 *
-                                (arc_distance + b12 - b11_).v());
+    return tau12 + b12 + b11;
   }
 
   /// Accessor for the length of the GeodesicSegment in metres.
   /// @return The length of the GeodesicSegment in metres.
   [[nodiscard("Pure Function")]]
   constexpr auto length() const -> units::si::Metres<T> {
-    return radians_to_metres(arc_length_, Angle<T>(arc_length_));
+    return convert_radians_to_metres(beta_, azi_, arc_length_, ellipsoid_);
   }
 
   /// Calculate the parametric latitude at the great circle distance.
@@ -378,11 +361,10 @@ public:
     const Angle<T> omega12{omega2 - omega1};
 
     const auto c3{ellipsoid_.calculate_c3y(eps_)};
-    const auto b31(sin_cos_series(sigma1_, c3));
     const auto b32(sin_cos_series(sigma_sum, c3));
 
-    return omega12 -
-           Angle<T>(Radians<T>{a3c_ * (arc_distance + (b32 - b31)).v()});
+    return omega12 - Angle<T>(Radians<T>{
+                         a3c_ * (arc_distance.v() + (b32.v() - b31_.v()))});
   }
 
   /// Calculate the geodesic longitude at the great circle length along
@@ -658,7 +640,7 @@ public:
     const Angle<T> atd_angle{atd};
     const Angle<T> beta_x{arc_beta(atd_angle)};
     const Angle<T> alpha{arc_azimuth(atd_angle).quarter_turn_ccw()};
-    return {radians_to_metres(atd, atd_angle),
+    return {convert_radians_to_metres(beta_, azi_, atd, ellipsoid_),
             convert_radians_to_metres(beta_x, alpha, xtd, ellipsoid_),
             iterations};
   }

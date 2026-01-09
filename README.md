@@ -53,8 +53,7 @@ The `Ellipsoid` class represents an ellipsoid of revolution.
 The singleton `Ellipsoid::wgs84()` represents the WGS-84 `Ellipsoid` which is used
 by the `GeodesicSegment` constructors to create `GeodesicSegment`s on the WGS-84 `Ellipsoid`.
 
-![Ellipsoid Class Diagram](docs/images/ellipsoid_class_diagram.svg)
-
+![Ellipsoid Class Diagram](docs/images/ellipsoid_class_diagram.svg)\
 *Figure 3 Class Diagram*
 
 ## Example

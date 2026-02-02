@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019-2025 Ken Barker
+// Copyright (c) 2019-2026 Ken Barker
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"),
@@ -339,6 +339,34 @@ BOOST_AUTO_TEST_CASE(test_geodesic_examples_with_geographiclib) {
 #ifndef OUTPUT_GEOGRAPHICLIB_VALUES
   std::cout << "GeographicLib lines: " << line_number << std::endl;
 #endif
+}
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+BOOST_AUTO_TEST_CASE(test_geodesic_equator_with_geographiclib) {
+  const auto geoid(GeographicLib::Geodesic::WGS84());
+
+  const double lat1d{0.0};
+  const double lon1d{0.0};
+  const double lat2d{0.0};
+  const double lon2d{179.0};
+
+  // Solve the inverse problem on the WGS-84 geoid using GeographicLib
+  double s12, azi1, azi2;
+  geoid.Inverse(lat1d, lon1d, lat2d, lon2d, s12, azi1, azi2);
+  BOOST_CHECK_CLOSE(19926188.851995971, s12, 1.0e-13);
+  BOOST_CHECK_CLOSE(90.0, azi1, 1.0e-13);
+
+  // Solve the inverse problem on the WGS-84 geoid
+  const auto [azimuth, aux_length, end_azimuth,
+              iterations]{ellipsoid::calculate_azimuths_arc_length(
+      LatLong(Degrees(lat1d), Degrees(lon1d)),
+      LatLong(Degrees(lat2d), Degrees(lon2d)))};
+
+  // Compare distance with GeographicLib value
+  const auto distance_m{ellipsoid::convert_radians_to_metres(
+      Angle<double>(), azimuth, aux_length)};
+  BOOST_CHECK_CLOSE(s12, distance_m.v(), 1.0e-12);
 }
 //////////////////////////////////////////////////////////////////////////////
 #endif

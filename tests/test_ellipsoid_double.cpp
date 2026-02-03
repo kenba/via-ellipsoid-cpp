@@ -232,8 +232,10 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_karney_2025_04_01) {
   const Angle a2(Degrees(80.0));
   const GeodesicSegment<double> g2(p2, a2, Radians(trig::PI<double> - 0.1));
 
+  const Radians<double> precision{great_circle::MIN_VALUE<double>};
+  const double sin_precision{std::sin(precision.v())};
   const auto result{calculate_arc_reference_distances_and_angle(
-      g1, g2, Radians(great_circle::MIN_VALUE<double>))};
+      g1, g2, precision, sin_precision)};
   const auto d1{std::get<0>(result)};
   const auto d2{std::get<1>(result)};
 #ifdef OUTPUT_ITERATIONS
@@ -258,10 +260,11 @@ BOOST_AUTO_TEST_CASE(
 
   // 1m precision in Radians on the unit sphere
   const Radians<double> precision{1.0 / g_0.ellipsoid().a().v()};
+  const double sin_precision{std::sin(precision.v())};
 
   // same segments
-  const auto result_0 =
-      calculate_arc_reference_distances_and_angle(g_0, g_0, precision);
+  const auto result_0 = calculate_arc_reference_distances_and_angle(
+      g_0, g_0, precision, sin_precision);
   BOOST_CHECK_EQUAL(Radians(0.0), get<0>(result_0));
   BOOST_CHECK_EQUAL(Radians(0.0), get<1>(result_0));
   BOOST_CHECK_EQUAL(Degrees(0.0), get<2>(result_0).to_degrees());
@@ -270,16 +273,16 @@ BOOST_AUTO_TEST_CASE(
   const LatLong latlong_w179(Degrees(0.0), Degrees(-179.0));
   const LatLong latlong_e179(Degrees(0.0), Degrees(179.0));
   const GeodesicSegment<double> g_1(latlong_e179, latlong_w179);
-  const auto result_1 =
-      calculate_arc_reference_distances_and_angle(g_0, g_1, precision);
+  const auto result_1 = calculate_arc_reference_distances_and_angle(
+      g_0, g_1, precision, sin_precision);
   BOOST_CHECK_CLOSE(-trig::PI_2<double>, get<0>(result_1).v(), precision.v());
   BOOST_CHECK_CLOSE(trig::PI_2<double>, get<1>(result_1).v(), precision.v());
   BOOST_CHECK_EQUAL(Degrees(0.0), get<2>(result_1).to_degrees());
 
   // opposite segments and geodesic paths
   const GeodesicSegment<double> g_2(latlong_w179, latlong_e179);
-  const auto result_2 =
-      calculate_arc_reference_distances_and_angle(g_0, g_2, precision);
+  const auto result_2 = calculate_arc_reference_distances_and_angle(
+      g_0, g_2, precision, sin_precision);
   BOOST_CHECK_CLOSE(-trig::PI_2<double>, get<0>(result_2).v(), precision.v());
   BOOST_CHECK_CLOSE(-trig::PI_2<double>, get<1>(result_2).v(), precision.v());
   BOOST_CHECK_EQUAL(Degrees(180.0), get<2>(result_2).to_degrees());
@@ -299,10 +302,11 @@ BOOST_AUTO_TEST_CASE(
 
   // 1m precision in Radians on the unit sphere
   const Radians<double> precision{1.0 / g_0.ellipsoid().a().v()};
+  const double sin_precision{std::sin(precision.v())};
 
   // intersection, same mid points, acute angle
-  const auto result_0 =
-      calculate_arc_reference_distances_and_angle(g_0, g_1, precision);
+  const auto result_0 = calculate_arc_reference_distances_and_angle(
+      g_0, g_1, precision, sin_precision);
   BOOST_CHECK_SMALL(get<0>(result_0).v(), precision.v());
   BOOST_CHECK_SMALL(get<1>(result_0).v(), precision.v());
   BOOST_CHECK_EQUAL(Degrees(90.0), get<2>(result_0).to_degrees());
@@ -312,16 +316,16 @@ BOOST_AUTO_TEST_CASE(
   const LatLong latlong_sw1(Degrees(-1.0), Degrees(-1.0));
   const LatLong latlong_ne1(Degrees(1.0), Degrees(1.0));
   const GeodesicSegment<double> g_2(latlong_sw1, latlong_ne1);
-  const auto result_1 =
-      calculate_arc_reference_distances_and_angle(g_0, g_2, precision);
+  const auto result_1 = calculate_arc_reference_distances_and_angle(
+      g_0, g_2, precision, sin_precision);
   BOOST_CHECK_SMALL(get<0>(result_1).v(), precision.v());
   BOOST_CHECK_SMALL(get<1>(result_1).v(), precision.v());
   BOOST_CHECK_CLOSE(angle, get<2>(result_1).to_degrees().v(), precision.v());
 
   // intersection, same mid points, obtuse angle
   const GeodesicSegment<double> g_3(latlong_ne1, latlong_sw1);
-  const auto result_2 =
-      calculate_arc_reference_distances_and_angle(g_0, g_3, precision);
+  const auto result_2 = calculate_arc_reference_distances_and_angle(
+      g_0, g_3, precision, sin_precision);
   BOOST_CHECK_SMALL(get<0>(result_2).v(), precision.v());
   BOOST_CHECK_SMALL(get<1>(result_2).v(), precision.v());
   BOOST_CHECK_CLOSE(180.0 - angle, get<2>(result_2).to_degrees().v(),
@@ -332,16 +336,16 @@ BOOST_AUTO_TEST_CASE(
       Angle<double>(), Angle<double>(),
       g_2.arc_azimuth(Angle(g_2.arc_length().half())),
       Radians(trig::PI_2<double>), units::si::Metres(0.0), g_2.ellipsoid());
-  const auto result_3 =
-      calculate_arc_reference_distances_and_angle(g_0, g_4, precision);
+  const auto result_3 = calculate_arc_reference_distances_and_angle(
+      g_0, g_4, precision, sin_precision);
   BOOST_CHECK_SMALL(get<0>(result_3).v(), precision.v());
   BOOST_CHECK_CLOSE(-trig::PI_4<double>, get<1>(result_3).v(), precision.v());
   BOOST_CHECK_CLOSE(angle, get<2>(result_3).to_degrees().v(), precision.v());
 
   // intersection, different mid points, obtuse angle
   const GeodesicSegment<double> g_5{g_4.reverse()};
-  const auto result_4 =
-      calculate_arc_reference_distances_and_angle(g_0, g_5, precision);
+  const auto result_4 = calculate_arc_reference_distances_and_angle(
+      g_0, g_5, precision, sin_precision);
   BOOST_CHECK_SMALL(get<0>(result_4).v(), precision.v());
   BOOST_CHECK_CLOSE(trig::PI_4<double>, get<1>(result_4).v(), precision.v());
   BOOST_CHECK_CLOSE(180.0 - angle, get<2>(result_4).to_degrees().v(),

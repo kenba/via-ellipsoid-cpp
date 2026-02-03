@@ -83,8 +83,10 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_karney_2025_04_01) {
   const GeodesicSegment<long double> g2(p2, a2,
                                         Radians(trig::PI<long double> - 0.1L));
 
+  const Radians<long double> precision{great_circle::MIN_VALUE<long double>};
+  const long double sin_precision{std::sin(precision.v())};
   const auto result{calculate_arc_reference_distances_and_angle(
-      g1, g2, Radians(great_circle::MIN_VALUE<long double>))};
+      g1, g2, precision, sin_precision)};
   const auto d1{std::get<0>(result)};
   const auto d2{std::get<1>(result)};
 #ifdef OUTPUT_ITERATIONS

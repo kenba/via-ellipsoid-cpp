@@ -75,9 +75,9 @@ auto calculate_intersection_distances(const GeodesicSegment<T> &g_0,
                                       units::si::Metres<T> precision)
     -> std::tuple<Radians<T>, Radians<T>> {
   const Radians<T> precision_r{precision.v() / g_0.ellipsoid().a().v()};
-  const auto [distance1, distance2, _angle, _]{
-      intersection::calculate_arc_reference_distances_and_angle(g_0, g_1,
-                                                                precision_r)};
+  const auto [distance1, distance2, _angle,
+              _]{intersection::calculate_arc_reference_distances_and_angle(
+      g_0, g_1, precision_r, std::sin(precision_r.v()))};
   return {distance1 + g_0.arc_length().half(),
           distance2 + g_1.arc_length().half()};
 }
@@ -98,9 +98,9 @@ auto calculate_intersection_point(const GeodesicSegment<T> &g_0,
                                   units::si::Metres<T> precision)
     -> std::optional<LatLong<T>> {
   const Radians<T> precision_r{precision.v() / g_0.ellipsoid().a().v()};
-  const auto [distance_0, distance_1, angle, _]{
-      intersection::calculate_arc_reference_distances_and_angle(g_0, g_1,
-                                                                precision_r)};
+  const auto [distance_0, distance_1, angle,
+              _]{intersection::calculate_arc_reference_distances_and_angle(
+      g_0, g_1, precision_r, std::sin(precision_r.v()))};
 
   const bool segments_are_coincident{angle.sin().v() == T()};
   const bool segments_intersect_or_overlap{

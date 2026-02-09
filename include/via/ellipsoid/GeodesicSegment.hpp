@@ -274,11 +274,21 @@ public:
     return tau12 + b12 + b11;
   }
 
+  /// Convert a distance in radians on the auxiliary sphere to metres
+  /// on the ellipsoid.
+  /// @param arc_distance the distance along the great circle arc in Radians.
+  /// @return the distance along the GeodesicSegment in metres.
+  [[nodiscard("Pure Function")]]
+  constexpr auto radians_to_metres(const Radians<T> arc_distance) const
+      -> units::si::Metres<T> {
+    return convert_radians_to_metres(beta_, azi_, arc_distance, ellipsoid_);
+  }
+
   /// Accessor for the length of the GeodesicSegment in metres.
   /// @return The length of the GeodesicSegment in metres.
   [[nodiscard("Pure Function")]]
   constexpr auto length() const -> units::si::Metres<T> {
-    return convert_radians_to_metres(beta_, azi_, arc_length_, ellipsoid_);
+    return radians_to_metres(arc_length_);
   }
 
   /// Calculate the parametric latitude at the great circle distance.

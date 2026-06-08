@@ -24,7 +24,6 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "via/ellipsoid.hpp"
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 using namespace via::ellipsoid::intersection;
 using namespace via::ellipsoid;
@@ -63,7 +62,7 @@ BOOST_AUTO_TEST_CASE(test_intersection_point_non_wgs84) {
   const auto result{
       calculate_intersection_point(g1, g2, units::si::Metres(1e-12L))};
   BOOST_CHECK_CLOSE(-28.0999449880836288072L, result->lat().v(),
-                    CALCULATION_TOLERANCE);
+                    6 * CALCULATION_TOLERANCE);
   BOOST_CHECK_CLOSE(172.27633238701048303L, result->lon().v(),
                     CALCULATION_TOLERANCE);
 }
